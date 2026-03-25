@@ -68,6 +68,34 @@ body.dark::before {
   z-index: 1;
 }
 
+/* Default card transparency for better background visibility */
+.bg-white {
+  @apply bg-white/85 backdrop-blur-sm;
+}
+
+.dark .bg-gray-800,
+.dark\:bg-gray-800 {
+  @apply dark:bg-gray-800/85 dark:backdrop-blur-sm;
+}
+
+.bg-gray-50 {
+  @apply bg-gray-50/85 backdrop-blur-sm;
+}
+
+.dark .bg-gray-700,
+.dark\:bg-gray-700 {
+  @apply dark:bg-gray-700/85 dark:backdrop-blur-sm;
+}
+
+.bg-gray-100 {
+  @apply bg-gray-100/85 backdrop-blur-sm;
+}
+
+.dark .bg-gray-900,
+.dark\:bg-gray-900 {
+  @apply dark:bg-gray-900/90 dark:backdrop-blur-sm;
+}
+
 /* Glasmorphism styles - reduced opacity for better background visibility */
 .glass-mode .bg-white {
   @apply bg-white/50 backdrop-blur-md border border-white/30;
