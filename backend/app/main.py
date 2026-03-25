@@ -2,6 +2,7 @@
 Main FastAPI application for the Cooking Management System.
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -10,11 +11,37 @@ import os
 from app.database import engine, Base
 from app.models import *  # Import all models to ensure they're registered
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager for startup and shutdown events.
+    """
+    # Startup: Create database tables
+    try:
+        Base.metadata.create_all(bind=engine, checkfirst=True)
+        print("Database tables created successfully")
+    except Exception as e:
+        error_msg = str(e)
+        # Only ignore DB2 index warnings (SQL0605W)
+        if "SQL0605W" in error_msg:
+            print(f"Warning (ignored): Index already exists")
+            print("Database tables created successfully (with warnings)")
+        else:
+            print(f"ERROR creating tables: {error_msg}")
+            raise
+    
+    yield
+    
+    # Shutdown: Add cleanup logic here if needed
+    print("Application shutting down")
+
 # Create FastAPI app
 app = FastAPI(
     title="Cookies Support System API",
     description="API for managing recipes, events, cooking tools, and storage",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # CORS configuration
@@ -23,8 +50,10 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",  # Vite dev server
         "http://localhost:3000",  # Alternative dev server
+        "http://localhost",  # Frontend container (port 80)
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
+        "http://127.0.0.1",  # Frontend container (port 80)
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -37,15 +66,6 @@ os.makedirs("uploads/tools", exist_ok=True)
 
 # Mount static files for images
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-
-@app.on_event("startup")
-async def startup():
-    """
-    Create database tables on startup.
-    """
-    Base.metadata.create_all(bind=engine)
-    print("Database tables created successfully")
 
 
 @app.get("/")
