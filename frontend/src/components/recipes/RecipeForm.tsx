@@ -19,6 +19,8 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
   const [formData, setFormData] = useState<RecipeCreate>({
     name: initialData?.name || '',
     description: initialData?.description || '',
+    preparation_time: initialData?.preparation_time || '0:00',
+    cooking_time: initialData?.cooking_time || '0:00',
     categories: initialData?.categories || [],
     ingredients: initialData?.ingredients || [],
     steps: initialData?.steps || [],
@@ -222,34 +224,52 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Info */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('recipes.recipeName')}</h3>
         <Input
-          label="Recipe Name"
+          label={t('recipes.recipeName')}
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
-          placeholder="Enter recipe name"
+          placeholder={t('recipes.recipeName')}
         />
         <Textarea
-          label="Description"
+          label={t('recipes.description')}
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           rows={3}
-          placeholder="Describe your recipe"
+          placeholder={t('recipes.description')}
         />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input
+            label={t('recipes.preparationTime')}
+            value={formData.preparation_time}
+            onChange={(e) => setFormData({ ...formData, preparation_time: e.target.value })}
+            placeholder="e.g., 0:30 or 1:15"
+            pattern="\d+:\d{2}"
+            title="Format: H:MM or HH:MM (e.g., 0:30 or 1:15)"
+          />
+          <Input
+            label={t('recipes.cookingTime')}
+            value={formData.cooking_time}
+            onChange={(e) => setFormData({ ...formData, cooking_time: e.target.value })}
+            placeholder="e.g., 0:45 or 2:00"
+            pattern="\d+:\d{2}"
+            title="Format: H:MM or HH:MM (e.g., 0:45 or 2:00)"
+          />
+        </div>
       </div>
 
       {/* Categories */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Categories</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('recipes.categories')}</h3>
         <div className="flex gap-2">
           <Input
             value={categoryInput}
             onChange={(e) => setCategoryInput(e.target.value)}
-            placeholder="Add category"
+            placeholder={t('recipes.categories')}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
           />
-          <Button type="button" onClick={addCategory}>Add</Button>
+          <Button type="button" onClick={addCategory}>{t('common.add')}</Button>
         </div>
         <div className="flex flex-wrap gap-2">
           {formData.categories?.map((category) => (
@@ -272,42 +292,42 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
 
       {/* Ingredients */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Ingredients</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('recipes.ingredients')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Name"
+            label={t('recipes.ingredientName')}
             value={ingredientForm.name}
             onChange={(e) => setIngredientForm({ ...ingredientForm, name: e.target.value })}
-            placeholder="Ingredient name"
+            placeholder={t('recipes.ingredientName')}
           />
           <Input
-            label="Description"
+            label={t('recipes.ingredientDescription')}
             value={ingredientForm.description}
             onChange={(e) => setIngredientForm({ ...ingredientForm, description: e.target.value })}
-            placeholder="Optional description"
+            placeholder={t('recipes.ingredientDescription')}
           />
           <Input
-            label="Amount"
+            label={t('recipes.amount')}
             type="number"
             step="0.01"
             value={ingredientForm.amount || ''}
             onChange={(e) => setIngredientForm({ ...ingredientForm, amount: e.target.value ? parseFloat(e.target.value) : undefined })}
-            placeholder="Amount"
+            placeholder={t('recipes.amount')}
           />
           <Input
-            label="Unit"
+            label={t('recipes.unit')}
             value={ingredientForm.unit}
             onChange={(e) => setIngredientForm({ ...ingredientForm, unit: e.target.value })}
-            placeholder="e.g., cups, grams"
+            placeholder={t('recipes.unit')}
           />
         </div>
         <div className="flex gap-2">
           <Button type="button" onClick={addIngredient} variant="secondary">
-            {editingIngredientIndex !== null ? 'Update Ingredient' : 'Add Ingredient'}
+            {editingIngredientIndex !== null ? t('recipes.updateIngredient') : t('recipes.addIngredient')}
           </Button>
           {editingIngredientIndex !== null && (
             <Button type="button" onClick={cancelEditIngredient} variant="ghost">
-              Cancel Edit
+              {t('common.cancelEdit')}
             </Button>
           )}
         </div>

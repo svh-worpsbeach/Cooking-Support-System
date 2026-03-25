@@ -8,6 +8,7 @@ import Card from '../components/common/Card';
 import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import RecipeForm from '../components/recipes/RecipeForm';
+import { calculateTotalTime, formatTimeForDisplay } from '../utils/timeUtils';
 import type { RecipeCreate } from '../types';
 
 export default function RecipeDetailPage() {
@@ -67,6 +68,8 @@ export default function RecipeDetailPage() {
   const initialFormData: Partial<RecipeCreate> = recipe ? {
     name: recipe.name,
     description: recipe.description,
+    preparation_time: recipe.preparation_time,
+    cooking_time: recipe.cooking_time,
     categories: recipe.categories?.map(c => c.category_name) || [],
     ingredients: recipe.ingredients?.map(ing => ({
       name: ing.name,
@@ -80,6 +83,9 @@ export default function RecipeDetailPage() {
       content: step.content,
     })) || [],
   } : {};
+
+  const totalTime = calculateTotalTime(recipe.preparation_time, recipe.cooking_time);
+  const showTimes = recipe.preparation_time !== '0:00' || recipe.cooking_time !== '0:00';
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -125,7 +131,36 @@ export default function RecipeDetailPage() {
       <div>
         <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{recipe.name}</h1>
         {recipe.description && (
-          <p className="text-lg text-gray-600 dark:text-gray-400">{recipe.description}</p>
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">{recipe.description}</p>
+        )}
+        
+        {/* Time Information */}
+        {showTimes && (
+          <div className="flex flex-wrap items-center gap-6 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mt-4">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⏱️</span>
+              <div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.totalTime')}</div>
+                <div className="text-lg font-semibold">{formatTimeForDisplay(totalTime)}</div>
+              </div>
+            </div>
+            <div className="h-12 w-px bg-gray-300 dark:bg-gray-600"></div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🔪</span>
+              <div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.prepTime')}</div>
+                <div className="text-lg font-semibold">{formatTimeForDisplay(recipe.preparation_time)}</div>
+              </div>
+            </div>
+            <div className="h-12 w-px bg-gray-300 dark:bg-gray-600"></div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🔥</span>
+              <div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.cookTime')}</div>
+                <div className="text-lg font-semibold">{formatTimeForDisplay(recipe.cooking_time)}</div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
