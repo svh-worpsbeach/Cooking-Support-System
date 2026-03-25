@@ -1,14 +1,21 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# SQLite database URL
-SQLALCHEMY_DATABASE_URL = "sqlite:///./cooking_system.db"
+# Get database URL from environment variable or use default DB2 connection
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "db2+ibm_db://db2inst1:db2inst1-pwd@localhost:50000/cookingdb"
+)
 
-# Create engine with check_same_thread=False for SQLite
+# Create engine for DB2
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    pool_pre_ping=True,  # Enable connection health checks
+    pool_size=10,
+    max_overflow=20,
+    echo=False  # Set to True for SQL query logging
 )
 
 # Create SessionLocal class

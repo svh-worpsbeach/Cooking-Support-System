@@ -24,10 +24,8 @@ venv/
 env/
 ENV/
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
+# Database (SQLite removed - using DB2)
+# DB2 data is stored in Docker volumes
 
 # IDEs
 .vscode/

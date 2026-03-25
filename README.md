@@ -58,7 +58,8 @@ The Cookies Support System is a modern web application that provides four integr
 - Python 3.11+
 - FastAPI (async web framework)
 - SQLAlchemy (ORM)
-- SQLite (database)
+- IBM DB2 (database)
+- ibm-db / ibm-db-sa (DB2 drivers)
 - Pydantic (data validation)
 
 **Frontend:**
@@ -341,7 +342,7 @@ npm run format
 
 ## 📊 Database Schema
 
-The application uses SQLite with the following main tables:
+The application uses IBM DB2 with the following main tables:
 - `recipes` - Recipe information
 - `recipe_ingredients` - Recipe ingredients
 - `recipe_steps` - Recipe cooking steps

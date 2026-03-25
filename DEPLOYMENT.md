@@ -6,8 +6,8 @@ Dieses Dokument beschreibt, wie das Cooking Management System als Microservices 
 
 - Docker (Version 20.10 oder höher)
 - Docker Compose (Version 2.0 oder höher)
-- Mindestens 2GB freier RAM
-- Mindestens 5GB freier Festplattenspeicher
+- Mindestens 4GB freier RAM (für DB2)
+- Mindestens 10GB freier Festplattenspeicher (für DB2)
 
 ## Schnellstart
 
@@ -48,8 +48,15 @@ docker-compose down
 
 #### Backend (.env)
 ```env
-DATABASE_URL=sqlite:///./cooking.db
+DATABASE_URL=db2+ibm_db://db2inst1:db2inst1-pwd@db2:50000/cookingdb
 CORS_ORIGINS=http://localhost,http://localhost:80
+```
+
+#### DB2 Database
+```env
+DB2INSTANCE=db2inst1
+DB2INST1_PASSWORD=db2inst1-pwd
+DBNAME=cookingdb
 ```
 
 #### Frontend (Build-Zeit)
@@ -60,7 +67,7 @@ VITE_API_URL=http://localhost:8000
 ### Persistente Daten
 
 Die folgenden Daten werden persistent gespeichert:
-- **Datenbank**: `./backend/cooking.db`
+- **DB2 Datenbank**: Docker Volume `db2-data`
 - **Uploads**: `./backend/uploads/`
 
 Diese werden als Volumes gemountet und bleiben auch nach Container-Neustarts erhalten.
@@ -69,11 +76,19 @@ Diese werden als Volumes gemountet und bleiben auch nach Container-Neustarts erh
 
 ### Services
 
+#### DB2 Database Service
+- **Image**: IBM DB2 Community Edition
+- **Port**: 50000
+- **Database**: cookingdb
+- **Instance**: db2inst1
+- **Health Check**: DB2 connect test
+
 #### Backend Service
 - **Image**: Python 3.11 Slim
 - **Port**: 8000
 - **Framework**: FastAPI mit Uvicorn
-- **Datenbank**: SQLite (über Volume)
+- **Datenbank**: IBM DB2 (über Netzwerk)
+- **Dependencies**: ibm-db, ibm-db-sa
 - **Health Check**: GET /api/recipes
 
 #### Frontend Service
@@ -85,7 +100,9 @@ Diese werden als Volumes gemountet und bleiben auch nach Container-Neustarts erh
 
 ### Netzwerk
 
-Beide Services kommunizieren über ein internes Docker-Netzwerk (`cooking-network`). Das Frontend proxied API-Anfragen an das Backend.
+Alle Services kommunizieren über ein internes Docker-Netzwerk (`cooking-network`):
+- Frontend → Backend (API-Anfragen)
+- Backend → DB2 (Datenbankverbindung)
 
 ## Produktions-Deployment
 
@@ -95,8 +112,11 @@ Für Produktion sollten Sie folgende Anpassungen vornehmen:
 
 ```env
 # Backend
-DATABASE_URL=postgresql://user:password@db:5432/cooking_db
+DATABASE_URL=db2+ibm_db://db2inst1:SECURE_PASSWORD@db2:50000/cookingdb
 CORS_ORIGINS=https://yourdomain.com
+
+# DB2 (Produktions-Passwort)
+DB2INST1_PASSWORD=SECURE_PASSWORD_HERE
 
 # Frontend (Build-Zeit)
 VITE_API_URL=https://api.yourdomain.com
@@ -117,26 +137,25 @@ services:
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
 ```
 
-### 3. PostgreSQL verwenden (empfohlen für Produktion)
+### 3. DB2 Produktions-Konfiguration
+
+Für Produktion sollten Sie:
+- Starke Passwörter verwenden
+- DB2 Backup-Strategie implementieren
+- DB2 Performance-Tuning durchführen
+- Separate DB2-Instanz für Produktion verwenden
 
 ```yaml
 services:
-  db:
-    image: postgres:15-alpine
+  db2:
+    image: icr.io/db2_community/db2:latest
     environment:
-      POSTGRES_DB: cooking_db
-      POSTGRES_USER: cooking_user
-      POSTGRES_PASSWORD: secure_password
+      - DB2INST1_PASSWORD=${DB2_PASSWORD}
+      - DBNAME=cookingdb
+      - ARCHIVE_LOGS=true  # Für Backup
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - cooking-network
-
-  backend:
-    environment:
-      - DATABASE_URL=postgresql://cooking_user:secure_password@db:5432/cooking_db
-    depends_on:
-      - db
+      - db2-prod-data:/database
+      - ./db2-backup:/backup
 ```
 
 ### 4. Sicherheitsempfehlungen
@@ -184,8 +203,11 @@ docker-compose ps
 ### Backup erstellen
 
 ```bash
-# Datenbank sichern
-docker-compose exec backend sqlite3 /app/cooking.db .dump > backup.sql
+# DB2 Datenbank sichern
+docker-compose exec db2 su - db2inst1 -c "db2 backup database cookingdb to /backup"
+
+# Backup-Datei aus Container kopieren
+docker cp cooking-db2:/backup ./db2-backups/
 
 # Uploads sichern
 tar -czf uploads-backup.tar.gz backend/uploads/
@@ -194,8 +216,11 @@ tar -czf uploads-backup.tar.gz backend/uploads/
 ### Backup wiederherstellen
 
 ```bash
-# Datenbank wiederherstellen
-cat backup.sql | docker-compose exec -T backend sqlite3 /app/cooking.db
+# Backup-Datei in Container kopieren
+docker cp ./db2-backups/COOKINGDB.0.db2inst1.DBPART000.20231225120000.001 cooking-db2:/backup/
+
+# DB2 Datenbank wiederherstellen
+docker-compose exec db2 su - db2inst1 -c "db2 restore database cookingdb from /backup"
 
 # Uploads wiederherstellen
 tar -xzf uploads-backup.tar.gz
@@ -228,12 +253,19 @@ docker-compose up -d
 ### Datenbank-Probleme
 
 ```bash
-# In Backend-Container einsteigen
-docker-compose exec backend bash
+# DB2-Status prüfen
+docker-compose exec db2 su - db2inst1 -c "db2 list active databases"
 
-# Datenbank-Migrationen ausführen
-python migrate_add_recipe_times.py
-python migrate_add_step_images.py
+# DB2-Logs anzeigen
+docker-compose logs db2
+
+# In DB2-Container einsteigen
+docker-compose exec db2 bash
+
+# Datenbank neu initialisieren (ACHTUNG: Löscht alle Daten!)
+docker-compose exec db2 su - db2inst1 -c "db2 drop database cookingdb"
+docker-compose exec db2 su - db2inst1 -c "db2 create database cookingdb"
+docker-compose exec db2 bash /var/custom/init-db.sh
 ```
 
 ### Port-Konflikte
