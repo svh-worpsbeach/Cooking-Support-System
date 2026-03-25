@@ -10,12 +10,12 @@ class StorageItem(Base):
     """
     __tablename__ = "storage_items"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
-    name = Column(String, nullable=False, index=True)
-    category = Column(String, nullable=False)  # e.g., "herb", "spice", "flavor", "oil", "vinegar"
+    name = Column(String(255), nullable=False)
+    category = Column(String(100), nullable=False)  # e.g., "herb", "spice", "flavor", "oil", "vinegar"
     quantity = Column(Float, nullable=False)
-    unit = Column(String, nullable=False)  # e.g., "g", "ml", "pieces", "tsp", "tbsp"
+    unit = Column(String(50), nullable=False)  # e.g., "g", "ml", "pieces", "tsp", "tbsp"
     expiry_date = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -8,7 +8,8 @@ import io
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont
 
-BASE_URL = "http://localhost:8000/api"
+import os
+BASE_URL = os.getenv("API_URL", "http://localhost:8000/api")
 
 def create_placeholder_image(text, size=(800, 600), bg_color=(200, 200, 200), text_color=(50, 50, 50)):
     """Create a placeholder image with text."""
@@ -60,6 +61,7 @@ def create_locations():
             created_locations.append(response.json())
             print(f"✓ Created location: {location['name']}")
         else:
+            print(f"✗ Failed to create location: {location['name']} - Status: {response.status_code}, Response: {response.text}")
             # Location might already exist, try to fetch it
             get_response = requests.get(f"{BASE_URL}/locations")
             if get_response.status_code == 200:
@@ -68,10 +70,6 @@ def create_locations():
                 if matching:
                     created_locations.append(matching)
                     print(f"✓ Using existing location: {location['name']}")
-                else:
-                    print(f"✗ Failed to create location: {location['name']}")
-            else:
-                print(f"✗ Failed to create location: {location['name']}")
     
     return created_locations
 

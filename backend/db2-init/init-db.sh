@@ -9,7 +9,7 @@ sleep 30
 echo "Creating database schema..."
 
 # Connect to DB2 and create tables
-db2 connect to cookingdb
+db2 connect to COOKDB
 
 # Create Locations table
 db2 "CREATE TABLE IF NOT EXISTS locations (
@@ -179,7 +179,7 @@ db2 "COMMIT"
 
 echo "Database schema created successfully!"
 
-db2 disconnect cookingdb
+db2 disconnect COOKDB
 
 echo "DB2 initialization complete!"
 

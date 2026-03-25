@@ -10,12 +10,12 @@ class Recipe(Base):
     """
     __tablename__ = "recipes"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True, nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    preparation_time = Column(String, nullable=False, default="0:00", server_default="0:00")
-    cooking_time = Column(String, nullable=False, default="0:00", server_default="0:00")
-    title_image_id = Column(Integer, ForeignKey("recipe_images.id"), nullable=True)
+    preparation_time = Column(String(50), nullable=False, default="0:00", server_default="0:00")
+    cooking_time = Column(String(50), nullable=False, default="0:00", server_default="0:00")
+    title_image_id = Column(Integer, nullable=True)  # No FK to avoid circular dependency
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -24,7 +24,7 @@ class Recipe(Base):
     ingredients = relationship("RecipeIngredient", back_populates="recipe", cascade="all, delete-orphan")
     steps = relationship("RecipeStep", back_populates="recipe", cascade="all, delete-orphan")
     images = relationship("RecipeImage", back_populates="recipe", foreign_keys="RecipeImage.recipe_id", cascade="all, delete-orphan")
-    title_image = relationship("RecipeImage", foreign_keys=[title_image_id], post_update=True)
+    # Note: title_image relationship removed to avoid circular FK dependency with DB2
 
     def __repr__(self):
         return f"<Recipe(id={self.id}, name='{self.name}')>"
@@ -36,9 +36,9 @@ class RecipeCategory(Base):
     """
     __tablename__ = "recipe_categories"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
-    category_name = Column(String, nullable=False)
+    category_name = Column(String(100), nullable=False)
 
     # Relationships
     recipe = relationship("Recipe", back_populates="categories")
@@ -53,12 +53,12 @@ class RecipeIngredient(Base):
     """
     __tablename__ = "recipe_ingredients"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
-    name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
+    name = Column(String(255), nullable=False)
+    description = Column(String(500), nullable=True)
     amount = Column(Float, nullable=False)
-    unit = Column(String, nullable=False)
+    unit = Column(String(50), nullable=False)
     order_index = Column(Integer, nullable=False, default=0)
 
     # Relationships
@@ -75,16 +75,16 @@ class RecipeStep(Base):
     """
     __tablename__ = "recipe_steps"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
     step_number = Column(Integer, nullable=False)
     content = Column(Text, nullable=False)
-    step_image_id = Column(Integer, ForeignKey("recipe_images.id"), nullable=True)
+    step_image_id = Column(Integer, nullable=True)  # No FK to avoid circular dependency
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
     recipe = relationship("Recipe", back_populates="steps")
-    step_image = relationship("RecipeImage", foreign_keys=[step_image_id], post_update=True)
+    # Note: step_image relationship removed to avoid circular FK dependency with DB2
     ingredient_refs = relationship("StepIngredientRef", back_populates="step", cascade="all, delete-orphan")
     storage_refs = relationship("StepStorageRef", back_populates="step", cascade="all, delete-orphan")
 
@@ -98,10 +98,10 @@ class RecipeImage(Base):
     """
     __tablename__ = "recipe_images"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
-    filename = Column(String, nullable=False)
-    filepath = Column(String, nullable=False)
+    filename = Column(String(255), nullable=False)
+    filepath = Column(String(500), nullable=False)
     is_process_image = Column(Boolean, default=False)
     order_index = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -119,7 +119,7 @@ class StepIngredientRef(Base):
     """
     __tablename__ = "step_ingredient_refs"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     step_id = Column(Integer, ForeignKey("recipe_steps.id"), nullable=False)
     ingredient_id = Column(Integer, ForeignKey("recipe_ingredients.id"), nullable=False)
 
@@ -137,7 +137,7 @@ class StepStorageRef(Base):
     """
     __tablename__ = "step_storage_refs"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     step_id = Column(Integer, ForeignKey("recipe_steps.id"), nullable=False)
     storage_item_id = Column(Integer, ForeignKey("storage_items.id"), nullable=False)
 

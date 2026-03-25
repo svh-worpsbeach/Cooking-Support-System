@@ -10,10 +10,10 @@ class Event(Base):
     """
     __tablename__ = "events"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    theme = Column(String, nullable=True)
+    theme = Column(String(100), nullable=True)
     event_date = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -33,9 +33,9 @@ class EventParticipant(Base):
     """
     __tablename__ = "event_participants"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
-    name = Column(String, nullable=False)
+    name = Column(String(255), nullable=False)
     dietary_restrictions = Column(Text, nullable=True)
 
     # Relationships
@@ -51,10 +51,10 @@ class EventCourse(Base):
     """
     __tablename__ = "event_courses"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
     course_number = Column(Integer, nullable=False)
-    course_name = Column(String, nullable=False)
+    course_name = Column(String(255), nullable=False)
 
     # Relationships
     event = relationship("Event", back_populates="courses")
@@ -70,7 +70,7 @@ class CourseRecipe(Base):
     """
     __tablename__ = "course_recipes"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     course_id = Column(Integer, ForeignKey("event_courses.id"), nullable=False)
     recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
 
@@ -88,7 +88,7 @@ class ShoppingList(Base):
     """
     __tablename__ = "shopping_lists"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False, unique=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -107,13 +107,13 @@ class ShoppingListItem(Base):
     """
     __tablename__ = "shopping_list_items"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     shopping_list_id = Column(Integer, ForeignKey("shopping_lists.id"), nullable=False)
-    item_name = Column(String, nullable=False)
+    item_name = Column(String(255), nullable=False)
     quantity = Column(Float, nullable=False)
-    unit = Column(String, nullable=False)
+    unit = Column(String(50), nullable=False)
     is_purchased = Column(Boolean, default=False)
-    source = Column(String, nullable=True)  # e.g., "recipe", "manual", "storage"
+    source = Column(String(50), nullable=True)  # e.g., "recipe", "manual", "storage"
 
     # Relationships
     shopping_list = relationship("ShoppingList", back_populates="items")
