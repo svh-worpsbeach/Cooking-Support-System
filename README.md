@@ -240,15 +240,25 @@ Die Anwendung ist dann verfügbar unter:
 - Backend API: http://localhost:8000
 - API Dokumentation: http://localhost:8000/docs
 
-**Detaillierte Deployment-Anleitung:**
+**Deployment-Anleitungen:**
+- **[Allgemeines Deployment](DEPLOYMENT.md)** - Standard Docker Deployment, Produktions-Setup, Monitoring
+- **[Synology NAS Deployment](SYNOLOGY_DEPLOYMENT.md)** - Detaillierte Anleitung für Synology DSM 8 mit Container Manager
+
 Siehe [DEPLOYMENT.md](DEPLOYMENT.md) für:
 - Produktions-Deployment
 - Umgebungsvariablen-Konfiguration
 - HTTPS/SSL-Setup
-- PostgreSQL-Integration
+- DB2-Integration
 - Monitoring und Logging
 - Backup und Wiederherstellung
 - Skalierung und Performance-Optimierung
+
+Siehe [SYNOLOGY_DEPLOYMENT.md](SYNOLOGY_DEPLOYMENT.md) für:
+- Synology DSM 8 spezifische Konfiguration
+- Container Manager Setup
+- Reverse Proxy und SSL-Zertifikate
+- Hyper Backup Integration
+- Synology-spezifisches Troubleshooting
 
 ### Manuelle Deployment-Optionen
 
