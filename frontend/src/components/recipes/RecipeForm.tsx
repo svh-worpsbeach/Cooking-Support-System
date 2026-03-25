@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { RecipeCreate, RecipeIngredient, RecipeStep } from '../../types';
+import type { RecipeCreate, RecipeIngredient } from '../../types';
 import Input from '../common/Input';
 import Textarea from '../common/Textarea';
 import Button from '../common/Button';
@@ -35,7 +35,6 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
   const [editingIngredientIndex, setEditingIngredientIndex] = useState<number | null>(null);
   const [stepContent, setStepContent] = useState('');
   const [stepImages, setStepImages] = useState<Map<number, { file?: File; url?: string; imageId?: number }>>(new Map());
-  const [uploadingImage, setUploadingImage] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,14 +155,13 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
     }
 
     // For existing recipes, upload immediately
-    setUploadingImage(true);
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
       uploadFormData.append('is_process_image', 'true');
       uploadFormData.append('order_index', stepIndex.toString());
 
-      const response = await api.post(`/recipes/${(initialData as any).id}/images`, uploadFormData, {
+      const response = await api.post(`/recipes/${(initialData as { id: number }).id}/images`, uploadFormData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -181,8 +179,6 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
     } catch (error) {
       console.error('Error uploading step image:', error);
       alert('Failed to upload image');
-    } finally {
-      setUploadingImage(false);
     }
   };
 
@@ -190,7 +186,7 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
     const imageData = stepImages.get(stepIndex);
     if (imageData?.imageId && initialData) {
       try {
-        await api.delete(`/recipes/${(initialData as any).id}/images/${imageData.imageId}`);
+        await api.delete(`/recipes/${(initialData as { id: number }).id}/images/${imageData.imageId}`);
       } catch (error) {
         console.error('Error deleting step image:', error);
       }

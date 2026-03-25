@@ -17,12 +17,59 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+  @apply text-gray-900 dark:text-gray-100;
+  
+  /* Light mode: Bright daylight kitchen with white/cream tones */
+  background: linear-gradient(135deg,
+    #f8f9fa 0%,
+    #e9ecef 25%,
+    #f1f3f5 50%,
+    #e9ecef 75%,
+    #f8f9fa 100%
+  );
+  background-attachment: fixed;
+}
+
+body.dark {
+  /* Dark mode: Warm evening kitchen with amber/orange lighting */
+  background: linear-gradient(135deg,
+    #1a1410 0%,
+    #2d1f1a 25%,
+    #3d2a20 50%,
+    #2d1f1a 75%,
+    #1a1410 100%
+  );
+  background-attachment: fixed;
+}
+
+/* Add subtle texture overlay for kitchen feel */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.03;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.05) 2px, rgba(0,0,0,.05) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.05) 2px, rgba(0,0,0,.05) 4px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.dark::before {
+  opacity: 0.08;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,200,100,.1) 2px, rgba(255,200,100,.1) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,200,100,.1) 2px, rgba(255,200,100,.1) 4px);
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
+  position: relative;
+  z-index: 1;
 }
 
 /* Glasmorphism styles */

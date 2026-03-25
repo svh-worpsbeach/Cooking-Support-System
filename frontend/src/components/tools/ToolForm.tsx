@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useLocations } from '../../hooks/useLocations';
 import type { CookingToolCreate } from '../../types';
 import Input from '../common/Input';
@@ -13,7 +12,6 @@ interface ToolFormProps {
 }
 
 export default function ToolForm({ initialData, onSubmit, onCancel }: ToolFormProps) {
-  const { t } = useTranslation();
   const { locations } = useLocations();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<CookingToolCreate>({

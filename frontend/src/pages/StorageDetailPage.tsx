@@ -1,33 +1,34 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStorageItem } from '../hooks/useStorage';
 import { api } from '../services/api';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
-import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import StorageForm from '../components/storage/StorageForm';
-import type { StorageItemCreate } from '../types';
 
 export default function StorageDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { item, isLoading, error } = useStorageItem(Number(id));
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleEdit = async (data: StorageItemCreate) => {
-    try {
-      await api.put(`/storage/${id}`, data);
-      setIsEditModalOpen(false);
-      window.location.reload();
-    } catch (err) {
-      console.error('Failed to update storage item:', err);
-      alert(t('errors.saveFailed'));
+  // Calculate expiry status - must be before early returns to follow React Hooks rules
+  const { isExpired, isExpiringSoon } = useMemo(() => {
+    if (!item?.expiry_date) {
+      return { isExpired: false, isExpiringSoon: false };
     }
-  };
+    
+    const now = new Date();
+    const expiryDate = new Date(item.expiry_date);
+    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    const expired = expiryDate < now;
+    const expiringSoon = expiryDate < sevenDaysFromNow && !expired;
+    
+    return { isExpired: expired, isExpiringSoon: expiringSoon };
+  }, [item]);
 
   const handleDelete = async () => {
     if (!window.confirm(t('storage.deleteConfirm'))) {
@@ -58,11 +59,6 @@ export default function StorageDetailPage() {
     );
   }
 
-  const isExpired = item.expiry_date && new Date(item.expiry_date) < new Date();
-  const isExpiringSoon = item.expiry_date && 
-    new Date(item.expiry_date) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) &&
-    !isExpired;
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -74,13 +70,6 @@ export default function StorageDetailPage() {
           ← {t('common.back')} {t('nav.storage')}
         </Link>
         <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsEditModalOpen(true)}
-          >
-            {t('common.edit')}
-          </Button>
           <Button
             variant="danger"
             size="sm"

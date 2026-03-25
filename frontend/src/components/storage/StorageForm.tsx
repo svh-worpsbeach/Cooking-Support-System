@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useLocations } from '../../hooks/useLocations';
 import type { StorageItemCreate } from '../../types';
 import Input from '../common/Input';
@@ -12,7 +11,6 @@ interface StorageFormProps {
 }
 
 export default function StorageForm({ initialData, onSubmit, onCancel }: StorageFormProps) {
-  const { t } = useTranslation();
   const { locations } = useLocations();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<StorageItemCreate>({

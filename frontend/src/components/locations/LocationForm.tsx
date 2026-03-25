@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { LocationCreate } from '../../types';
 import Input from '../common/Input';
 import Textarea from '../common/Textarea';
@@ -12,7 +11,6 @@ interface LocationFormProps {
 }
 
 export default function LocationForm({ initialData, onSubmit, onCancel }: LocationFormProps) {
-  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<LocationCreate>({
     name: initialData?.name || '',

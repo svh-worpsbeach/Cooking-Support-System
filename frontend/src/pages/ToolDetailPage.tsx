@@ -5,29 +5,14 @@ import { useTool } from '../hooks/useTools';
 import { api } from '../services/api';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
-import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import ToolForm from '../components/tools/ToolForm';
-import type { CookingToolCreate } from '../types';
 
 export default function ToolDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { tool, isLoading, error } = useTool(Number(id));
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleEdit = async (data: CookingToolCreate) => {
-    try {
-      await api.put(`/tools/${id}`, data);
-      setIsEditModalOpen(false);
-      window.location.reload();
-    } catch (err) {
-      console.error('Failed to update tool:', err);
-      alert(t('errors.saveFailed'));
-    }
-  };
 
   const handleDelete = async () => {
     if (!window.confirm(t('tools.deleteConfirm'))) {
@@ -69,13 +54,6 @@ export default function ToolDetailPage() {
           ← {t('common.back')} {t('nav.tools')}
         </Link>
         <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsEditModalOpen(true)}
-          >
-            {t('common.edit')}
-          </Button>
           <Button
             variant="danger"
             size="sm"

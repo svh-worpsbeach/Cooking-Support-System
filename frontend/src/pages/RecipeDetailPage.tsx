@@ -8,7 +8,7 @@ import Card from '../components/common/Card';
 import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import RecipeForm from '../components/recipes/RecipeForm';
-import type { RecipeCreate, Recipe } from '../types';
+import type { RecipeCreate } from '../types';
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
