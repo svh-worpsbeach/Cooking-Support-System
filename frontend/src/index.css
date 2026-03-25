@@ -25,4 +25,40 @@ body {
   min-height: 100vh;
 }
 
+/* Glasmorphism styles */
+.glass-mode .bg-white {
+  @apply bg-white/70 backdrop-blur-xl border border-white/20;
+}
+
+.glass-mode .dark\:bg-gray-800 {
+  @apply dark:bg-gray-800/70 dark:backdrop-blur-xl dark:border dark:border-gray-700/30;
+}
+
+.glass-mode .bg-gray-50 {
+  @apply bg-gray-50/70 backdrop-blur-lg;
+}
+
+.glass-mode .dark\:bg-gray-700 {
+  @apply dark:bg-gray-700/70 dark:backdrop-blur-lg;
+}
+
+.glass-mode .bg-gray-100 {
+  @apply bg-gray-100/70 backdrop-blur-lg;
+}
+
+.glass-mode .dark\:bg-gray-900 {
+  @apply dark:bg-gray-900/80 dark:backdrop-blur-xl;
+}
+
+/* Glass mode card enhancements */
+.glass-mode [class*="bg-white"],
+.glass-mode [class*="bg-gray"] {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+.glass-mode.dark [class*="bg-white"],
+.glass-mode.dark [class*="bg-gray"] {
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
 /* Made with Bob */

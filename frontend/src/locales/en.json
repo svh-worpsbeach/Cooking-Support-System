@@ -192,6 +192,8 @@
     "systemMode": "System",
     "language": "Language",
     "selectLanguage": "Select Language",
+    "glassMode": "Glass Mode",
+    "glassModeDescription": "Enable glassmorphism design with blur effects",
     "about": "About",
     "version": "Version"
   }

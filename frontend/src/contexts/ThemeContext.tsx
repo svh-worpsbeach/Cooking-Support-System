@@ -7,6 +7,8 @@ interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   effectiveTheme: 'light' | 'dark';
+  glassMode: boolean;
+  setGlassMode: (enabled: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -15,6 +17,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem('theme') as Theme;
     return stored || 'system';
+  });
+
+  const [glassMode, setGlassModeState] = useState<boolean>(() => {
+    const stored = localStorage.getItem('glassMode');
+    return stored === 'true';
   });
 
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light');
@@ -39,6 +46,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       } else {
         root.classList.remove('dark');
       }
+      
+      // Add glass mode class
+      if (glassMode) {
+        root.classList.add('glass-mode');
+      } else {
+        root.classList.remove('glass-mode');
+      }
     };
 
     updateTheme();
@@ -50,15 +64,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       mediaQuery.addEventListener('change', handler);
       return () => mediaQuery.removeEventListener('change', handler);
     }
-  }, [theme]);
+  }, [theme, glassMode]);
 
   const setTheme = (newTheme: Theme) => {
     localStorage.setItem('theme', newTheme);
     setThemeState(newTheme);
   };
 
+  const setGlassMode = (enabled: boolean) => {
+    localStorage.setItem('glassMode', enabled.toString());
+    setGlassModeState(enabled);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, effectiveTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, effectiveTheme, glassMode, setGlassMode }}>
       {children}
     </ThemeContext.Provider>
   );

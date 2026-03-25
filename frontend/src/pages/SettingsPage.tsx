@@ -4,7 +4,7 @@ import Card from '../components/common/Card';
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, glassMode, setGlassMode } = useTheme();
 
   const themeOptions = [
     { value: 'light', label: t('settings.lightMode'), icon: '☀️' },
@@ -59,6 +59,34 @@ export default function SettingsPage() {
                 </button>
               ))}
             </div>
+          </div>
+          
+          {/* Glass Mode Toggle */}
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t('settings.glassMode')}
+                </span>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {t('settings.glassModeDescription')}
+                </p>
+              </div>
+              <button
+                onClick={() => setGlassMode(!glassMode)}
+                className={`
+                  relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                  ${glassMode ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'}
+                `}
+              >
+                <span
+                  className={`
+                    inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                    ${glassMode ? 'translate-x-6' : 'translate-x-1'}
+                  `}
+                />
+              </button>
+            </label>
           </div>
         </div>
       </Card>

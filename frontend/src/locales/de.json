@@ -180,6 +180,8 @@
     "systemMode": "System",
     "language": "Sprache",
     "selectLanguage": "Sprache auswählen",
+    "glassMode": "Glas-Modus",
+    "glassModeDescription": "Aktiviere Glasmorphismus-Design mit Unschärfe-Effekten",
     "about": "Über",
     "version": "Version"
   }
