@@ -19,27 +19,27 @@ body {
   min-height: 100vh;
   @apply text-gray-900 dark:text-gray-100;
   
-  /* Light mode: Bright daylight kitchen with white/cream tones */
-  background: linear-gradient(135deg,
-    #f8f9fa 0%,
-    #e9ecef 25%,
-    #f1f3f5 50%,
-    #e9ecef 75%,
-    #f8f9fa 100%
-  );
+  /* Light mode: Modern kitchen with daylight */
+  background-image: url('/src/assets/kitchen-light.jpg');
+  background-size: cover;
+  background-position: center;
   background-attachment: fixed;
+  background-repeat: no-repeat;
+  
+  /* Fallback gradient if image is not available */
+  background-color: #f8f9fa;
 }
 
 body.dark {
-  /* Dark mode: Warm evening kitchen with amber/orange lighting */
-  background: linear-gradient(135deg,
-    #1a1410 0%,
-    #2d1f1a 25%,
-    #3d2a20 50%,
-    #2d1f1a 75%,
-    #1a1410 100%
-  );
+  /* Dark mode: Modern kitchen with artificial lighting */
+  background-image: url('/src/assets/kitchen-dark.jpg');
+  background-size: cover;
+  background-position: center;
   background-attachment: fixed;
+  background-repeat: no-repeat;
+  
+  /* Fallback gradient if image is not available */
+  background-color: #1a1410;
 }
 
 /* Add subtle texture overlay for kitchen feel */
