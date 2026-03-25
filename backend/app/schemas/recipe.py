@@ -115,6 +115,8 @@ class RecipeBase(BaseModel):
     """Base schema for Recipe."""
     name: str = Field(..., min_length=1, max_length=255, description="Recipe name")
     description: Optional[str] = Field(None, description="Recipe description")
+    preparation_time: str = Field(default="0:00", pattern=r"^\d+:\d{2}$", description="Preparation time in format H:MM or HH:MM")
+    cooking_time: str = Field(default="0:00", pattern=r"^\d+:\d{2}$", description="Cooking/baking time in format H:MM or HH:MM")
 
 
 class RecipeCreate(RecipeBase):
@@ -139,12 +141,16 @@ class RecipeUpdate(BaseModel):
     """Schema for updating a recipe."""
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = None
+    preparation_time: Optional[str] = Field(None, pattern=r"^\d+:\d{2}$")
+    cooking_time: Optional[str] = Field(None, pattern=r"^\d+:\d{2}$")
     title_image_id: Optional[int] = None
 
 
 class RecipeResponse(RecipeBase):
     """Schema for recipe response."""
     id: int
+    preparation_time: str
+    cooking_time: str
     title_image_id: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime] = None

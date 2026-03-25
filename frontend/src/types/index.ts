@@ -17,6 +17,8 @@ export interface Recipe {
   id: number;
   name: string;
   description?: string;
+  preparation_time: string;
+  cooking_time: string;
   title_image_id?: number;
   created_at: string;
   updated_at: string;
@@ -79,6 +81,8 @@ export interface StepStorageRef {
 export interface RecipeCreate {
   name: string;
   description?: string;
+  preparation_time?: string;
+  cooking_time?: string;
   categories?: string[];
   ingredients?: Omit<RecipeIngredient, 'id' | 'recipe_id'>[];
   steps?: Omit<RecipeStep, 'id' | 'recipe_id' | 'created_at' | 'ingredient_refs' | 'storage_refs'>[];

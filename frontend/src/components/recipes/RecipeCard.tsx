@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Recipe } from '../../types';
 import Card from '../common/Card';
+import { calculateTotalTime, formatTimeForDisplay } from '../../utils/timeUtils';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -11,6 +12,9 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
   const imageUrl = titleImage
     ? `${import.meta.env.VITE_API_URL}${titleImage.filepath}`
     : null;
+
+  const totalTime = calculateTotalTime(recipe.preparation_time, recipe.cooking_time);
+  const showTimes = recipe.preparation_time !== '0:00' || recipe.cooking_time !== '0:00';
 
   return (
     <Link to={`/recipes/${recipe.id}`}>
@@ -49,12 +53,24 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
             )}
           </div>
         )}
-        {(recipe.ingredients || recipe.steps) && (
-          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 space-x-4">
-            {recipe.ingredients && <span>🥘 {recipe.ingredients.length} ingredients</span>}
-            {recipe.steps && <span>📝 {recipe.steps.length} steps</span>}
-          </div>
-        )}
+        <div className="space-y-2">
+          {showTimes && (
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-4">
+              <span className="flex items-center gap-1">
+                ⏱️ <span className="font-medium">{formatTimeForDisplay(totalTime)}</span>
+              </span>
+              <span className="text-gray-400 dark:text-gray-500">|</span>
+              <span>🔪 {formatTimeForDisplay(recipe.preparation_time)}</span>
+              <span>🔥 {formatTimeForDisplay(recipe.cooking_time)}</span>
+            </div>
+          )}
+          {(recipe.ingredients || recipe.steps) && (
+            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 space-x-4">
+              {recipe.ingredients && <span>🥘 {recipe.ingredients.length} ingredients</span>}
+              {recipe.steps && <span>📝 {recipe.steps.length} steps</span>}
+            </div>
+          )}
+        </div>
       </Card>
     </Link>
   );

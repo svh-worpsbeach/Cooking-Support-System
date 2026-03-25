@@ -13,6 +13,8 @@ class Recipe(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
     description = Column(Text, nullable=True)
+    preparation_time = Column(String, nullable=False, default="0:00", server_default="0:00")
+    cooking_time = Column(String, nullable=False, default="0:00", server_default="0:00")
     title_image_id = Column(Integer, ForeignKey("recipe_images.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

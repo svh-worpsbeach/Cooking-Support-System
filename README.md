@@ -218,31 +218,54 @@ Key optimizations include:
 
 ## 🚢 Deployment
 
-### Backend Deployment
+### Docker Deployment (Empfohlen)
 
-**Using Docker:**
+Das Projekt ist vollständig containerisiert und kann als Microservices bereitgestellt werden.
+
+**Schnellstart mit Docker Compose:**
 ```bash
-cd backend
-docker build -t cooking-api .
-docker run -p 8000:8000 -v ./data:/app/data cooking-api
+# Container starten
+docker-compose up -d
+
+# Logs anzeigen
+docker-compose logs -f
+
+# Container stoppen
+docker-compose down
 ```
 
-**Manual Deployment:**
+Die Anwendung ist dann verfügbar unter:
+- Frontend: http://localhost
+- Backend API: http://localhost:8000
+- API Dokumentation: http://localhost:8000/docs
+
+**Detaillierte Deployment-Anleitung:**
+Siehe [DEPLOYMENT.md](DEPLOYMENT.md) für:
+- Produktions-Deployment
+- Umgebungsvariablen-Konfiguration
+- HTTPS/SSL-Setup
+- PostgreSQL-Integration
+- Monitoring und Logging
+- Backup und Wiederherstellung
+- Skalierung und Performance-Optimierung
+
+### Manuelle Deployment-Optionen
+
+**Backend (ohne Docker):**
 ```bash
 cd backend
 poetry install --no-dev
 poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-### Frontend Deployment
-
+**Frontend (ohne Docker):**
 ```bash
 cd frontend
 npm run build
 # Deploy the 'dist' directory to your hosting service
 ```
 
-Recommended hosting services:
+Empfohlene Hosting-Services:
 - Netlify
 - Vercel
 - AWS S3 + CloudFront
