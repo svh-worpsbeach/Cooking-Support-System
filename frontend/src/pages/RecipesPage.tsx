@@ -15,11 +15,12 @@ export default function RecipesPage() {
   const [filters, setFilters] = useState<RecipeFilters>({});
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const { recipes, isLoading, error, createRecipe, refetch } = useRecipes(filters);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const handleCreateRecipe = async (data: RecipeCreate) => {
     await createRecipe(data);
-    setIsModalOpen(false);
+    setIsCreateModalOpen(false);
   };
 
   const handleCategoryClick = (category: string) => {
@@ -67,29 +68,43 @@ export default function RecipesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('nav.recipes')}</h1>
-        <Button onClick={() => setIsModalOpen(true)}>
-          {t('recipes.createRecipe')}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setIsSearchModalOpen(true)} variant="secondary">
+            🔍 {t('common.search')}
+          </Button>
+          <Button onClick={() => setIsCreateModalOpen(true)}>
+            {t('recipes.createRecipe')}
+          </Button>
+        </div>
       </div>
-
-      <AdvancedRecipeSearch onSearch={handleSearch} onReset={handleReset} />
 
       <CategoryCloud
         onCategoryClick={handleCategoryClick}
         selectedCategories={selectedCategories}
       />
 
-      <RecipeList recipes={recipes} onCreateNew={() => setIsModalOpen(true)} />
+      <RecipeList recipes={recipes} onCreateNew={() => setIsCreateModalOpen(true)} />
 
+      {/* Search Modal */}
       <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        title={t('recipes.advancedSearch')}
+        size="lg"
+      >
+        <AdvancedRecipeSearch onSearch={handleSearch} onReset={handleReset} />
+      </Modal>
+
+      {/* Create Recipe Modal */}
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
         title={t('recipes.createRecipe')}
         size="xl"
       >
         <RecipeForm
           onSubmit={handleCreateRecipe}
-          onCancel={() => setIsModalOpen(false)}
+          onCancel={() => setIsCreateModalOpen(false)}
         />
       </Modal>
     </div>
