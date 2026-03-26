@@ -2,15 +2,46 @@ import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import type { Recipe, RecipeCreate } from '../types';
 
-export function useRecipes() {
+export interface RecipeFilters {
+  search?: string;
+  categories?: string[];
+  ingredients?: string[];
+  allowSubstitutes?: boolean;
+  sortBy?: string;
+}
+
+export function useRecipes(filters?: RecipeFilters) {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRecipes = async () => {
+  const fetchRecipes = async (customFilters?: RecipeFilters) => {
     try {
       setIsLoading(true);
-      const response = await api.get<Recipe[]>('/recipes');
+      const params = new URLSearchParams();
+      
+      const activeFilters = customFilters || filters || {};
+      
+      if (activeFilters.search) {
+        params.append('search', activeFilters.search);
+      }
+      if (activeFilters.categories && activeFilters.categories.length > 0) {
+        activeFilters.categories.forEach(cat => params.append('categories', cat));
+      }
+      if (activeFilters.ingredients && activeFilters.ingredients.length > 0) {
+        activeFilters.ingredients.forEach(ing => params.append('ingredients', ing));
+      }
+      if (activeFilters.allowSubstitutes !== undefined) {
+        params.append('allow_substitutes', String(activeFilters.allowSubstitutes));
+      }
+      if (activeFilters.sortBy) {
+        params.append('sort_by', activeFilters.sortBy);
+      }
+      
+      const queryString = params.toString();
+      const url = queryString ? `/recipes?${queryString}` : '/recipes';
+      
+      const response = await api.get<Recipe[]>(url);
       setRecipes(response.data);
       setError(null);
     } catch (err) {

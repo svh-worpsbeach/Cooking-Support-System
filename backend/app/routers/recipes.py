@@ -2,8 +2,9 @@
 Recipe router for managing recipes and related entities.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, func
 from typing import List, Optional
 
 from app.database import get_db
@@ -93,16 +94,106 @@ def create_recipe(recipe: RecipeCreate, db: Session = Depends(get_db)):
 def list_recipes(
     skip: int = 0,
     limit: int = 100,
-    category: Optional[str] = None,
+    category: Optional[str] = Query(None, description="Filter by category"),
+    categories: Optional[List[str]] = Query(None, description="Filter by multiple categories"),
+    search: Optional[str] = Query(None, description="Search in recipe name and description"),
+    ingredients: Optional[List[str]] = Query(None, description="Filter by ingredients"),
+    allow_substitutes: bool = Query(False, description="Allow ingredient substitutes in search"),
+    sort_by: Optional[str] = Query("name_asc", description="Sort by: name_asc, name_desc, category, created_desc"),
     db: Session = Depends(get_db)
 ):
     """
-    List all recipes with optional category filter and pagination.
-    """
-    query = db.query(Recipe)
+    List all recipes with advanced filtering, search, and sorting.
     
+    Parameters:
+    - skip: Number of records to skip (pagination)
+    - limit: Maximum number of records to return
+    - category: Filter by single category (legacy support)
+    - categories: Filter by multiple categories (OR logic)
+    - search: Search in recipe name and description (fuzzy match)
+    - ingredients: Filter by ingredient names (AND logic)
+    - allow_substitutes: If True, also search for common ingredient substitutes
+    - sort_by: Sorting option (name_asc, name_desc, category, created_desc)
+    """
+    query = db.query(Recipe).distinct()
+    
+    # Category filter (support both single and multiple)
+    category_list = []
     if category:
-        query = query.join(RecipeCategory).filter(RecipeCategory.category_name == category)
+        category_list.append(category)
+    if categories:
+        category_list.extend(categories)
+    
+    if category_list:
+        query = query.join(RecipeCategory).filter(
+            RecipeCategory.category_name.in_(category_list)
+        )
+    
+    # Search filter (fuzzy match in name and description)
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.filter(
+            or_(
+                Recipe.name.ilike(search_pattern),
+                Recipe.description.ilike(search_pattern)
+            )
+        )
+    
+    # Ingredient filter
+    if ingredients:
+        # For each ingredient, join and filter
+        for ingredient_name in ingredients:
+            ingredient_pattern = f"%{ingredient_name}%"
+            
+            if allow_substitutes:
+                # Define common substitutes (can be extended)
+                substitutes_map = {
+                    'butter': ['margarine', 'öl', 'oil'],
+                    'margarine': ['butter', 'öl', 'oil'],
+                    'milch': ['sahne', 'cream', 'kokosmilch', 'coconut milk'],
+                    'milk': ['cream', 'coconut milk', 'sahne'],
+                    'zucker': ['honig', 'honey', 'agavendicksaft', 'stevia'],
+                    'sugar': ['honey', 'agave', 'stevia'],
+                    'mehl': ['stärke', 'flour', 'starch'],
+                    'flour': ['starch', 'mehl'],
+                }
+                
+                # Get substitutes for this ingredient
+                ingredient_lower = ingredient_name.lower()
+                search_terms = [ingredient_pattern]
+                for key, subs in substitutes_map.items():
+                    if key in ingredient_lower:
+                        search_terms.extend([f"%{sub}%" for sub in subs])
+                
+                # Create OR condition for ingredient and its substitutes
+                ingredient_conditions = [
+                    RecipeIngredient.name.ilike(pattern) for pattern in search_terms
+                ]
+                query = query.join(RecipeIngredient).filter(
+                    or_(*ingredient_conditions)
+                )
+            else:
+                # Exact ingredient match
+                query = query.join(RecipeIngredient).filter(
+                    RecipeIngredient.name.ilike(ingredient_pattern)
+                )
+    
+    # Sorting
+    if sort_by == "name_asc":
+        query = query.order_by(Recipe.name.asc())
+    elif sort_by == "name_desc":
+        query = query.order_by(Recipe.name.desc())
+    elif sort_by == "category":
+        # Sort by category name, then recipe name
+        query = query.join(RecipeCategory).order_by(
+            RecipeCategory.category_name.asc(),
+            Recipe.name.asc()
+        )
+    elif sort_by == "created_desc":
+        query = query.order_by(Recipe.created_at.desc())
+    else:
+        # Default to name ascending
+        query = query.order_by(Recipe.name.asc())
     
     recipes = query.offset(skip).limit(limit).all()
     return recipes
@@ -498,6 +589,68 @@ def get_image_url(recipe_id: int, image_id: int, thumbnail: bool = False, db: Se
         url = file_service.get_file_url(db_image.filepath)
     
     return {"url": url, "filename": db_image.filename}
+
+@router.get("/recipes/categories/cloud")
+def get_category_cloud(db: Session = Depends(get_db)):
+    """
+    Get category cloud with recipe counts.
+    
+    Returns a list of categories with their recipe counts for creating a tag cloud.
+    """
+    # Query to get category counts
+    category_counts = db.query(
+        RecipeCategory.category_name,
+        func.count(RecipeCategory.recipe_id).label('count')
+    ).group_by(RecipeCategory.category_name).all()
+    
+    # Format response
+    cloud = [
+        {
+            "category": cat_name,
+            "count": count
+        }
+        for cat_name, count in category_counts
+    ]
+    
+    # Sort by count descending
+    cloud.sort(key=lambda x: x['count'], reverse=True)
+    
+    return {"categories": cloud}
+
+
+@router.get("/recipes/ingredients/substitutes")
+def get_ingredient_substitutes():
+    """
+    Get common ingredient substitutes mapping.
+    
+    Returns a dictionary of ingredients and their possible substitutes.
+    """
+    substitutes = {
+        'butter': ['margarine', 'öl', 'oil', 'kokosöl', 'coconut oil'],
+        'margarine': ['butter', 'öl', 'oil'],
+        'milch': ['sahne', 'cream', 'kokosmilch', 'coconut milk', 'mandelmilch', 'almond milk'],
+        'milk': ['cream', 'coconut milk', 'almond milk', 'sahne'],
+        'sahne': ['milch', 'milk', 'kokosmilch', 'coconut milk'],
+        'cream': ['milk', 'coconut milk', 'milch'],
+        'zucker': ['honig', 'honey', 'agavendicksaft', 'agave syrup', 'stevia', 'ahornsirup', 'maple syrup'],
+        'sugar': ['honey', 'agave syrup', 'stevia', 'maple syrup'],
+        'honig': ['zucker', 'sugar', 'agavendicksaft', 'agave syrup'],
+        'honey': ['sugar', 'agave syrup', 'zucker'],
+        'mehl': ['stärke', 'flour', 'starch', 'mandelmehl', 'almond flour'],
+        'flour': ['starch', 'almond flour', 'mehl', 'stärke'],
+        'weizenmehl': ['dinkelmehl', 'spelt flour', 'mandelmehl', 'almond flour'],
+        'wheat flour': ['spelt flour', 'almond flour', 'dinkelmehl'],
+        'öl': ['butter', 'margarine', 'oil'],
+        'oil': ['butter', 'margarine', 'öl'],
+        'olivenöl': ['rapsöl', 'sonnenblumenöl', 'olive oil', 'rapeseed oil', 'sunflower oil'],
+        'olive oil': ['rapeseed oil', 'sunflower oil', 'olivenöl'],
+        'eier': ['apfelmus', 'banane', 'eggs', 'applesauce', 'banana', 'leinsamen', 'flax seeds'],
+        'eggs': ['applesauce', 'banana', 'flax seeds', 'apfelmus', 'banane'],
+        'salz': ['meersalz', 'kräutersalz', 'salt', 'sea salt', 'herb salt'],
+        'salt': ['sea salt', 'herb salt', 'salz', 'meersalz'],
+    }
+    
+    return {"substitutes": substitutes}
 
 
 # Made with Bob
