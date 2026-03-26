@@ -64,7 +64,7 @@ export default function RecipeDetailPage() {
   // Image management state
   const [titleImageData, setTitleImageData] = useState<{ file?: File; url?: string; imageId?: number; action?: 'keep' | 'update' | 'delete' }>({ action: 'keep' });
   const [stepImages, setStepImages] = useState<Map<number, StepImageData>>(new Map());
-  const titleImageInputRef = useRef<HTMLInputElement>(null);
+  // const titleImageInputRef = useRef<HTMLInputElement>(null); // Currently unused
 
   const handleEditToggle = () => {
     if (!isEditMode && recipe) {
@@ -283,21 +283,21 @@ export default function RecipeDetailPage() {
     setEditSteps(editSteps.filter((_, i) => i !== index));
   };
   
-  // Title image handlers
-  const handleTitleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setTitleImageData({ file, url, action: 'update', imageId: titleImageData.imageId });
-    }
-  };
+  // Title image handlers - Currently unused, prepared for future implementation
+  // const handleTitleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     const url = URL.createObjectURL(file);
+  //     setTitleImageData({ file, url, action: 'update', imageId: titleImageData.imageId });
+  //   }
+  // };
   
-  const handleTitleImageDelete = () => {
-    if (titleImageData.url && titleImageData.file) {
-      URL.revokeObjectURL(titleImageData.url);
-    }
-    setTitleImageData({ action: 'delete', imageId: titleImageData.imageId });
-  };
+  // const handleTitleImageDelete = () => {
+  //   if (titleImageData.url && titleImageData.file) {
+  //     URL.revokeObjectURL(titleImageData.url);
+  //   }
+  //   setTitleImageData({ action: 'delete', imageId: titleImageData.imageId });
+  // };
   
   // Step image handlers
   const handleStepImageCapture = (stepIndex: number, file: File) => {
