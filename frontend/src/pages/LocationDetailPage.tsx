@@ -7,9 +7,9 @@ import { useStorage } from '../hooks/useStorage';
 import { api } from '../services/api';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
-import Modal from '../components/common/Modal';
+import Input from '../components/common/Input';
+import Textarea from '../components/common/Textarea';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import LocationForm from '../components/locations/LocationForm';
 import type { LocationCreate } from '../types';
 
 export default function LocationDetailPage() {
@@ -19,17 +19,57 @@ export default function LocationDetailPage() {
   const { location, isLoading, error } = useLocation(Number(id));
   const { tools } = useTools();
   const { items: storageItems } = useStorage();
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Edit form state
+  const [editData, setEditData] = useState<LocationCreate>({
+    name: '',
+    description: '',
+  });
 
-  const handleEdit = async (data: LocationCreate) => {
+  // Initialize edit data when location loads or edit mode is enabled
+  useState(() => {
+    if (location && isEditMode) {
+      setEditData({
+        name: location.name,
+        description: location.description || '',
+      });
+    }
+  });
+
+  const handleEditToggle = () => {
+    if (!isEditMode && location) {
+      // Entering edit mode - initialize form
+      setEditData({
+        name: location.name,
+        description: location.description || '',
+      });
+    }
+    setIsEditMode(!isEditMode);
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
     try {
-      await api.put(`/locations/${id}`, data);
-      setIsEditModalOpen(false);
+      await api.put(`/locations/${id}`, editData);
+      setIsEditMode(false);
       window.location.reload();
     } catch (err) {
       console.error('Failed to update location:', err);
       alert(t('errors.saveFailed'));
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditMode(false);
+    if (location) {
+      setEditData({
+        name: location.name,
+        description: location.description || '',
+      });
     }
   };
 
@@ -76,29 +116,73 @@ export default function LocationDetailPage() {
           ← {t('common.back')} {t('nav.locations')}
         </Link>
         <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsEditModalOpen(true)}
-          >
-            {t('common.edit')}
-          </Button>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? `${t('common.delete')}...` : t('common.delete')}
-          </Button>
+          {isEditMode ? (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleCancel}
+                disabled={isSaving}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? `${t('common.save')}...` : t('common.save')}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleEditToggle}
+              >
+                {t('common.edit')}
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? `${t('common.delete')}...` : t('common.delete')}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Location Header */}
       <div>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{location.name}</h1>
-        {location.description && (
-          <p className="text-lg text-gray-600 dark:text-gray-300">{location.description}</p>
+        {isEditMode ? (
+          <div className="space-y-4">
+            <Input
+              label={t('locations.name')}
+              value={editData.name}
+              onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+              required
+              className="text-4xl font-bold"
+            />
+            <Textarea
+              label={t('locations.description')}
+              value={editData.description}
+              onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+              rows={3}
+              className="text-lg"
+            />
+          </div>
+        ) : (
+          <>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{location.name}</h1>
+            {location.description && (
+              <p className="text-lg text-gray-600 dark:text-gray-300">{location.description}</p>
+            )}
+          </>
         )}
       </div>
 
@@ -228,23 +312,6 @@ export default function LocationDetailPage() {
           </div>
         </Card>
       )}
-
-      {/* Edit Modal */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        title={t('locations.editLocation')}
-        size="lg"
-      >
-        <LocationForm
-          initialData={location ? {
-            name: location.name,
-            description: location.description,
-          } : {}}
-          onSubmit={handleEdit}
-          onCancel={() => setIsEditModalOpen(false)}
-        />
-      </Modal>
     </div>
   );
 }

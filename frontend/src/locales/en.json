@@ -64,7 +64,10 @@
     "takePhoto": "Take Photo",
     "cameraAccessError": "Unable to access camera. Please check permissions.",
     "noRecipes": "No recipes found",
-    "deleteConfirm": "Are you sure you want to delete this recipe?"
+    "deleteConfirm": "Are you sure you want to delete this recipe?",
+    "advancedEdit": "Advanced Edit",
+    "advancedEditHint": "Use 'Advanced Edit' to modify ingredients, steps, categories, and images",
+    "name": "Name"
   },
   "events": {
     "title": "Events",
@@ -97,7 +100,10 @@
     "courseNumber": "Course Number",
     "selectRecipes": "Select Recipes",
     "noEvents": "No events found",
-    "deleteConfirm": "Are you sure you want to delete this event?"
+    "deleteConfirm": "Are you sure you want to delete this event?",
+    "noParticipants": "No participants added yet",
+    "noCourses": "No courses added yet",
+    "name": "Name"
   },
   "tools": {
     "title": "Cooking Tools",
@@ -118,7 +124,12 @@
     "added": "Added",
     "lastUpdated": "Last Updated",
     "noTools": "No tools found",
-    "deleteConfirm": "Are you sure you want to delete this tool?"
+    "deleteConfirm": "Are you sure you want to delete this tool?",
+    "details": "Details",
+    "added": "Added",
+    "lastUpdated": "Last Updated",
+    "name": "Name",
+    "selectLocation": "Select a location"
   },
   "storage": {
     "title": "Storage",
@@ -141,6 +152,11 @@
     "checkAvailability": "Check Availability",
     "noItems": "No items found",
     "deleteConfirm": "Are you sure you want to delete this item?",
+    "details": "Details",
+    "added": "Added",
+    "lastUpdated": "Last Updated",
+    "name": "Name",
+    "selectLocation": "Select a location",
     "categories": {
       "herbs": "Herbs",
       "spices": "Spices",
@@ -165,7 +181,8 @@
     "expires": "Expires",
     "noItemsAtLocation": "No tools or storage items at this location yet",
     "noLocations": "No locations found",
-    "deleteConfirm": "Are you sure you want to delete this location?"
+    "deleteConfirm": "Are you sure you want to delete this location?",
+    "name": "Name"
   },
   "shoppingList": {
     "title": "Shopping List",

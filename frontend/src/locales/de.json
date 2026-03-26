@@ -64,7 +64,10 @@
     "takePhoto": "Foto aufnehmen",
     "cameraAccessError": "Kamerazugriff nicht möglich. Bitte Berechtigungen überprüfen.",
     "noRecipes": "Keine Rezepte gefunden",
-    "deleteConfirm": "Möchten Sie dieses Rezept wirklich löschen?"
+    "deleteConfirm": "Möchten Sie dieses Rezept wirklich löschen?",
+    "advancedEdit": "Erweiterte Bearbeitung",
+    "advancedEditHint": "Verwenden Sie 'Erweiterte Bearbeitung', um Zutaten, Schritte, Kategorien und Bilder zu ändern",
+    "name": "Name"
   },
   "events": {
     "title": "Veranstaltungen",
@@ -97,7 +100,10 @@
     "courseNumber": "Gangnummer",
     "selectRecipes": "Rezepte auswählen",
     "noEvents": "Keine Veranstaltungen gefunden",
-    "deleteConfirm": "Möchten Sie diese Veranstaltung wirklich löschen?"
+    "deleteConfirm": "Möchten Sie diese Veranstaltung wirklich löschen?",
+    "noParticipants": "Noch keine Teilnehmer hinzugefügt",
+    "noCourses": "Noch keine Gänge hinzugefügt",
+    "name": "Name"
   },
   "tools": {
     "title": "Kochwerkzeuge",
@@ -114,7 +120,13 @@
     "estimatedPrice": "Geschätzter Preis",
     "url": "URL",
     "noTools": "Keine Werkzeuge gefunden",
-    "deleteConfirm": "Möchten Sie dieses Werkzeug wirklich löschen?"
+    "deleteConfirm": "Möchten Sie dieses Werkzeug wirklich löschen?",
+    "details": "Details",
+    "added": "Hinzugefügt",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "name": "Name",
+    "selectLocation": "Standort auswählen",
+    "startTracking": "Beginnen Sie mit der Verfolgung Ihrer Kochwerkzeuge und -geräte"
   },
   "storage": {
     "title": "Lager",
@@ -129,6 +141,16 @@
     "checkAvailability": "Verfügbarkeit prüfen",
     "noItems": "Keine Artikel gefunden",
     "deleteConfirm": "Möchten Sie diesen Artikel wirklich löschen?",
+    "details": "Details",
+    "added": "Hinzugefügt",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "name": "Name",
+    "selectLocation": "Standort auswählen",
+    "startTracking": "Beginnen Sie mit der Verfolgung Ihrer Kräuter, Gewürze und Vorräte",
+    "expired": "Abgelaufen",
+    "expiringSoon": "Läuft bald ab",
+    "expiredOn": "Dieser Artikel ist abgelaufen am",
+    "expiresOn": "Dieser Artikel läuft ab am",
     "categories": {
       "herbs": "Kräuter",
       "spices": "Gewürze",
@@ -153,7 +175,8 @@
     "expires": "Läuft ab",
     "noItemsAtLocation": "Noch keine Utensilien oder Vorratsartikel an diesem Standort",
     "noLocations": "Keine Standorte gefunden",
-    "deleteConfirm": "Möchten Sie diesen Standort wirklich löschen?"
+    "deleteConfirm": "Möchten Sie diesen Standort wirklich löschen?",
+    "name": "Name"
   },
   "shoppingList": {
     "title": "Einkaufsliste",

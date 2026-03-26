@@ -6,6 +6,8 @@ import { api } from '../services/api';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import Modal from '../components/common/Modal';
+import Input from '../components/common/Input';
+import Textarea from '../components/common/Textarea';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import RecipeForm from '../components/recipes/RecipeForm';
 import { calculateTotalTime, formatTimeForDisplay } from '../utils/timeUtils';
@@ -16,27 +18,84 @@ export default function RecipeDetailPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { recipe, isLoading, error } = useRecipe(Number(id));
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isAdvancedEditModalOpen, setIsAdvancedEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  if (isLoading) {
-    return <LoadingSpinner size="lg" className="py-12" />;
-  }
+  // Simple edit form state (for basic fields only)
+  const [editData, setEditData] = useState({
+    name: '',
+    description: '',
+    preparation_time: '',
+    cooking_time: '',
+  });
 
-  if (error || !recipe) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-red-600 mb-4">{error || t('errors.loadFailed')}</p>
-        <Button onClick={() => navigate('/recipes')}>{t('common.back')} {t('nav.recipes')}</Button>
-      </div>
-    );
-  }
+  const handleEditToggle = () => {
+    if (!isEditMode && recipe) {
+      // Entering edit mode - initialize form
+      setEditData({
+        name: recipe.name,
+        description: recipe.description || '',
+        preparation_time: recipe.preparation_time || '0:00',
+        cooking_time: recipe.cooking_time || '0:00',
+      });
+    }
+    setIsEditMode(!isEditMode);
+  };
 
-  const handleEdit = async (data: RecipeCreate) => {
+  const handleSave = async () => {
+    if (!recipe) return;
+    
+    setIsSaving(true);
+    try {
+      // Prepare full data with existing ingredients, steps, and categories
+      const fullData: RecipeCreate = {
+        name: editData.name,
+        description: editData.description,
+        preparation_time: editData.preparation_time,
+        cooking_time: editData.cooking_time,
+        categories: recipe.categories?.map(c => c.category_name) || [],
+        ingredients: recipe.ingredients?.map(ing => ({
+          name: ing.name,
+          description: ing.description,
+          amount: ing.amount,
+          unit: ing.unit,
+          order_index: ing.order_index,
+        })) || [],
+        steps: recipe.steps?.map(step => ({
+          step_number: step.step_number,
+          content: step.content,
+        })) || [],
+      };
+
+      await api.put(`/recipes/${id}`, fullData);
+      setIsEditMode(false);
+      window.location.reload();
+    } catch (err) {
+      console.error('Failed to update recipe:', err);
+      alert(t('errors.saveFailed'));
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditMode(false);
+    if (recipe) {
+      setEditData({
+        name: recipe.name,
+        description: recipe.description || '',
+        preparation_time: recipe.preparation_time || '0:00',
+        cooking_time: recipe.cooking_time || '0:00',
+      });
+    }
+  };
+
+  const handleAdvancedEdit = async (data: RecipeCreate) => {
     try {
       await api.put(`/recipes/${id}`, data);
-      setIsEditModalOpen(false);
-      window.location.reload(); // Reload to show updated data
+      setIsAdvancedEditModalOpen(false);
+      window.location.reload();
     } catch (err) {
       console.error('Failed to update recipe:', err);
       alert('Failed to update recipe');
@@ -59,12 +118,25 @@ export default function RecipeDetailPage() {
     }
   };
 
+  if (isLoading) {
+    return <LoadingSpinner size="lg" className="py-12" />;
+  }
+
+  if (error || !recipe) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">{error || t('errors.loadFailed')}</p>
+        <Button onClick={() => navigate('/recipes')}>{t('common.back')} {t('nav.recipes')}</Button>
+      </div>
+    );
+  }
+
   const titleImage = recipe.images?.find(img => img.id === recipe.title_image_id);
   const imageUrl = titleImage
     ? `${import.meta.env.VITE_API_URL}${titleImage.filepath}`
     : null;
 
-  // Prepare initial data for edit form
+  // Prepare initial data for advanced edit form
   const initialFormData: Partial<RecipeCreate> = recipe ? {
     name: recipe.name,
     description: recipe.description,
@@ -98,26 +170,56 @@ export default function RecipeDetailPage() {
           ← {t('common.back')} {t('nav.recipes')}
         </Link>
         <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsEditModalOpen(true)}
-          >
-            {t('common.edit')}
-          </Button>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? `${t('common.delete')}...` : t('common.delete')}
-          </Button>
+          {isEditMode ? (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsAdvancedEditModalOpen(true)}
+              >
+                {t('recipes.advancedEdit')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleCancel}
+                disabled={isSaving}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? `${t('common.save')}...` : t('common.save')}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleEditToggle}
+              >
+                {t('common.edit')}
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? `${t('common.delete')}...` : t('common.delete')}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Title Image */}
-      {imageUrl && (
+      {imageUrl && !isEditMode && (
         <div className="w-full h-96 rounded-lg overflow-hidden">
           <img
             src={imageUrl}
@@ -129,43 +231,83 @@ export default function RecipeDetailPage() {
 
       {/* Recipe Header */}
       <div>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{recipe.name}</h1>
-        {recipe.description && (
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">{recipe.description}</p>
-        )}
-        
-        {/* Time Information */}
-        {showTimes && (
-          <div className="flex flex-wrap items-center gap-6 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mt-4">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">⏱️</span>
-              <div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.totalTime')}</div>
-                <div className="text-lg font-semibold">{formatTimeForDisplay(totalTime)}</div>
-              </div>
+        {isEditMode ? (
+          <div className="space-y-4">
+            <Input
+              label={t('recipes.name')}
+              value={editData.name}
+              onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+              required
+              className="text-4xl font-bold"
+            />
+            <Textarea
+              label={t('recipes.description')}
+              value={editData.description}
+              onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+              rows={3}
+              className="text-lg"
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label={t('recipes.prepTime')}
+                type="time"
+                value={editData.preparation_time}
+                onChange={(e) => setEditData({ ...editData, preparation_time: e.target.value })}
+              />
+              <Input
+                label={t('recipes.cookTime')}
+                type="time"
+                value={editData.cooking_time}
+                onChange={(e) => setEditData({ ...editData, cooking_time: e.target.value })}
+              />
             </div>
-            <div className="h-12 w-px bg-gray-300 dark:bg-gray-600"></div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🔪</span>
-              <div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.prepTime')}</div>
-                <div className="text-lg font-semibold">{formatTimeForDisplay(recipe.preparation_time)}</div>
-              </div>
-            </div>
-            <div className="h-12 w-px bg-gray-300 dark:bg-gray-600"></div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🔥</span>
-              <div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.cookTime')}</div>
-                <div className="text-lg font-semibold">{formatTimeForDisplay(recipe.cooking_time)}</div>
-              </div>
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                💡 {t('recipes.advancedEditHint')}
+              </p>
             </div>
           </div>
+        ) : (
+          <>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{recipe.name}</h1>
+            {recipe.description && (
+              <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">{recipe.description}</p>
+            )}
+            
+            {/* Time Information */}
+            {showTimes && (
+              <div className="flex flex-wrap items-center gap-6 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mt-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">⏱️</span>
+                  <div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.totalTime')}</div>
+                    <div className="text-lg font-semibold">{formatTimeForDisplay(totalTime)}</div>
+                  </div>
+                </div>
+                <div className="h-12 w-px bg-gray-300 dark:bg-gray-600"></div>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🔪</span>
+                  <div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.prepTime')}</div>
+                    <div className="text-lg font-semibold">{formatTimeForDisplay(recipe.preparation_time)}</div>
+                  </div>
+                </div>
+                <div className="h-12 w-px bg-gray-300 dark:bg-gray-600"></div>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🔥</span>
+                  <div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.cookTime')}</div>
+                    <div className="text-lg font-semibold">{formatTimeForDisplay(recipe.cooking_time)}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {/* Categories */}
-      {recipe.categories && recipe.categories.length > 0 && (
+      {!isEditMode && recipe.categories && recipe.categories.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {recipe.categories.map((cat) => (
             <span
@@ -179,7 +321,7 @@ export default function RecipeDetailPage() {
       )}
 
       {/* Ingredients */}
-      {recipe.ingredients && recipe.ingredients.length > 0 && (
+      {!isEditMode && recipe.ingredients && recipe.ingredients.length > 0 && (
         <Card>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('recipes.ingredients')}</h2>
           <div className="space-y-3">
@@ -210,7 +352,7 @@ export default function RecipeDetailPage() {
       )}
 
       {/* Steps */}
-      {recipe.steps && recipe.steps.length > 0 && (
+      {!isEditMode && recipe.steps && recipe.steps.length > 0 && (
         <Card>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('recipes.steps')}</h2>
           <ol className="space-y-6">
@@ -269,7 +411,7 @@ export default function RecipeDetailPage() {
       )}
 
       {/* Process Images */}
-      {recipe.images && recipe.images.filter(img => img.is_process_image).length > 0 && (
+      {!isEditMode && recipe.images && recipe.images.filter(img => img.is_process_image).length > 0 && (
         <Card>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('recipes.processImages')}</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -289,17 +431,17 @@ export default function RecipeDetailPage() {
         </Card>
       )}
 
-      {/* Edit Modal */}
+      {/* Advanced Edit Modal */}
       <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        isOpen={isAdvancedEditModalOpen}
+        onClose={() => setIsAdvancedEditModalOpen(false)}
         title={t('recipes.editRecipe')}
         size="xl"
       >
         <RecipeForm
           initialData={initialFormData}
-          onSubmit={handleEdit}
-          onCancel={() => setIsEditModalOpen(false)}
+          onSubmit={handleAdvancedEdit}
+          onCancel={() => setIsAdvancedEditModalOpen(false)}
         />
       </Modal>
     </div>
