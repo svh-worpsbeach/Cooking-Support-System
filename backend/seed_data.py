@@ -7,6 +7,7 @@ import json
 import io
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont
+from additional_recipes import ITALIAN_FRENCH_RECIPES
 
 import os
 BASE_URL = os.getenv("API_URL", "http://localhost:8000/api")
@@ -305,7 +306,7 @@ def create_recipes():
                 }
             ]
         }
-    ]
+    ] + ITALIAN_FRENCH_RECIPES  # Add Italian and French recipes
     
     created_recipes = []
     for recipe in recipes:
