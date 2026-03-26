@@ -31,6 +31,10 @@ from app.models.location import Location
 _log_buffer: List[Dict[str, Any]] = []
 _max_log_entries = 1000
 
+# Export _log_buffer for use in routers
+__all__ = ['_log_buffer', 'add_log_entry', 'get_system_config', 'get_logs', 'get_system_stats',
+           'clear_all_data', 'load_seed_data', 'load_seed_data_background']
+
 
 def add_log_entry(level: str, source: str, message: str, details: Dict[str, Any] = None):
     """Add a log entry to the buffer."""
