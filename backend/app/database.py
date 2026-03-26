@@ -1,35 +1,23 @@
-import os
 import warnings
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SAWarning
 
-# Get database URL from environment variable or use default DB2 connection
-SQLALCHEMY_DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "db2+ibm_db://db2inst1:db2inst1-pwd@localhost:50000/COOKDB"
-)
+from app.config import settings, DatabaseType
 
-# Check if we're using DB2 or SQLite (fallback for local development)
-if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-    # SQLite configuration
-    engine = create_engine(
-        SQLALCHEMY_DATABASE_URL,
-        connect_args={"check_same_thread": False}
-    )
-else:
-    # DB2 configuration
-    # Ignore DB2 warnings about duplicate indexes
+# Get database URL from settings
+SQLALCHEMY_DATABASE_URL = settings.get_database_url()
+
+# Ignore DB2 warnings about duplicate indexes
+if settings.database_type == DatabaseType.DB2:
     warnings.filterwarnings("ignore", category=SAWarning)
-    
-    engine = create_engine(
-        SQLALCHEMY_DATABASE_URL,
-        pool_pre_ping=True,  # Enable connection health checks
-        pool_size=10,
-        max_overflow=20,
-        echo=False  # Set to True for SQL query logging
-    )
+
+# Create engine with appropriate configuration
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    **settings.get_engine_kwargs()
+)
 
 # Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

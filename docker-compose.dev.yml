@@ -1,0 +1,65 @@
+version: '3.8'
+
+# Development Docker Compose Configuration
+# This configuration uses SQLite for local development without DB2
+
+services:
+  # Backend API Service (Development)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cooking-backend-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_TYPE=sqlite
+      - SQLITE_DATABASE=/app/data/cooking.db
+      - CORS_ORIGINS=http://localhost,http://localhost:80,http://localhost:5173,http://localhost:3000
+      - ECHO_SQL=false
+    volumes:
+      - ./backend:/app
+      - ./backend/uploads:/app/uploads
+      - sqlite-data:/app/data
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - cooking-network-dev
+
+  # Frontend Service (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8000
+    container_name: cooking-frontend-dev
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - cooking-network-dev
+
+networks:
+  cooking-network-dev:
+    driver: bridge
+
+volumes:
+  sqlite-data:
+    driver: local
+
+# Made with Bob

@@ -89,12 +89,13 @@ async def health_check():
 
 
 # Include routers
-from app.routers import locations, recipes, events, tools, storage
+from app.routers import locations, recipes, events, tools, storage, admin
 
 app.include_router(locations.router, prefix="/api", tags=["locations"])
 app.include_router(recipes.router, prefix="/api", tags=["recipes"])
 app.include_router(events.router, prefix="/api", tags=["events"])
 app.include_router(tools.router, prefix="/api", tags=["tools"])
 app.include_router(storage.router, prefix="/api", tags=["storage"])
+app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 
 # Made with Bob

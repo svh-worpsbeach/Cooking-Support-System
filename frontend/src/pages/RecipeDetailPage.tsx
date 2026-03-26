@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useRecipe } from '../hooks/useRecipes';
@@ -11,6 +11,7 @@ import Input from '../components/common/Input';
 import Textarea from '../components/common/Textarea';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import RecipeForm from '../components/recipes/RecipeForm';
+import ImageCapture from '../components/common/ImageCapture';
 import { calculateTotalTime, formatTimeForDisplay } from '../utils/timeUtils';
 import type { RecipeCreate } from '../types';
 
@@ -27,6 +28,14 @@ interface EditStep {
   id?: number;
   step_number: number;
   content: string;
+  step_image_id?: number;
+}
+
+interface StepImageData {
+  file?: File;
+  url?: string;
+  imageId?: number;
+  action?: 'keep' | 'update' | 'delete' | 'detach';
 }
 
 export default function RecipeDetailPage() {
@@ -51,6 +60,11 @@ export default function RecipeDetailPage() {
   // Ingredients and steps edit state
   const [editIngredients, setEditIngredients] = useState<EditIngredient[]>([]);
   const [editSteps, setEditSteps] = useState<EditStep[]>([]);
+  
+  // Image management state
+  const [titleImageData, setTitleImageData] = useState<{ file?: File; url?: string; imageId?: number; action?: 'keep' | 'update' | 'delete' }>({ action: 'keep' });
+  const [stepImages, setStepImages] = useState<Map<number, StepImageData>>(new Map());
+  const titleImageInputRef = useRef<HTMLInputElement>(null);
 
   const handleEditToggle = () => {
     if (!isEditMode && recipe) {
@@ -80,8 +94,37 @@ export default function RecipeDetailPage() {
           id: step.id,
           step_number: step.step_number,
           content: step.content,
+          step_image_id: step.step_image_id,
         })) || []
       );
+      
+      // Initialize title image
+      const titleImg = recipe.images?.find(img => img.id === recipe.title_image_id);
+      if (titleImg) {
+        setTitleImageData({
+          url: `${import.meta.env.VITE_API_URL}${titleImg.filepath}`,
+          imageId: titleImg.id,
+          action: 'keep'
+        });
+      } else {
+        setTitleImageData({ action: 'keep' });
+      }
+      
+      // Initialize step images
+      const newStepImages = new Map<number, StepImageData>();
+      recipe.steps?.forEach((step, index) => {
+        if (step.step_image_id) {
+          const stepImg = recipe.images?.find(img => img.id === step.step_image_id);
+          if (stepImg) {
+            newStepImages.set(index, {
+              url: `${import.meta.env.VITE_API_URL}${stepImg.filepath}`,
+              imageId: stepImg.id,
+              action: 'keep'
+            });
+          }
+        }
+      });
+      setStepImages(newStepImages);
     }
     setIsEditMode(!isEditMode);
   };
@@ -91,7 +134,51 @@ export default function RecipeDetailPage() {
     
     setIsSaving(true);
     try {
-      // Prepare full data with edited ingredients and steps
+      // 1. Handle title image
+      if (titleImageData.action === 'delete' && titleImageData.imageId) {
+        await api.delete(`/recipes/${id}/images/${titleImageData.imageId}`);
+      } else if (titleImageData.action === 'update' && titleImageData.file) {
+        // Delete old if exists
+        if (titleImageData.imageId) {
+          await api.delete(`/recipes/${id}/images/${titleImageData.imageId}`);
+        }
+        // Upload new
+        const formData = new FormData();
+        formData.append('file', titleImageData.file);
+        formData.append('is_process_image', 'false');
+        await api.post(`/recipes/${id}/images`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
+      
+      // 2. Handle step images
+      for (const [stepIndex, imageData] of stepImages.entries()) {
+        const step = editSteps[stepIndex];
+        if (!step) continue;
+        
+        if (imageData.action === 'delete' && imageData.imageId) {
+          await api.delete(`/recipes/${id}/images/${imageData.imageId}`);
+          step.step_image_id = undefined;
+        } else if (imageData.action === 'detach') {
+          step.step_image_id = undefined;
+        } else if (imageData.action === 'update' && imageData.file) {
+          // Delete old if exists
+          if (imageData.imageId) {
+            await api.delete(`/recipes/${id}/images/${imageData.imageId}`);
+          }
+          // Upload new
+          const formData = new FormData();
+          formData.append('file', imageData.file);
+          formData.append('is_process_image', 'true');
+          formData.append('order_index', stepIndex.toString());
+          const response = await api.post(`/recipes/${id}/images`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          step.step_image_id = response.data.id;
+        }
+      }
+      
+      // 3. Update recipe data
       const fullData: RecipeCreate = {
         name: editData.name,
         description: editData.description,
@@ -108,6 +195,7 @@ export default function RecipeDetailPage() {
         steps: editSteps.map((step, idx) => ({
           step_number: idx + 1,
           content: step.content,
+          step_image_id: step.step_image_id,
         })),
       };
 
@@ -132,6 +220,8 @@ export default function RecipeDetailPage() {
       });
       setEditIngredients([]);
       setEditSteps([]);
+      setTitleImageData({ action: 'keep' });
+      setStepImages(new Map());
     }
   };
 
@@ -177,7 +267,76 @@ export default function RecipeDetailPage() {
   };
 
   const handleRemoveStep = (index: number) => {
+    // Remove step image data if exists
+    const newStepImages = new Map(stepImages);
+    newStepImages.delete(index);
+    // Reindex remaining images
+    const reindexedImages = new Map<number, StepImageData>();
+    newStepImages.forEach((data, idx) => {
+      if (idx > index) {
+        reindexedImages.set(idx - 1, data);
+      } else {
+        reindexedImages.set(idx, data);
+      }
+    });
+    setStepImages(reindexedImages);
     setEditSteps(editSteps.filter((_, i) => i !== index));
+  };
+  
+  // Title image handlers
+  const handleTitleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setTitleImageData({ file, url, action: 'update', imageId: titleImageData.imageId });
+    }
+  };
+  
+  const handleTitleImageDelete = () => {
+    if (titleImageData.url && titleImageData.file) {
+      URL.revokeObjectURL(titleImageData.url);
+    }
+    setTitleImageData({ action: 'delete', imageId: titleImageData.imageId });
+  };
+  
+  // Step image handlers
+  const handleStepImageCapture = (stepIndex: number, file: File) => {
+    const url = URL.createObjectURL(file);
+    const currentData = stepImages.get(stepIndex);
+    setStepImages(new Map(stepImages.set(stepIndex, {
+      file,
+      url,
+      action: 'update',
+      imageId: currentData?.imageId
+    })));
+  };
+  
+  const handleStepImageDelete = (stepIndex: number) => {
+    const imageData = stepImages.get(stepIndex);
+    if (imageData?.url && imageData.file) {
+      URL.revokeObjectURL(imageData.url);
+    }
+    if (imageData?.imageId) {
+      setStepImages(new Map(stepImages.set(stepIndex, {
+        action: 'delete',
+        imageId: imageData.imageId
+      })));
+    } else {
+      const newStepImages = new Map(stepImages);
+      newStepImages.delete(stepIndex);
+      setStepImages(newStepImages);
+    }
+  };
+  
+  const handleStepImageDetach = (stepIndex: number) => {
+    const imageData = stepImages.get(stepIndex);
+    if (imageData?.imageId) {
+      setStepImages(new Map(stepImages.set(stepIndex, {
+        action: 'detach',
+        imageId: imageData.imageId,
+        url: imageData.url
+      })));
+    }
   };
 
   const handleAdvancedEdit = async (data: RecipeCreate) => {
@@ -530,34 +689,104 @@ export default function RecipeDetailPage() {
         </div>
         
         {isEditMode ? (
-          <div className="space-y-4">
-            {editSteps.map((step, index) => (
-              <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <div className="flex items-start gap-4">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center font-semibold">
-                    {index + 1}
-                  </span>
-                  <div className="flex-1 space-y-3">
-                    <Textarea
-                      label={t('recipes.stepContent')}
-                      value={step.content}
-                      onChange={(e) => handleUpdateStep(index, e.target.value)}
-                      rows={4}
-                      required
-                    />
-                    <div className="flex justify-end">
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleRemoveStep(index)}
-                      >
-                        {t('common.remove')}
-                      </Button>
+          <div className="space-y-8">
+            {editSteps.map((step, index) => {
+              const stepImageData = stepImages.get(index);
+              const showImage = stepImageData && stepImageData.url && stepImageData.action !== 'delete';
+              
+              return (
+                <div key={index} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  {/* Left Column: Step Text */}
+                  <div className="flex gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center font-semibold">
+                      {index + 1}
+                    </span>
+                    <div className="flex-1 space-y-3">
+                      <Textarea
+                        label={t('recipes.stepContent')}
+                        value={step.content}
+                        onChange={(e) => handleUpdateStep(index, e.target.value)}
+                        rows={4}
+                        required
+                      />
+                      <div className="flex justify-end">
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleRemoveStep(index)}
+                        >
+                          {t('common.remove')}
+                        </Button>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Right Column: Step Image */}
+                  <div className="flex flex-col items-center justify-center space-y-3">
+                    {showImage ? (
+                      <div className="relative w-full">
+                        <div className={`rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700`}>
+                          <img
+                            src={stepImageData.url}
+                            alt={`Step ${index + 1}`}
+                            className={`${getStepImageClasses()} object-cover w-full`}
+                          />
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = 'image/*';
+                              input.onchange = (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0];
+                                if (file) handleStepImageCapture(index, file);
+                              };
+                              input.click();
+                            }}
+                          >
+                            {t('recipes.updateImage')}
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleStepImageDelete(index)}
+                          >
+                            {t('recipes.deleteImage')}
+                          </Button>
+                          {stepImageData.imageId && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStepImageDetach(index)}
+                              title={t('recipes.detachImageHint')}
+                            >
+                              {t('recipes.detachImage')}
+                            </Button>
+                          )}
+                        </div>
+                        {stepImageData.action === 'detach' && (
+                          <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
+                            ⚠️ {t('recipes.detachImageHint')}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="w-full">
+                        <div className={`${getStepImageClasses()} bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-600 mb-2`}>
+                          <span className="text-4xl">📷</span>
+                        </div>
+                        <ImageCapture
+                          onImageCapture={(file) => handleStepImageCapture(index, file)}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {editSteps.length === 0 && (
               <p className="text-gray-500 dark:text-gray-400 text-center py-4">
                 {t('recipes.noSteps')}

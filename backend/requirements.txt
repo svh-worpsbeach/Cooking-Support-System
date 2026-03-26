@@ -1,3 +1,4 @@
+# Core Dependencies
 fastapi>=0.115.0
 uvicorn[standard]>=0.32.0
 sqlalchemy>=2.0.36
@@ -6,5 +7,17 @@ pillow>=10.3.0
 pydantic>=2.10.0
 pydantic-settings>=2.7.0
 requests>=2.31.0
+
+# Database Drivers
+# DB2 (Production)
 ibm-db>=3.2.0
 ibm-db-sa>=0.4.0
+
+# PostgreSQL (Optional)
+# Uncomment if using PostgreSQL
+# psycopg2-binary>=2.9.9
+
+# MySQL (Optional)
+# Uncomment if using MySQL
+# pymysql>=1.1.0
+# cryptography>=41.0.0

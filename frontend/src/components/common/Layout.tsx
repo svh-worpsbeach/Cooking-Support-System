@@ -24,6 +24,7 @@ export default function Layout({ children }: LayoutProps) {
     { path: '/storage', label: t('nav.storage') },
     { path: '/locations', label: t('nav.locations') },
     { path: '/settings', label: t('nav.settings') },
+    { path: '/admin', label: t('nav.admin') },
   ];
 
   const isActive = (path: string) => {

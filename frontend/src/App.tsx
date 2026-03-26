@@ -14,6 +14,7 @@ import StorageDetailPage from './pages/StorageDetailPage';
 import LocationsPage from './pages/LocationsPage';
 import LocationDetailPage from './pages/LocationDetailPage';
 import SettingsPage from './pages/SettingsPage';
+import AdminPage from './pages/AdminPage';
 import './i18n';
 
 const queryClient = new QueryClient({
@@ -45,6 +46,7 @@ function App() {
               <Route path="/locations" element={<LocationsPage />} />
               <Route path="/locations/:id" element={<LocationDetailPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/admin" element={<AdminPage />} />
             </Routes>
           </Layout>
         </Router>
