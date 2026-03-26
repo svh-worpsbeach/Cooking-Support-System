@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
+type StepImageSize = 'small' | 'medium' | 'large';
 
 interface ThemeContextType {
   theme: Theme;
@@ -9,6 +10,8 @@ interface ThemeContextType {
   effectiveTheme: 'light' | 'dark';
   glassMode: boolean;
   setGlassMode: (enabled: boolean) => void;
+  stepImageSize: StepImageSize;
+  setStepImageSize: (size: StepImageSize) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -22,6 +25,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [glassMode, setGlassModeState] = useState<boolean>(() => {
     const stored = localStorage.getItem('glassMode');
     return stored === 'true';
+  });
+
+  const [stepImageSize, setStepImageSizeState] = useState<StepImageSize>(() => {
+    const stored = localStorage.getItem('stepImageSize') as StepImageSize;
+    return stored || 'medium';
   });
 
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light');
@@ -76,8 +84,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setGlassModeState(enabled);
   };
 
+  const setStepImageSize = (size: StepImageSize) => {
+    localStorage.setItem('stepImageSize', size);
+    setStepImageSizeState(size);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, effectiveTheme, glassMode, setGlassMode }}>
+    <ThemeContext.Provider value={{ theme, setTheme, effectiveTheme, glassMode, setGlassMode, stepImageSize, setStepImageSize }}>
       {children}
     </ThemeContext.Provider>
   );

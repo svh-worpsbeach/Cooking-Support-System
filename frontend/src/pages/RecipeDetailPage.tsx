@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useRecipe } from '../hooks/useRecipes';
+import { useTheme } from '../contexts/ThemeContext';
 import { api } from '../services/api';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
@@ -18,6 +19,7 @@ export default function RecipeDetailPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { recipe, isLoading, error } = useRecipe(Number(id));
+  const { stepImageSize } = useTheme();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isAdvancedEditModalOpen, setIsAdvancedEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -159,8 +161,21 @@ export default function RecipeDetailPage() {
   const totalTime = calculateTotalTime(recipe.preparation_time, recipe.cooking_time);
   const showTimes = recipe.preparation_time !== '0:00' || recipe.cooking_time !== '0:00';
 
+  // Get step image size classes
+  const getStepImageClasses = () => {
+    switch (stepImageSize) {
+      case 'small':
+        return 'w-48 h-32';
+      case 'large':
+        return 'w-96 h-64';
+      case 'medium':
+      default:
+        return 'w-64 h-48';
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <Link
@@ -218,18 +233,7 @@ export default function RecipeDetailPage() {
         </div>
       </div>
 
-      {/* Title Image */}
-      {imageUrl && !isEditMode && (
-        <div className="w-full h-96 rounded-lg overflow-hidden">
-          <img
-            src={imageUrl}
-            alt={recipe.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-
-      {/* Recipe Header */}
+      {/* Section 1: Title and Categories */}
       <div>
         {isEditMode ? (
           <div className="space-y-4">
@@ -302,60 +306,76 @@ export default function RecipeDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Categories */}
+            {recipe.categories && recipe.categories.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {recipe.categories.map((cat) => (
+                  <span
+                    key={cat.id}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200"
+                  >
+                    {cat.category_name}
+                  </span>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
 
-      {/* Categories */}
-      {!isEditMode && recipe.categories && recipe.categories.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {recipe.categories.map((cat) => (
-            <span
-              key={cat.id}
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200"
-            >
-              {cat.category_name}
-            </span>
-          ))}
+      {/* Section 2: Ingredients and Title Image Side by Side */}
+      {!isEditMode && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Ingredients */}
+          {recipe.ingredients && recipe.ingredients.length > 0 && (
+            <Card>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('recipes.ingredients')}</h2>
+              <div className="space-y-3">
+                {recipe.ingredients
+                  .sort((a, b) => a.order_index - b.order_index)
+                  .map((ingredient) => (
+                    <div key={ingredient.id} className="flex items-start gap-4">
+                      <div className="w-24 flex-shrink-0 text-right text-gray-600 dark:text-gray-400">
+                        {ingredient.amount && (
+                          <span>
+                            {ingredient.amount}
+                            {ingredient.unit && ` ${ingredient.unit}`}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900 dark:text-gray-100">{ingredient.name}</div>
+                        {ingredient.description && (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {ingredient.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Title Image */}
+          {imageUrl && (
+            <Card className="flex items-center justify-center">
+              <img
+                src={imageUrl}
+                alt={recipe.name}
+                className="w-full h-auto max-h-96 object-cover rounded-lg"
+              />
+            </Card>
+          )}
         </div>
       )}
 
-      {/* Ingredients */}
-      {!isEditMode && recipe.ingredients && recipe.ingredients.length > 0 && (
-        <Card>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('recipes.ingredients')}</h2>
-          <div className="space-y-3">
-            {recipe.ingredients
-              .sort((a, b) => a.order_index - b.order_index)
-              .map((ingredient) => (
-                <div key={ingredient.id} className="flex items-start gap-4">
-                  <div className="w-24 flex-shrink-0 text-right text-gray-600 dark:text-gray-400">
-                    {ingredient.amount && (
-                      <span>
-                        {ingredient.amount}
-                        {ingredient.unit && ` ${ingredient.unit}`}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{ingredient.name}</div>
-                    {ingredient.description && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        {ingredient.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Steps */}
+      {/* Section 3: Preparation Steps in Two Columns */}
       {!isEditMode && recipe.steps && recipe.steps.length > 0 && (
         <Card>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('recipes.steps')}</h2>
-          <ol className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">{t('recipes.steps')}</h2>
+          <div className="space-y-8">
             {recipe.steps
               .sort((a, b) => a.step_number - b.step_number)
               .map((step) => {
@@ -367,69 +387,60 @@ export default function RecipeDetailPage() {
                   : null;
 
                 return (
-                  <li key={step.id} className="flex gap-4">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center font-semibold">
-                      {step.step_number}
-                    </span>
-                    <div className="flex-1 pt-1 space-y-3">
-                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                        {step.content}
-                      </p>
-                      
-                      {stepImageUrl && (
+                  <div key={step.id} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    {/* Left Column: Step Text */}
+                    <div className="flex gap-4">
+                      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center font-semibold">
+                        {step.step_number}
+                      </span>
+                      <div className="flex-1 pt-1 space-y-3">
+                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                          {step.content}
+                        </p>
+                        
+                        {step.ingredient_refs && step.ingredient_refs.length > 0 && (
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            <span className="font-medium">{t('recipes.ingredients')}: </span>
+                            {step.ingredient_refs.map((ref, idx) => {
+                              const ingredient = recipe.ingredients?.find(
+                                (i) => i.id === ref.ingredient_id
+                              );
+                              return ingredient ? (
+                                <span key={ref.id}>
+                                  {idx > 0 && ', '}
+                                  {ingredient.name}
+                                </span>
+                              ) : null;
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Column: Step Image */}
+                    <div className="flex items-center justify-center">
+                      {stepImageUrl ? (
                         <div className="rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
                           <img
                             src={stepImageUrl}
                             alt={`Step ${step.step_number}`}
-                            className="w-full max-w-md h-auto object-cover"
+                            className={`${getStepImageClasses()} object-cover`}
                           />
                         </div>
-                      )}
-                      
-                      {step.ingredient_refs && step.ingredient_refs.length > 0 && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-medium">{t('recipes.ingredients')}: </span>
-                          {step.ingredient_refs.map((ref, idx) => {
-                            const ingredient = recipe.ingredients?.find(
-                              (i) => i.id === ref.ingredient_id
-                            );
-                            return ingredient ? (
-                              <span key={ref.id}>
-                                {idx > 0 && ', '}
-                                {ingredient.name}
-                              </span>
-                            ) : null;
-                          })}
+                      ) : (
+                        <div className={`${getStepImageClasses()} bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-600`}>
+                          <span className="text-4xl">📷</span>
                         </div>
                       )}
                     </div>
-                  </li>
+                  </div>
                 );
               })}
-          </ol>
-        </Card>
-      )}
-
-      {/* Process Images */}
-      {!isEditMode && recipe.images && recipe.images.filter(img => img.is_process_image).length > 0 && (
-        <Card>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('recipes.processImages')}</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {recipe.images
-              .filter(img => img.is_process_image)
-              .sort((a, b) => a.order_index - b.order_index)
-              .map((image) => (
-                <div key={image.id} className="rounded-lg overflow-hidden">
-                  <img
-                    src={`${import.meta.env.VITE_API_URL}${image.filepath}`}
-                    alt={`Process step ${image.order_index}`}
-                    className="w-full h-48 object-cover"
-                  />
-                </div>
-              ))}
           </div>
         </Card>
       )}
+
+      {/* Process Images - Removed from main view, only in advanced edit */}
 
       {/* Advanced Edit Modal */}
       <Modal

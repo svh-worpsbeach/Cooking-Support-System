@@ -4,7 +4,7 @@ import Card from '../components/common/Card';
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
-  const { theme, setTheme, glassMode, setGlassMode } = useTheme();
+  const { theme, setTheme, glassMode, setGlassMode, stepImageSize, setStepImageSize } = useTheme();
 
   const themeOptions = [
     { value: 'light', label: t('settings.lightMode'), icon: '☀️' },
@@ -87,6 +87,45 @@ export default function SettingsPage() {
                 />
               </button>
             </label>
+          </div>
+
+          {/* Step Image Size Setting */}
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              {t('settings.stepImageSize')}
+            </label>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {t('settings.stepImageSizeDescription')}
+            </p>
+            <div className="grid grid-cols-3 gap-4">
+              {(['small', 'medium', 'large'] as const).map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setStepImageSize(size)}
+                  className={`
+                    relative flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all
+                    ${
+                      stepImageSize === size
+                        ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }
+                  `}
+                >
+                  <div className={`
+                    bg-gray-300 dark:bg-gray-600 rounded
+                    ${size === 'small' ? 'w-12 h-8' : size === 'large' ? 'w-24 h-16' : 'w-16 h-12'}
+                  `} />
+                  <span className="font-medium text-gray-900 dark:text-white capitalize">
+                    {t(`settings.${size}`)}
+                  </span>
+                  {stepImageSize === size && (
+                    <span className="absolute top-2 right-2 text-primary-600 dark:text-primary-400">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </Card>

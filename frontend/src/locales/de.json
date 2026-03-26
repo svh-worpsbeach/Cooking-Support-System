@@ -210,6 +210,11 @@
     "selectLanguage": "Sprache auswählen",
     "glassMode": "Glas-Modus",
     "glassModeDescription": "Aktiviere Glasmorphismus-Design mit Unschärfe-Effekten",
+    "stepImageSize": "Rezept-Schritt Bildgröße",
+    "stepImageSizeDescription": "Passe die Größe der Bilder in den Rezept-Zubereitungsschritten an",
+    "small": "Klein",
+    "medium": "Mittel",
+    "large": "Groß",
     "about": "Über",
     "version": "Version"
   }

@@ -216,6 +216,11 @@
     "selectLanguage": "Select Language",
     "glassMode": "Glass Mode",
     "glassModeDescription": "Enable glassmorphism design with blur effects",
+    "stepImageSize": "Recipe Step Image Size",
+    "stepImageSizeDescription": "Adjust the size of images in recipe preparation steps",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large",
     "about": "About",
     "version": "Version"
   }
