@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -13,7 +13,7 @@ class CookingTool(Base):
     id = Column(Integer, primary_key=True)
     location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
     name = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
+    description = Column(String(2000), nullable=True)
     image_path = Column(String(500), nullable=True)
     storage_location = Column(String(255), nullable=True)  # Specific location within the location (e.g., "Top shelf", "Drawer 2")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -34,7 +34,7 @@ class ToolWishlist(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
+    description = Column(String(2000), nullable=True)
     url = Column(String(500), nullable=True)  # Link to product page
     estimated_price = Column(Float, nullable=True)
     priority = Column(Integer, default=3)  # 1 (highest) to 5 (lowest)

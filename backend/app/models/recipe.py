@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Float, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -12,7 +12,7 @@ class Recipe(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
+    description = Column(String(2000), nullable=True)
     preparation_time = Column(String(50), nullable=False, default="0:00", server_default="0:00")
     cooking_time = Column(String(50), nullable=False, default="0:00", server_default="0:00")
     title_image_id = Column(Integer, nullable=True)  # No FK to avoid circular dependency
@@ -78,7 +78,7 @@ class RecipeStep(Base):
     id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
     step_number = Column(Integer, nullable=False)
-    content = Column(Text, nullable=False)
+    content = Column(String(4000), nullable=False)
     step_image_id = Column(Integer, nullable=True)  # No FK to avoid circular dependency
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
