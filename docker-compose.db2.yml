@@ -71,7 +71,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://192.168.178.88:5580
+        - VITE_API_URL=http://192.168.178.88:5580/api
     container_name: cooking-frontend
     hostname: frontend
     ports:
