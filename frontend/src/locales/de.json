@@ -89,7 +89,19 @@
     "deleteImage": "Bild löschen",
     "detachImage": "Bild trennen",
     "detachImageHint": "Bild vom Schritt trennen, aber im Rezept behalten",
-    "keepImage": "Bild behalten"
+    "keepImage": "Bild behalten",
+    "import": {
+      "title": "Rezept importieren",
+      "import": "Importieren",
+      "importing": "Importiere...",
+      "urlLabel": "Rezept-URL",
+      "urlRequired": "Bitte geben Sie eine URL ein",
+      "urlHint": "Fügen Sie die URL eines Rezepts von einer unterstützten Website ein",
+      "supportedSites": "Unterstützte Websites",
+      "examples": "Beispiele",
+      "failed": "Import fehlgeschlagen",
+      "info": "Das Rezept wird mit allen Zutaten, Schritten und Bildern importiert. Die Quelle wird gespeichert."
+    }
   },
   "events": {
     "title": "Veranstaltungen",

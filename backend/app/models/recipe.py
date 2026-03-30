@@ -16,6 +16,7 @@ class Recipe(Base):
     preparation_time = Column(String(50), nullable=False, default="0:00", server_default="0:00")
     cooking_time = Column(String(50), nullable=False, default="0:00", server_default="0:00")
     title_image_id = Column(Integer, nullable=True)  # No FK to avoid circular dependency
+    source_url = Column(String(500), nullable=True)  # URL where recipe was imported from
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

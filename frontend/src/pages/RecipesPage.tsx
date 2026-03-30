@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useRecipes, type RecipeFilters } from '../hooks/useRecipes';
 import RecipeList from '../components/recipes/RecipeList';
 import RecipeForm from '../components/recipes/RecipeForm';
+import RecipeImportDialog from '../components/recipes/RecipeImportDialog';
 import CategoryCloud from '../components/recipes/CategoryCloud';
 import AdvancedRecipeSearch from '../components/recipes/AdvancedRecipeSearch';
 import Button from '../components/common/Button';
@@ -17,6 +19,8 @@ export default function RecipesPage() {
   const { recipes, isLoading, error, createRecipe, refetch } = useRecipes(filters);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleCreateRecipe = async (data: RecipeCreate) => {
     await createRecipe(data);
@@ -52,6 +56,11 @@ export default function RecipesPage() {
     refetch({});
   };
 
+  const handleImportSuccess = (recipeId: number) => {
+    refetch();
+    navigate(`/recipes/${recipeId}`);
+  };
+
   if (isLoading) {
     return <LoadingSpinner size="lg" className="py-12" />;
   }
@@ -71,6 +80,9 @@ export default function RecipesPage() {
         <div className="flex gap-2">
           <Button onClick={() => setIsSearchModalOpen(true)} variant="secondary">
             🔍 {t('common.search')}
+          </Button>
+          <Button onClick={() => setIsImportModalOpen(true)} variant="secondary">
+            📥 {t('recipes.import.import')}
           </Button>
           <Button onClick={() => setIsCreateModalOpen(true)}>
             {t('recipes.createRecipe')}
@@ -107,6 +119,13 @@ export default function RecipesPage() {
           onCancel={() => setIsCreateModalOpen(false)}
         />
       </Modal>
+
+      {/* Import Recipe Modal */}
+      <RecipeImportDialog
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportSuccess={handleImportSuccess}
+      />
     </div>
   );
 }

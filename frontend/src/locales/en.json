@@ -89,7 +89,19 @@
     "deleteImage": "Delete Image",
     "detachImage": "Detach Image",
     "detachImageHint": "Detach image from step but keep it in recipe",
-    "keepImage": "Keep Image"
+    "keepImage": "Keep Image",
+    "import": {
+      "title": "Import Recipe",
+      "import": "Import",
+      "importing": "Importing...",
+      "urlLabel": "Recipe URL",
+      "urlRequired": "Please enter a URL",
+      "urlHint": "Paste the URL of a recipe from a supported website",
+      "supportedSites": "Supported Websites",
+      "examples": "Examples",
+      "failed": "Import failed",
+      "info": "The recipe will be imported with all ingredients, steps, and images. The source will be saved."
+    }
   },
   "events": {
     "title": "Events",

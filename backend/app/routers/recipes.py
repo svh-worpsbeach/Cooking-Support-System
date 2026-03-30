@@ -687,7 +687,8 @@ async def import_recipe_from_url(
             prep_time=recipe_data.get('prep_time'),
             cook_time=recipe_data.get('cook_time'),
             servings=recipe_data.get('servings', 4),
-            difficulty=recipe_data.get('difficulty', 'medium')
+            difficulty=recipe_data.get('difficulty', 'medium'),
+            source_url=url  # Store the source URL
         )
         db.add(db_recipe)
         db.flush()
