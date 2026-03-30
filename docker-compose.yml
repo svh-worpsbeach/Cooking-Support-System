@@ -7,7 +7,7 @@ services:
     container_name: cooking-db2
     privileged: true
     ports:
-      - "50000:50000"
+      - "5500:50000"
     environment:
       - LICENSE=accept
       - DB2INSTANCE=db2inst1
@@ -34,7 +34,7 @@ services:
       dockerfile: Dockerfile
     container_name: cooking-backend
     ports:
-      - "8000:8000"
+      - "5580:8000"
     environment:
       - DATABASE_URL=db2+ibm_db://db2inst1:db2inst1-pwd@db2:50000/COOKDB
       - CORS_ORIGINS=http://localhost,http://localhost:80,http://frontend
@@ -45,7 +45,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/recipes"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -62,7 +62,7 @@ services:
         - VITE_API_URL=http://localhost:8000
     container_name: cooking-frontend
     ports:
-      - "80:80"
+      - "5501:80"
     depends_on:
       - backend
     restart: unless-stopped

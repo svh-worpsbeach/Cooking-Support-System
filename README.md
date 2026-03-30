@@ -126,9 +126,9 @@ cooking-management-system/
 ```
 
 The application will be available at:
-- Frontend: http://localhost (or http://localhost:5173 for SQLite)
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+- Frontend: http://localhost:5500 (PostgreSQL), http://localhost:5501 (DB2), http://localhost:5502 (SQLite)
+- Backend API: http://localhost:5580
+- API Docs: http://localhost:5580/docs
 
 See [DATABASE_SWITCHING_GUIDE.md](DATABASE_SWITCHING_GUIDE.md) for detailed database configuration.
 

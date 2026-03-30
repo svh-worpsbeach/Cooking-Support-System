@@ -9,7 +9,7 @@ services:
     image: postgres:16-alpine
     container_name: cooking-postgres
     ports:
-      - "5432:5432"
+      - "5532:5432"
     environment:
       - POSTGRES_DB=cooking_db
       - POSTGRES_USER=postgres
@@ -34,7 +34,7 @@ services:
       dockerfile: Dockerfile
     container_name: cooking-backend
     ports:
-      - "8000:8000"
+      - "5580:8000"
     environment:
       - DATABASE_TYPE=postgresql
       - POSTGRES_HOST=postgres
@@ -70,7 +70,7 @@ services:
         - VITE_API_URL=http://localhost:8000
     container_name: cooking-frontend
     ports:
-      - "80:80"
+      - "5500:80"
     depends_on:
       - backend
     restart: unless-stopped

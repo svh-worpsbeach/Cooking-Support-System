@@ -72,7 +72,7 @@ switch_to_sqlite() {
 DATABASE_TYPE=sqlite
 SQLITE_DATABASE=./cooking.db
 ECHO_SQL=false
-CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
+CORS_ORIGINS=http://localhost:5502,http://localhost:5580
 EOF
     
     print_success "Configuration updated for SQLite"
@@ -81,8 +81,8 @@ EOF
     docker-compose -f docker-compose.dev.yml up -d --build
     
     print_success "Services started!"
-    print_info "Backend: http://localhost:8000"
-    print_info "Frontend: http://localhost:5173"
+    print_info "Backend: http://localhost:5580"
+    print_info "Frontend: http://localhost:5502"
     print_info "Database: ./backend/cooking.db"
 }
 
@@ -102,7 +102,7 @@ POOL_SIZE=10
 MAX_OVERFLOW=20
 POOL_PRE_PING=true
 ECHO_SQL=false
-CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
+CORS_ORIGINS=http://localhost:5500,http://localhost:5580
 EOF
     
     print_success "Configuration updated for PostgreSQL"
@@ -111,9 +111,9 @@ EOF
     docker-compose -f docker-compose.postgres.yml up -d --build
     
     print_success "Services started!"
-    print_info "Backend: http://localhost:8000"
-    print_info "Frontend: http://localhost:80"
-    print_info "PostgreSQL: localhost:5432"
+    print_info "Backend: http://localhost:5580"
+    print_info "Frontend: http://localhost:5500"
+    print_info "PostgreSQL: localhost:5532"
     print_warning "Wait ~10 seconds for PostgreSQL to initialize..."
 }
 
@@ -133,7 +133,7 @@ POOL_SIZE=10
 MAX_OVERFLOW=20
 POOL_PRE_PING=true
 ECHO_SQL=false
-CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
+CORS_ORIGINS=http://localhost:5501,http://localhost:5580
 EOF
     
     print_success "Configuration updated for DB2"
@@ -142,9 +142,9 @@ EOF
     docker-compose up -d --build
     
     print_success "Services started!"
-    print_info "Backend: http://localhost:8000"
-    print_info "Frontend: http://localhost:80"
-    print_info "DB2: localhost:50000"
+    print_info "Backend: http://localhost:5580"
+    print_info "Frontend: http://localhost:5501"
+    print_info "DB2: localhost:5500"
     print_warning "Wait ~3 minutes for DB2 to initialize..."
 }
 

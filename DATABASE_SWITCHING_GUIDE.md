@@ -90,8 +90,8 @@ docker-compose -f docker-compose.dev.yml up -d
 ```
 
 **Zugriff:**
-- Backend: http://localhost:8000
-- Frontend: http://localhost:5173
+- Backend: http://localhost:5580
+- Frontend: http://localhost:5502
 - Datenbank: `./backend/cooking.db`
 
 ### PostgreSQL
@@ -122,9 +122,9 @@ docker-compose -f docker-compose.postgres.yml up -d
 ```
 
 **Zugriff:**
-- Backend: http://localhost:8000
-- Frontend: http://localhost:80
-- PostgreSQL: localhost:5432
+- Backend: http://localhost:5580
+- Frontend: http://localhost:5500
+- PostgreSQL: localhost:5532
 
 **Initialisierungszeit:** ~10 Sekunden
 
@@ -154,9 +154,9 @@ docker-compose up -d
 ```
 
 **Zugriff:**
-- Backend: http://localhost:8000
-- Frontend: http://localhost:80
-- DB2: localhost:50000
+- Backend: http://localhost:5580
+- Frontend: http://localhost:5501
+- DB2: localhost:5500
 
 **Initialisierungszeit:** ~3 Minuten
 
@@ -220,10 +220,10 @@ docker-compose down -v
 
 ```bash
 # Backend Health Check
-curl http://localhost:8000/health
+curl http://localhost:5580/health
 
 # API Test
-curl http://localhost:8000/api/recipes
+curl http://localhost:5580/api/recipes
 ```
 
 ## Umgebungsspezifische Konfigurationen
