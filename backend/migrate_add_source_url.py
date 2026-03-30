@@ -13,12 +13,12 @@ def migrate():
     db_url = settings.get_database_url()
     engine = create_engine(db_url, **settings.get_engine_kwargs())
     
-    print(f"Connecting to database: {settings.DATABASE_TYPE}")
+    print(f"Connecting to database: {settings.database_type}")
     
     try:
         with engine.connect() as conn:
             # Check if column already exists
-            if settings.DATABASE_TYPE == "sqlite":
+            if settings.database_type == "sqlite":
                 # SQLite: Check using pragma
                 result = conn.execute(text("PRAGMA table_info(recipes)"))
                 columns = [row[1] for row in result]
@@ -34,7 +34,7 @@ def migrate():
                 else:
                     print("✓ Column already exists")
                     
-            elif settings.DATABASE_TYPE == "postgresql":
+            elif settings.database_type == "postgresql":
                 # PostgreSQL: Check using information_schema
                 result = conn.execute(text("""
                     SELECT column_name 
@@ -53,7 +53,7 @@ def migrate():
                 else:
                     print("✓ Column already exists")
                     
-            elif settings.DATABASE_TYPE == "db2":
+            elif settings.database_type == "db2":
                 # DB2: Check using syscat.columns
                 result = conn.execute(text("""
                     SELECT colname 
@@ -73,7 +73,7 @@ def migrate():
                     print("✓ Column already exists")
                     
             else:
-                print(f"Unsupported database type: {settings.DATABASE_TYPE}")
+                print(f"Unsupported database type: {settings.database_type}")
                 return False
                 
         print("\n✓ Migration completed successfully!")
