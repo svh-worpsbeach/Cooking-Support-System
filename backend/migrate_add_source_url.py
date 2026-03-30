@@ -5,14 +5,13 @@ Run this script to update existing database schema.
 
 from sqlalchemy import create_engine, text
 from app.config import settings
-from app.database import get_database_url
 
 def migrate():
     """Add source_url column to recipes table"""
     
-    # Get database URL
-    db_url = get_database_url()
-    engine = create_engine(db_url)
+    # Get database URL from settings
+    db_url = settings.get_database_url()
+    engine = create_engine(db_url, **settings.get_engine_kwargs())
     
     print(f"Connecting to database: {settings.DATABASE_TYPE}")
     
