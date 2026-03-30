@@ -653,4 +653,148 @@ def get_ingredient_substitutes():
     return {"substitutes": substitutes}
 
 
+@router.post("/recipes/import", response_model=RecipeDetailResponse, status_code=status.HTTP_201_CREATED)
+async def import_recipe_from_url(
+    url: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Import a recipe from a supported website URL.
+    
+    Supported sites:
+    - Chefkoch.de
+    
+    The importer will extract:
+    - Recipe title and description
+    - Preparation and cooking times
+    - Servings and difficulty
+    - Ingredients list
+    - Preparation steps
+    - Main recipe image
+    - Categories/tags
+    """
+    from app.services.recipe_importer import RecipeImporterService
+    
+    try:
+        # Import recipe data
+        importer = RecipeImporterService()
+        recipe_data = importer.import_from_url(url)
+        
+        # Create recipe in database
+        db_recipe = Recipe(
+            name=recipe_data['title'],
+            description=recipe_data.get('description', ''),
+            prep_time=recipe_data.get('prep_time'),
+            cook_time=recipe_data.get('cook_time'),
+            servings=recipe_data.get('servings', 4),
+            difficulty=recipe_data.get('difficulty', 'medium')
+        )
+        db.add(db_recipe)
+        db.flush()
+        
+        # Add categories
+        for category_name in recipe_data.get('categories', []):
+            if category_name:  # Skip empty categories
+                db_category = RecipeCategory(
+                    recipe_id=db_recipe.id,
+                    category_name=category_name
+                )
+                db.add(db_category)
+        
+        # Add ingredients
+        for idx, ingredient in enumerate(recipe_data.get('ingredients', [])):
+            db_ingredient = RecipeIngredient(
+                recipe_id=db_recipe.id,
+                name=ingredient.get('name', ''),
+                amount=ingredient.get('amount', ''),
+                unit='',  # Chefkoch combines amount and unit
+                order_index=idx
+            )
+            db.add(db_ingredient)
+        
+        # Add steps
+        for idx, step_content in enumerate(recipe_data.get('steps', []), 1):
+            db_step = RecipeStep(
+                recipe_id=db_recipe.id,
+                step_number=idx,
+                content=step_content
+            )
+            db.add(db_step)
+        
+        # Save image if available
+        if recipe_data.get('image_data'):
+            try:
+                # Save image using file service
+                image_data = recipe_data['image_data']
+                content_type = recipe_data.get('image_content_type', 'image/jpeg')
+                
+                # Create a file-like object from bytes
+                from io import BytesIO
+                import os
+                
+                # Generate filename
+                ext = content_type.split('/')[-1]
+                if ext == 'jpeg':
+                    ext = 'jpg'
+                filename = f"imported_{db_recipe.id}_{int(os.urandom(4).hex(), 16)}.{ext}"
+                
+                # Save using file service
+                filepath = await file_service.save_image_data(
+                    image_data=image_data,
+                    filename=filename,
+                    category="recipes",
+                    create_thumbnail=True
+                )
+                
+                # Create database record
+                db_image = RecipeImage(
+                    recipe_id=db_recipe.id,
+                    filename=filename,
+                    filepath=filepath,
+                    is_process_image=True,  # Main recipe image
+                    order_index=0
+                )
+                db.add(db_image)
+                db.flush()
+                
+                # Set as title image
+                db_recipe.title_image_id = db_image.id
+                
+            except Exception as e:
+                print(f"Warning: Could not save imported image: {e}")
+                # Continue without image
+        
+        db.commit()
+        db.refresh(db_recipe)
+        
+        return db_recipe
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to import recipe: {str(e)}"
+        )
+
+
+@router.get("/recipes/import/supported-sites")
+def get_supported_import_sites():
+    """
+    Get list of supported recipe import websites.
+    """
+    from app.services.recipe_importer import RecipeImporterService
+    
+    importer = RecipeImporterService()
+    return {
+        "supported_sites": importer.get_supported_sites(),
+        "example_urls": [
+            "https://www.chefkoch.de/rezepte/1208161226570428/Der-perfekte-Pfannkuchen-gelingt-einfach-immer.html"
+        ]
+    }
+
+
 # Made with Bob

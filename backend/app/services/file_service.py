@@ -234,6 +234,61 @@ class FileService:
         if os.path.exists(thumbnail_path):
             return f"/uploads/{category}/thumbnails/{filename}"
         
+    
+    async def save_image_data(
+        self,
+        image_data: bytes,
+        filename: str,
+        category: str,
+        create_thumbnail: bool = True
+    ) -> str:
+        """
+        Save image data directly (not from upload).
+        
+        Args:
+            image_data: Raw image bytes
+            filename: Desired filename
+            category: Category (e.g., 'recipes', 'tools')
+            create_thumbnail: Whether to create a thumbnail
+            
+        Returns:
+            Relative filepath
+            
+        Raises:
+            HTTPException: If save fails
+        """
+        # Construct file paths
+        category_dir = os.path.join(self.upload_dir, category)
+        filepath = os.path.join(category_dir, filename)
+        
+        try:
+            # Check file size
+            if len(image_data) > self.MAX_FILE_SIZE:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"File too large. Maximum size: {self.MAX_FILE_SIZE / (1024*1024)}MB"
+                )
+            
+            # Save the file
+            with open(filepath, "wb") as buffer:
+                buffer.write(image_data)
+            
+            # Create thumbnail if requested
+            if create_thumbnail:
+                await self._create_thumbnail(filepath, category)
+            
+            # Return relative path for database storage
+            relative_path = os.path.join(category, filename)
+            return relative_path
+            
+        except HTTPException:
+            # Re-raise HTTP exceptions
+            raise
+        except Exception as e:
+            # Clean up file if it was created
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            raise HTTPException(status_code=500, detail=f"Failed to save image data: {str(e)}")
         return None
 
 
