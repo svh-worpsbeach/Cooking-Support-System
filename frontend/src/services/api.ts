@@ -2,11 +2,30 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-console.log('🔧 API Configuration:', {
-  baseURL: API_BASE_URL,
-  env: import.meta.env.VITE_API_URL,
-  mode: import.meta.env.MODE
+// Detailed initialization debug output
+console.group('🚀 Frontend API Initialization');
+console.log('📋 Configuration Source Analysis:');
+console.log('  ├─ VITE_API_URL (from env):', import.meta.env.VITE_API_URL || '❌ NOT SET');
+console.log('  ├─ Fallback value:', 'http://localhost:8000/api');
+console.log('  └─ Final API_BASE_URL:', API_BASE_URL);
+console.log('');
+console.log('🔍 Configuration Details:');
+console.log('  ├─ Build mode:', import.meta.env.MODE);
+console.log('  ├─ Is production:', import.meta.env.PROD);
+console.log('  ├─ Is development:', import.meta.env.DEV);
+console.log('  └─ Base URL:', import.meta.env.BASE_URL);
+console.log('');
+console.log('📝 How VITE_API_URL is set:');
+console.log('  1. Docker build arg: VITE_API_URL in docker-compose.yml');
+console.log('  2. Local .env file: VITE_API_URL=... in frontend/.env');
+console.log('  3. Fallback: http://localhost:8000/api (if not set)');
+console.log('');
+console.log('✅ Active configuration:', {
+  source: import.meta.env.VITE_API_URL ? 'Environment Variable' : 'Fallback Default',
+  value: API_BASE_URL,
+  timestamp: new Date().toISOString()
 });
+console.groupEnd();
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
