@@ -71,7 +71,7 @@ switch_to_sqlite() {
     cat > backend/.env << EOF
 DATABASE_TYPE=sqlite
 SQLITE_DATABASE=./cooking.db
-ECHO_SQL=false
+ECHO_SQL=true
 CORS_ORIGINS=http://localhost:5502,http://localhost:5580
 EOF
     
@@ -101,7 +101,7 @@ POSTGRES_PASSWORD=postgres
 POOL_SIZE=10
 MAX_OVERFLOW=20
 POOL_PRE_PING=true
-ECHO_SQL=false
+ECHO_SQL=true
 CORS_ORIGINS=http://localhost:5500,http://localhost:5580
 EOF
     
@@ -132,7 +132,7 @@ DB2_PASSWORD=db2inst1-pwd
 POOL_SIZE=10
 MAX_OVERFLOW=20
 POOL_PRE_PING=true
-ECHO_SQL=false
+ECHO_SQL=true
 CORS_ORIGINS=http://localhost:5501,http://localhost:5580
 EOF
     

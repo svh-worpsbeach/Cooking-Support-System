@@ -36,8 +36,18 @@ services:
     ports:
       - "5580:8000"
     environment:
-      - DATABASE_URL=db2+ibm_db://db2inst1:db2inst1-pwd@db2:50000/COOKDB
+      - DATABASE_TYPE=db2
+      - DB2_HOST=db2
+      - DB2_PORT=50000
+      - DB2_DATABASE=COOKDB
+      - DB2_USER=db2inst1
+      - DB2_PASSWORD=db2inst1-pwd
       - CORS_ORIGINS=http://localhost,http://localhost:80,http://frontend
+      - POOL_SIZE=10
+      - MAX_OVERFLOW=20
+      - POOL_PRE_PING=true
+      - ECHO_SQL=true
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./backend/uploads:/app/uploads
     depends_on:
