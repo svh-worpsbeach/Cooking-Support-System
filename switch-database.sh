@@ -58,7 +58,7 @@ EOF
 stop_containers() {
     print_info "Stopping all running containers..."
     docker-compose down 2>/dev/null || true
-    docker-compose -f docker-compose.postgres.yml down 2>/dev/null || true
+    docker-compose -f docker-compose.db2.yml down 2>/dev/null || true
     docker-compose -f docker-compose.dev.yml down 2>/dev/null || true
     print_success "Containers stopped"
 }
