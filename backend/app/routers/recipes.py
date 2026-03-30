@@ -712,7 +712,7 @@ async def import_recipe_from_url(
             # Parse amount string (e.g., "250 g" -> amount=250.0, unit="g")
             amount_str = ingredient.get('amount', '').strip()
             amount = 1.0  # Default
-            unit = ''
+            unit = '-'  # Default unit (Pydantic requires min_length=1)
             
             if amount_str:
                 # Try to extract number and unit
