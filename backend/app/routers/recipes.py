@@ -709,11 +709,29 @@ async def import_recipe_from_url(
         
         # Add ingredients
         for idx, ingredient in enumerate(recipe_data.get('ingredients', [])):
+            # Parse amount string (e.g., "250 g" -> amount=250.0, unit="g")
+            amount_str = ingredient.get('amount', '').strip()
+            amount = 1.0  # Default
+            unit = ''
+            
+            if amount_str:
+                # Try to extract number and unit
+                import re
+                match = re.match(r'([\d.,]+)\s*(.*)$', amount_str)
+                if match:
+                    try:
+                        # Replace comma with dot for German numbers
+                        amount = float(match.group(1).replace(',', '.'))
+                        unit = match.group(2).strip()
+                    except ValueError:
+                        amount = 1.0
+                        unit = amount_str
+            
             db_ingredient = RecipeIngredient(
                 recipe_id=db_recipe.id,
                 name=ingredient.get('name', ''),
-                amount=ingredient.get('amount', ''),
-                unit='',  # Chefkoch combines amount and unit
+                amount=amount,
+                unit=unit,
                 order_index=idx
             )
             db.add(db_ingredient)
