@@ -48,12 +48,20 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # Vite dev server
-        "http://localhost:3000",  # Alternative dev server
-        "http://localhost",  # Frontend container (port 80)
+        "http://localhost:5500",  # Frontend PostgreSQL
+        "http://localhost:5501",  # Frontend DB2
+        "http://localhost:5502",  # Frontend SQLite
+        "http://localhost:5580",  # Backend API
+        "http://localhost:5173",  # Vite dev server (legacy)
+        "http://localhost:3000",  # Alternative dev server (legacy)
+        "http://localhost",  # Frontend container (legacy)
+        "http://127.0.0.1:5500",
+        "http://127.0.0.1:5501",
+        "http://127.0.0.1:5502",
+        "http://127.0.0.1:5580",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
-        "http://127.0.0.1",  # Frontend container (port 80)
+        "http://127.0.0.1",
     ],
     allow_credentials=True,
     allow_methods=["*"],
