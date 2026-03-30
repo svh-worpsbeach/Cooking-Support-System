@@ -76,9 +76,9 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
 EOF
     
     print_success "Configuration updated for SQLite"
-    print_info "Starting services with SQLite..."
+    print_info "Building and starting services with SQLite..."
     
-    docker-compose -f docker-compose.dev.yml up -d
+    docker-compose -f docker-compose.dev.yml up -d --build
     
     print_success "Services started!"
     print_info "Backend: http://localhost:8000"
@@ -106,9 +106,9 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
 EOF
     
     print_success "Configuration updated for PostgreSQL"
-    print_info "Starting services with PostgreSQL..."
+    print_info "Building and starting services with PostgreSQL..."
     
-    docker-compose -f docker-compose.postgres.yml up -d
+    docker-compose -f docker-compose.postgres.yml up -d --build
     
     print_success "Services started!"
     print_info "Backend: http://localhost:8000"
@@ -137,9 +137,9 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
 EOF
     
     print_success "Configuration updated for DB2"
-    print_info "Starting services with DB2..."
+    print_info "Building and starting services with DB2..."
     
-    docker-compose up -d
+    docker-compose up -d --build
     
     print_success "Services started!"
     print_info "Backend: http://localhost:8000"
