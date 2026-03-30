@@ -681,13 +681,18 @@ async def import_recipe_from_url(
         recipe_data = importer.import_from_url(url)
         
         # Create recipe in database
+        # Convert minutes to time format (HH:MM)
+        prep_time = recipe_data.get('prep_time')
+        cook_time = recipe_data.get('cook_time')
+        
+        prep_time_str = f"0:{prep_time:02d}" if prep_time else "0:00"
+        cook_time_str = f"0:{cook_time:02d}" if cook_time else "0:00"
+        
         db_recipe = Recipe(
             name=recipe_data['title'],
             description=recipe_data.get('description', ''),
-            prep_time=recipe_data.get('prep_time'),
-            cook_time=recipe_data.get('cook_time'),
-            servings=recipe_data.get('servings', 4),
-            difficulty=recipe_data.get('difficulty', 'medium'),
+            preparation_time=prep_time_str,
+            cooking_time=cook_time_str,
             source_url=url  # Store the source URL
         )
         db.add(db_recipe)
