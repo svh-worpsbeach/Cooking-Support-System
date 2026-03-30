@@ -58,8 +58,7 @@ The Cookies Support System is a modern web application that provides four integr
 - Python 3.11+
 - FastAPI (async web framework)
 - SQLAlchemy (ORM)
-- IBM DB2 (database)
-- ibm-db / ibm-db-sa (DB2 drivers)
+- Multiple database support: SQLite, PostgreSQL, DB2, MySQL
 - Pydantic (data validation)
 
 **Frontend:**
@@ -105,12 +104,35 @@ cooking-management-system/
 
 ### Prerequisites
 
-- Python 3.11 or higher
-- Node.js 18 or higher
-- npm or yarn
+- Docker and Docker Compose (recommended)
+- OR: Python 3.11+, Node.js 18+, and a database (SQLite/PostgreSQL/DB2)
 - Git
 
-### Installation
+### Quick Start with Docker
+
+**Option 1: SQLite (Development)**
+```bash
+./switch-database.sh sqlite
+```
+
+**Option 2: PostgreSQL (Production)**
+```bash
+./switch-database.sh postgresql
+```
+
+**Option 3: DB2 (Enterprise)**
+```bash
+./switch-database.sh db2
+```
+
+The application will be available at:
+- Frontend: http://localhost (or http://localhost:5173 for SQLite)
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+See [DATABASE_SWITCHING_GUIDE.md](DATABASE_SWITCHING_GUIDE.md) for detailed database configuration.
+
+### Manual Installation (Without Docker)
 
 1. **Clone the repository**
    ```bash
@@ -118,21 +140,28 @@ cooking-management-system/
    cd cooking-management-system
    ```
 
-2. **Set up the backend**
+2. **Configure database**
+   ```bash
+   cp backend/.env.example backend/.env
+   # Edit backend/.env and set DATABASE_TYPE=sqlite
+   ```
+
+3. **Set up the backend**
    ```bash
    cd backend
    
-   # Install Poetry (if not already installed)
-   curl -sSL https://install.python-poetry.org | python3 -
+   # Create virtual environment
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    
    # Install dependencies
-   poetry install
+   pip install -r requirements.txt
    
    # Create uploads directory
    mkdir -p uploads/recipes uploads/tools
    ```
 
-3. **Set up the frontend**
+4. **Set up the frontend**
    ```bash
    cd ../frontend
    
@@ -140,12 +169,11 @@ cooking-management-system/
    npm install
    ```
 
-### Running the Application
-
-1. **Start the backend server**
+5. **Start the backend server**
    ```bash
    cd backend
-   poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   source venv/bin/activate
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
    
    The API will be available at `http://localhost:8000`

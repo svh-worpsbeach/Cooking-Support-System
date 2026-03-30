@@ -9,13 +9,12 @@ pydantic-settings>=2.7.0
 requests>=2.31.0
 
 # Database Drivers
-# DB2 (Production)
+# DB2
 ibm-db>=3.2.0
 ibm-db-sa>=0.4.0
 
-# PostgreSQL (Optional)
-# Uncomment if using PostgreSQL
-# psycopg2-binary>=2.9.9
+# PostgreSQL
+psycopg2-binary>=2.9.9
 
 # MySQL (Optional)
 # Uncomment if using MySQL
