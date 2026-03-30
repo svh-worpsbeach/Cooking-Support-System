@@ -108,7 +108,7 @@ EOF
     print_success "Configuration updated for PostgreSQL"
     print_info "Building and starting services with PostgreSQL..."
     
-    docker-compose -f docker-compose.postgres.yml up -d --build
+    docker-compose up -d --build
     
     print_success "Services started!"
     print_info "Backend: http://localhost:5580"
@@ -139,7 +139,7 @@ EOF
     print_success "Configuration updated for DB2"
     print_info "Building and starting services with DB2..."
     
-    docker-compose up -d --build
+    docker-compose -f docker-compose.db2.yml up -d --build
     
     print_success "Services started!"
     print_info "Backend: http://localhost:5580"

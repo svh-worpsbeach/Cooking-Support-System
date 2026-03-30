@@ -1,30 +1,30 @@
 version: '3.8'
 
-# PostgreSQL Docker Compose Configuration
-# Use this configuration for PostgreSQL as the database backend
-
 services:
-  # PostgreSQL Database Service
-  postgres:
-    image: postgres:16-alpine
-    container_name: cooking-postgres
-    hostname: postgres
+  # DB2 Database Service
+  db2:
+    image: icr.io/db2_community/db2:latest
+    container_name: cooking-db2
+    hostname: db2
+    privileged: true
     ports:
-      - "5532:5432"
+      - "5500:50000"
     environment:
-      - POSTGRES_DB=cooking_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - LICENSE=accept
+      - DB2INSTANCE=db2inst1
+      - DB2INST1_PASSWORD=db2inst1-pwd
+      - DBNAME=COOKDB
+      - ARCHIVE_LOGS=false
+      - AUTOCONFIG=false
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./backend/postgres-init:/docker-entrypoint-initdb.d
+      - db2-data:/database
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      test: ["CMD-SHELL", "su - db2inst1 -c 'db2 connect to COOKDB' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
     networks:
       - cooking-network
 
@@ -38,13 +38,13 @@ services:
     ports:
       - "5580:8000"
     environment:
-      - DATABASE_TYPE=postgresql
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DATABASE=cooking_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - CORS_ORIGINS=http://frontend,http://localhost:5500,http://localhost:5580
+      - DATABASE_TYPE=db2
+      - DB2_HOST=db2
+      - DB2_PORT=50000
+      - DB2_DATABASE=COOKDB
+      - DB2_USER=db2inst1
+      - DB2_PASSWORD=db2inst1-pwd
+      - CORS_ORIGINS=http://frontend,http://localhost:5501,http://localhost:5580
       - POOL_SIZE=10
       - MAX_OVERFLOW=20
       - POOL_PRE_PING=true
@@ -53,7 +53,7 @@ services:
     volumes:
       - ./backend/uploads:/app/uploads
     depends_on:
-      postgres:
+      db2:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
@@ -61,7 +61,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 60s
     networks:
       - cooking-network
 
@@ -75,7 +75,7 @@ services:
     container_name: cooking-frontend
     hostname: frontend
     ports:
-      - "5500:80"
+      - "5501:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -93,7 +93,7 @@ networks:
     driver: bridge
 
 volumes:
-  postgres-data:
+  db2-data:
     driver: local
 
 # Made with Bob

@@ -10,12 +10,13 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: cooking-backend-dev
+    hostname: backend
     ports:
       - "5580:8000"
     environment:
       - DATABASE_TYPE=sqlite
       - SQLITE_DATABASE=/app/data/cooking.db
-      - CORS_ORIGINS=http://localhost:5502,http://localhost:5580
+      - CORS_ORIGINS=http://frontend,http://localhost:5502,http://localhost:5580
       - ECHO_SQL=true
       - PYTHONUNBUFFERED=1
     volumes:
@@ -39,8 +40,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://localhost:5580
+        - VITE_API_URL=http://backend:8000
     container_name: cooking-frontend-dev
+    hostname: frontend
     ports:
       - "5502:80"
     depends_on:
