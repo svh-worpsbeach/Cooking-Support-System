@@ -91,8 +91,8 @@ app.add_middleware(
 os.makedirs("uploads/recipes", exist_ok=True)
 os.makedirs("uploads/tools", exist_ok=True)
 
-# Mount static files for images
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# Mount static files for images under /api/uploads to match frontend URLs
+app.mount("/api/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.get("/")
