@@ -4,10 +4,14 @@ File upload service for handling image uploads.
 
 import os
 import uuid
+import logging
 from typing import Optional, Tuple
 from fastapi import UploadFile, HTTPException
 from PIL import Image
 import shutil
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class FileService:
@@ -25,14 +29,20 @@ class FileService:
             upload_dir: Base directory for uploads
         """
         self.upload_dir = upload_dir
+        logger.info(f"FileService initialized with upload_dir: {os.path.abspath(upload_dir)}")
         self._ensure_directories()
     
     def _ensure_directories(self):
         """Ensure upload directories exist."""
-        os.makedirs(os.path.join(self.upload_dir, "recipes"), exist_ok=True)
-        os.makedirs(os.path.join(self.upload_dir, "tools"), exist_ok=True)
-        os.makedirs(os.path.join(self.upload_dir, "recipes", "thumbnails"), exist_ok=True)
-        os.makedirs(os.path.join(self.upload_dir, "tools", "thumbnails"), exist_ok=True)
+        dirs = [
+            os.path.join(self.upload_dir, "recipes"),
+            os.path.join(self.upload_dir, "tools"),
+            os.path.join(self.upload_dir, "recipes", "thumbnails"),
+            os.path.join(self.upload_dir, "tools", "thumbnails")
+        ]
+        for dir_path in dirs:
+            os.makedirs(dir_path, exist_ok=True)
+            logger.debug(f"Ensured directory exists: {os.path.abspath(dir_path)}")
     
     def _validate_file(self, file: UploadFile) -> None:
         """
@@ -89,36 +99,59 @@ class FileService:
         Raises:
             HTTPException: If file is invalid or save fails
         """
+        logger.info(f"=== UPLOAD START: {file.filename} ===")
+        
         # Validate file
         self._validate_file(file)
+        logger.debug(f"✓ File validated: {file.filename}")
         
         # Generate unique filename
         filename = self._generate_unique_filename(file.filename)
+        logger.debug(f"✓ Generated filename: {filename}")
         
         # Construct file paths
         category_dir = os.path.join(self.upload_dir, category)
         filepath = os.path.join(category_dir, filename)
+        abs_filepath = os.path.abspath(filepath)
+        logger.info(f"Target path: {abs_filepath}")
+        logger.info(f"Category dir: {os.path.abspath(category_dir)}")
+        logger.info(f"Category dir exists: {os.path.exists(category_dir)}")
         
         try:
             # Save the file
+            logger.debug("Reading file content...")
+            content = await file.read()
+            file_size = len(content)
+            logger.info(f"File size: {file_size} bytes ({file_size / 1024:.2f} KB)")
+            
+            # Check file size
+            if file_size > self.MAX_FILE_SIZE:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"File too large. Maximum size: {self.MAX_FILE_SIZE / (1024*1024)}MB"
+                )
+            
+            logger.debug(f"Writing to: {abs_filepath}")
             with open(filepath, "wb") as buffer:
-                content = await file.read()
-                
-                # Check file size
-                if len(content) > self.MAX_FILE_SIZE:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"File too large. Maximum size: {self.MAX_FILE_SIZE / (1024*1024)}MB"
-                    )
-                
                 buffer.write(content)
+            
+            # Verify file was written
+            if os.path.exists(filepath):
+                actual_size = os.path.getsize(filepath)
+                logger.info(f"✓ File written successfully: {actual_size} bytes")
+            else:
+                logger.error(f"✗ File not found after write: {abs_filepath}")
+                raise HTTPException(status_code=500, detail="File write verification failed")
             
             # Create thumbnail if requested
             if create_thumbnail:
+                logger.debug("Creating thumbnail...")
                 await self._create_thumbnail(filepath, category)
+                logger.info("✓ Thumbnail created")
             
             # Return relative path for database storage
             relative_path = os.path.join(category, filename)
+            logger.info(f"=== UPLOAD COMPLETE: {relative_path} ===")
             return filename, relative_path
             
         except HTTPException:
@@ -139,10 +172,14 @@ class FileService:
             category: Category (e.g., 'recipes', 'tools')
         """
         try:
+            logger.debug(f"Opening image for thumbnail: {filepath}")
             # Open image
             with Image.open(filepath) as img:
+                logger.debug(f"Image mode: {img.mode}, size: {img.size}")
+                
                 # Convert to RGB if necessary (for PNG with transparency)
                 if img.mode in ("RGBA", "LA", "P"):
+                    logger.debug(f"Converting {img.mode} to RGB")
                     background = Image.new("RGB", img.size, (255, 255, 255))
                     if img.mode == "P":
                         img = img.convert("RGBA")
@@ -150,18 +187,27 @@ class FileService:
                     img = background
                 
                 # Create thumbnail
+                logger.debug(f"Creating thumbnail with size: {self.THUMBNAIL_SIZE}")
                 img.thumbnail(self.THUMBNAIL_SIZE, Image.Resampling.LANCZOS)
                 
                 # Save thumbnail
                 filename = os.path.basename(filepath)
                 thumbnail_dir = os.path.join(self.upload_dir, category, "thumbnails")
                 thumbnail_path = os.path.join(thumbnail_dir, filename)
+                abs_thumbnail_path = os.path.abspath(thumbnail_path)
                 
+                logger.debug(f"Saving thumbnail to: {abs_thumbnail_path}")
                 img.save(thumbnail_path, quality=85, optimize=True)
+                
+                if os.path.exists(thumbnail_path):
+                    thumb_size = os.path.getsize(thumbnail_path)
+                    logger.debug(f"✓ Thumbnail saved: {thumb_size} bytes")
+                else:
+                    logger.warning(f"✗ Thumbnail not found after save: {abs_thumbnail_path}")
                 
         except Exception as e:
             # Log error but don't fail the upload
-            print(f"Warning: Failed to create thumbnail: {str(e)}")
+            logger.error(f"✗ Failed to create thumbnail: {str(e)}", exc_info=True)
     
     def delete_file(self, filepath: str, category: str) -> bool:
         """
@@ -257,9 +303,17 @@ class FileService:
         Raises:
             HTTPException: If save fails
         """
+        logger.info(f"=== SAVE IMAGE DATA START: {filename} ===")
+        
         # Construct file paths
         category_dir = os.path.join(self.upload_dir, category)
         filepath = os.path.join(category_dir, filename)
+        abs_filepath = os.path.abspath(filepath)
+        
+        logger.info(f"Target path: {abs_filepath}")
+        logger.info(f"Category dir: {os.path.abspath(category_dir)}")
+        logger.info(f"Category dir exists: {os.path.exists(category_dir)}")
+        logger.info(f"Image data size: {len(image_data)} bytes ({len(image_data) / 1024:.2f} KB)")
         
         try:
             # Check file size
@@ -270,24 +324,39 @@ class FileService:
                 )
             
             # Save the file
+            logger.debug(f"Writing image data to: {abs_filepath}")
             with open(filepath, "wb") as buffer:
                 buffer.write(image_data)
             
+            # Verify file was written
+            if os.path.exists(filepath):
+                actual_size = os.path.getsize(filepath)
+                logger.info(f"✓ File written successfully: {actual_size} bytes")
+            else:
+                logger.error(f"✗ File not found after write: {abs_filepath}")
+                raise HTTPException(status_code=500, detail="File write verification failed")
+            
             # Create thumbnail if requested
             if create_thumbnail:
+                logger.debug("Creating thumbnail...")
                 await self._create_thumbnail(filepath, category)
+                logger.info("✓ Thumbnail created")
             
             # Return relative path for database storage
             relative_path = os.path.join(category, filename)
+            logger.info(f"=== SAVE IMAGE DATA COMPLETE: {relative_path} ===")
             return relative_path
             
-        except HTTPException:
+        except HTTPException as e:
             # Re-raise HTTP exceptions
+            logger.error(f"✗ HTTP exception during save: {str(e)}")
             raise
         except Exception as e:
             # Clean up file if it was created
+            logger.error(f"✗ Failed to save image data: {str(e)}", exc_info=True)
             if os.path.exists(filepath):
                 os.remove(filepath)
+                logger.debug(f"Cleaned up failed file: {filepath}")
             raise HTTPException(status_code=500, detail=f"Failed to save image data: {str(e)}")
         return None
 
