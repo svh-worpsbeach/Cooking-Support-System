@@ -1,17 +1,35 @@
 # Docker Data Persistence Guide
 
-## PostgreSQL Data Persistence
+## Data Persistence Overview
 
-The PostgreSQL database uses a Docker volume (`postgres-data`) to persist data between container restarts and rebuilds.
+The application uses Docker volumes to persist data between container restarts and rebuilds:
+
+1. **PostgreSQL Database** (`postgres-data`) - All database data
+2. **Uploaded Files** (`uploads-data`) - Recipe images, tool images, etc.
 
 ### How Data Persistence Works
 
 ```yaml
 volumes:
+  postgres-data:
+    driver: local
+  uploads-data:
+    driver: local
+```
+
+**Backend Service:**
+```yaml
+volumes:
+  - uploads-data:/app/uploads
+```
+
+**PostgreSQL Service:**
+```yaml
+volumes:
   - postgres-data:/var/lib/postgresql/data
 ```
 
-This volume is defined in `docker-compose.yml` and stores all PostgreSQL data permanently on the host system.
+These volumes are defined in `docker-compose.yml` and store all data permanently on the host system.
 
 ## Container Management Commands
 
@@ -130,7 +148,9 @@ Docker volumes are stored on the host system:
 - **macOS:** `~/Library/Containers/com.docker.docker/Data/vms/0/`
 - **Windows:** `C:\ProgramData\Docker\volumes\`
 
-The actual volume name is: `cooking-management-system_postgres-data`
+The actual volume names are:
+- Database: `cooking-management-system_postgres-data`
+- Uploads: `cooking-management-system_uploads-data`
 
 ## Migration Between Environments
 
@@ -140,8 +160,8 @@ The actual volume name is: `cooking-management-system_postgres-data`
 # Export database
 docker compose exec postgres pg_dump -U postgres cooking_db > cooking_db_export.sql
 
-# Export uploads
-tar -czf uploads_backup.tar.gz backend/uploads/
+# Export uploads from Docker volume
+docker run --rm -v cooking-management-system_uploads-data:/data -v $(pwd):/backup alpine tar czf /backup/uploads_backup.tar.gz -C /data .
 ```
 
 ### Import Data
@@ -150,17 +170,35 @@ tar -czf uploads_backup.tar.gz backend/uploads/
 # Import database
 docker compose exec -T postgres psql -U postgres cooking_db < cooking_db_export.sql
 
-# Import uploads
-tar -xzf uploads_backup.tar.gz
+# Import uploads to Docker volume
+docker run --rm -v cooking-management-system_uploads-data:/data -v $(pwd):/backup alpine tar xzf /backup/uploads_backup.tar.gz -C /data
+```
+
+### Copy Existing Uploads to Volume
+
+If you have existing uploads in `backend/uploads/`, copy them to the new volume:
+
+```bash
+# Stop the backend container
+docker compose stop backend
+
+# Copy files from local directory to volume
+docker run --rm -v $(pwd)/backend/uploads:/source -v cooking-management-system_uploads-data:/dest alpine sh -c "cp -r /source/* /dest/"
+
+# Start the backend container
+docker compose start backend
 ```
 
 ## Summary
 
 - **Default behavior:** Data is preserved across container restarts and rebuilds
-- **Volume name:** `postgres-data` (defined in docker-compose.yml)
+- **Volume names:**
+  - `postgres-data` (database)
+  - `uploads-data` (images and files)
 - **Safe command:** `docker compose down` (without `-v`)
 - **Dangerous command:** `docker compose down -v` (deletes all data)
 - **Best practice:** Regular backups before any major changes
+- **Migration:** Use Docker volume commands to export/import data
 
 ---
 

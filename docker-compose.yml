@@ -51,7 +51,7 @@ services:
       - ECHO_SQL=true
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./backend/uploads:/app/uploads
+      - uploads-data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -94,6 +94,8 @@ networks:
 
 volumes:
   postgres-data:
+    driver: local
+  uploads-data:
     driver: local
 
 # Made with Bob
