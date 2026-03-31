@@ -268,55 +268,41 @@ class ChefkochImporter(RecipeImporter):
         return ingredients
     
     def _extract_steps(self, soup: BeautifulSoup) -> List[str]:
-        """Extract preparation steps from step-X divs"""
+        """Extract preparation steps from elements with id='step1', 'step2', etc."""
         steps = []
         
         logger.debug("Searching for preparation steps...")
         
-        # Strategy 1: Find step divs with id="step-X"
-        step_divs = soup.find_all('div', id=re.compile(r'^step-\d+$'))
-        logger.debug(f"Found {len(step_divs)} divs with id='step-X'")
-        
-        if step_divs:
-            for idx, step_div in enumerate(step_divs, 1):
-                # Try multiple selectors for instruction text
-                instruction = (
-                    step_div.find(class_='instruction__text') or
-                    step_div.find(class_='ds-recipe-meta__info') or
-                    step_div.find('p') or
-                    step_div
-                )
-                
-                if instruction:
-                    text = instruction.get_text(strip=True)
-                    if text and len(text) > 10:
-                        steps.append(text)
-                        logger.debug(f"  Step {idx}: {text[:80]}...")
-        
-        # Strategy 2: If no steps found, look for ordered list
-        if not steps:
-            logger.debug("No step divs found, trying ordered list...")
-            ol = soup.find('ol', class_=re.compile(r'instruction|preparation|recipe-steps', re.I))
-            if ol:
-                for idx, li in enumerate(ol.find_all('li'), 1):
-                    text = li.get_text(strip=True)
-                    if text and len(text) > 10:
-                        steps.append(text)
-                        logger.debug(f"  Step {idx}: {text[:80]}...")
-        
-        # Strategy 3: Look for any div with instruction-related classes
-        if not steps:
-            logger.debug("No ordered list found, trying instruction divs...")
-            instruction_divs = soup.find_all('div', class_=re.compile(r'instruction|step|preparation', re.I))
-            logger.debug(f"Found {len(instruction_divs)} instruction-related divs")
+        # Find all elements with id matching "stepN" pattern (step1, step2, step3, etc.)
+        step_number = 1
+        while True:
+            step_elem = soup.find(id=f'step{step_number}')
+            if not step_elem:
+                logger.debug(f"No more steps found after step{step_number - 1}")
+                break
             
-            for idx, div in enumerate(instruction_divs, 1):
-                text = div.get_text(strip=True)
-                if text and len(text) > 20 and len(text) < 1000:  # Reasonable step length
-                    steps.append(text)
-                    logger.debug(f"  Step {idx}: {text[:80]}...")
+            logger.debug(f"Found element with id='step{step_number}'")
+            
+            # Each step contains two <span> elements:
+            # - First span: step number (ignore)
+            # - Second span: step text (extract this)
+            spans = step_elem.find_all('span', recursive=False)
+            logger.debug(f"  Found {len(spans)} direct span children")
+            
+            if len(spans) >= 2:
+                # Get text from second span (index 1)
+                step_text = spans[1].get_text(strip=True)
+                if step_text and len(step_text) > 10:
+                    steps.append(step_text)
+                    logger.debug(f"  Step {step_number}: {step_text[:80]}...")
+                else:
+                    logger.warning(f"  Step {step_number} text too short or empty: '{step_text}'")
+            else:
+                logger.warning(f"  Step {step_number} does not have 2 span elements (found {len(spans)})")
+            
+            step_number += 1
         
-        logger.debug(f"Total steps extracted: {len(steps)}")
+        logger.info(f"Total steps extracted: {len(steps)}")
         return steps
     
     def _extract_image_url(self, soup: BeautifulSoup) -> Optional[str]:
