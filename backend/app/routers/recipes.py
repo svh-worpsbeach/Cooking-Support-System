@@ -820,9 +820,14 @@ async def import_recipe_from_url(
         # Save image if available
         if recipe_data.get('image_data'):
             try:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info("Saving imported recipe image...")
+                
                 # Save image using file service
                 image_data = recipe_data['image_data']
                 content_type = recipe_data.get('image_content_type', 'image/jpeg')
+                logger.debug(f"Image data size: {len(image_data)} bytes, content type: {content_type}")
                 
                 # Create a file-like object from bytes
                 from io import BytesIO
@@ -833,6 +838,7 @@ async def import_recipe_from_url(
                 if ext == 'jpeg':
                     ext = 'jpg'
                 filename = f"imported_{db_recipe.id}_{int(os.urandom(4).hex(), 16)}.{ext}"
+                logger.debug(f"Generated filename: {filename}")
                 
                 # Save using file service
                 filepath = await file_service.save_image_data(
@@ -841,23 +847,28 @@ async def import_recipe_from_url(
                     category="recipes",
                     create_thumbnail=True
                 )
+                logger.info(f"Image saved to: {filepath}")
                 
                 # Create database record
                 db_image = RecipeImage(
                     recipe_id=db_recipe.id,
                     filename=filename,
                     filepath=filepath,
-                    is_process_image=True,  # Main recipe image
+                    is_process_image=False,  # Title image, not a process/step image
                     order_index=0
                 )
                 db.add(db_image)
                 db.flush()
+                logger.debug(f"Image database record created with ID: {db_image.id}")
                 
                 # Set as title image
                 db_recipe.title_image_id = db_image.id
+                logger.info(f"✓ Image set as title image for recipe {db_recipe.id}")
                 
             except Exception as e:
-                print(f"Warning: Could not save imported image: {e}")
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"✗ Failed to save imported image: {e}", exc_info=True)
                 # Continue without image
         
         db.commit()
