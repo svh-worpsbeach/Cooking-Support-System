@@ -7,9 +7,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
+import logging
 
 from app.database import engine, Base
 from app.models import *  # Import all models to ensure they're registered
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -17,24 +25,50 @@ async def lifespan(app: FastAPI):
     """
     Lifespan context manager for startup and shutdown events.
     """
+    logger.info("=" * 80)
+    logger.info("BACKEND STARTUP - Cooking Management System")
+    logger.info("=" * 80)
+    
+    # Log database configuration
+    from app.config import settings
+    logger.info(f"Database Type: {settings.database_type}")
+    logger.info(f"Database URL: {settings.get_database_url()}")
+    
     # Startup: Create database tables
     try:
+        logger.info("Creating database tables...")
         Base.metadata.create_all(bind=engine, checkfirst=True)
-        print("Database tables created successfully")
+        
+        # Verify tables were created
+        from sqlalchemy import inspect
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        logger.info(f"Available tables: {', '.join(tables)}")
+        
+        # Check each table
+        for table_name in tables:
+            columns = inspector.get_columns(table_name)
+            logger.debug(f"Table '{table_name}' has {len(columns)} columns")
+        
+        logger.info("✓ Database tables created successfully")
     except Exception as e:
         error_msg = str(e)
         # Only ignore DB2 index warnings (SQL0605W)
         if "SQL0605W" in error_msg:
-            print(f"Warning (ignored): Index already exists")
-            print("Database tables created successfully (with warnings)")
+            logger.warning(f"Index already exists (ignored): {error_msg}")
+            logger.info("✓ Database tables created successfully (with warnings)")
         else:
-            print(f"ERROR creating tables: {error_msg}")
+            logger.error(f"✗ ERROR creating tables: {error_msg}")
             raise
+    
+    logger.info("=" * 80)
+    logger.info("Backend ready to accept requests")
+    logger.info("=" * 80)
     
     yield
     
     # Shutdown: Add cleanup logic here if needed
-    print("Application shutting down")
+    logger.info("Application shutting down")
 
 # Create FastAPI app
 app = FastAPI(

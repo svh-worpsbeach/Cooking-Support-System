@@ -10,6 +10,10 @@ from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 import base64
 from io import BytesIO
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class RecipeImporter:
@@ -50,38 +54,96 @@ class ChefkochImporter(RecipeImporter):
     
     def import_recipe(self, url: str) -> Dict:
         """Import recipe from Chefkoch.de"""
+        logger.info("=" * 80)
+        logger.info(f"RECIPE IMPORT STARTED: {url}")
+        logger.info("=" * 80)
+        
         try:
             # Fetch the page
+            logger.info("Fetching recipe page...")
             response = requests.get(url, headers=self.headers, timeout=10)
             response.raise_for_status()
+            logger.info(f"✓ Page fetched successfully (status: {response.status_code})")
             
+            logger.info("Parsing HTML content...")
             soup = BeautifulSoup(response.content, 'lxml')
+            logger.info("✓ HTML parsed successfully")
             
             # Extract recipe data
+            logger.info("Extracting recipe data...")
+            
+            title = self._extract_title(soup)
+            logger.debug(f"  Title: {title}")
+            
+            description = self._extract_description(soup)
+            logger.debug(f"  Description: {description[:100] if description else 'None'}...")
+            
+            prep_time = self._extract_prep_time(soup)
+            logger.debug(f"  Prep time: {prep_time} min")
+            
+            cook_time = self._extract_cook_time(soup)
+            logger.debug(f"  Cook time: {cook_time} min")
+            
+            servings = self._extract_servings(soup)
+            logger.debug(f"  Servings: {servings}")
+            
+            difficulty = self._extract_difficulty(soup)
+            logger.debug(f"  Difficulty: {difficulty}")
+            
+            ingredients = self._extract_ingredients(soup)
+            logger.info(f"  ✓ Extracted {len(ingredients)} ingredients")
+            for i, ing in enumerate(ingredients[:3], 1):
+                logger.debug(f"    {i}. {ing['amount']} {ing['name']}")
+            if len(ingredients) > 3:
+                logger.debug(f"    ... and {len(ingredients) - 3} more")
+            
+            steps = self._extract_steps(soup)
+            logger.info(f"  ✓ Extracted {len(steps)} preparation steps")
+            for i, step in enumerate(steps[:2], 1):
+                logger.debug(f"    Step {i}: {step[:80]}...")
+            if len(steps) > 2:
+                logger.debug(f"    ... and {len(steps) - 2} more steps")
+            
+            image_url = self._extract_image_url(soup)
+            logger.debug(f"  Image URL: {image_url}")
+            
+            categories = self._extract_categories(soup)
+            logger.debug(f"  Categories: {', '.join(categories) if categories else 'None'}")
+            
             recipe_data = {
-                'title': self._extract_title(soup),
-                'description': self._extract_description(soup),
-                'prep_time': self._extract_prep_time(soup),
-                'cook_time': self._extract_cook_time(soup),
-                'servings': self._extract_servings(soup),
-                'difficulty': self._extract_difficulty(soup),
-                'ingredients': self._extract_ingredients(soup),
-                'steps': self._extract_steps(soup),
-                'image_url': self._extract_image_url(soup),
+                'title': title,
+                'description': description,
+                'prep_time': prep_time,
+                'cook_time': cook_time,
+                'servings': servings,
+                'difficulty': difficulty,
+                'ingredients': ingredients,
+                'steps': steps,
+                'image_url': image_url,
                 'source_url': url,
-                'categories': self._extract_categories(soup)
+                'categories': categories
             }
             
             # Download image if available
             if recipe_data['image_url']:
+                logger.info("Downloading recipe image...")
                 image_data = self._download_image(recipe_data['image_url'])
                 if image_data:
                     recipe_data['image_data'] = image_data[0]
                     recipe_data['image_content_type'] = image_data[1]
+                    logger.info(f"✓ Image downloaded ({len(image_data[0])} bytes)")
+                else:
+                    logger.warning("✗ Failed to download image")
             
+            logger.info("=" * 80)
+            logger.info("✓ RECIPE IMPORT COMPLETED SUCCESSFULLY")
+            logger.info("=" * 80)
             return recipe_data
             
         except Exception as e:
+            logger.error("=" * 80)
+            logger.error(f"✗ RECIPE IMPORT FAILED: {str(e)}")
+            logger.error("=" * 80)
             raise Exception(f"Failed to import recipe from Chefkoch.de: {str(e)}")
     
     def _extract_title(self, soup: BeautifulSoup) -> str:
