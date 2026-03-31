@@ -268,39 +268,22 @@ class ChefkochImporter(RecipeImporter):
         return ingredients
     
     def _extract_steps(self, soup: BeautifulSoup) -> List[str]:
-        """Extract preparation steps from elements with id='step1', 'step2', etc."""
+        """Extract preparation steps from elements with class 'instruction__text'"""
         steps = []
         
-        logger.debug("Searching for preparation steps...")
+        logger.debug("Searching for preparation steps with class 'instruction__text'...")
         
-        # Find all elements with id matching "stepN" pattern (step1, step2, step3, etc.)
-        step_number = 1
-        while True:
-            step_elem = soup.find(id=f'step{step_number}')
-            if not step_elem:
-                logger.debug(f"No more steps found after step{step_number - 1}")
-                break
-            
-            logger.debug(f"Found element with id='step{step_number}'")
-            
-            # Each step contains two <span> elements:
-            # - First span: step number (ignore)
-            # - Second span: step text (extract this)
-            spans = step_elem.find_all('span', recursive=False)
-            logger.debug(f"  Found {len(spans)} direct span children")
-            
-            if len(spans) >= 2:
-                # Get text from second span (index 1)
-                step_text = spans[1].get_text(strip=True)
-                if step_text and len(step_text) > 10:
-                    steps.append(step_text)
-                    logger.debug(f"  Step {step_number}: {step_text[:80]}...")
-                else:
-                    logger.warning(f"  Step {step_number} text too short or empty: '{step_text}'")
+        # Find all elements with class "instruction__text"
+        instruction_elements = soup.find_all(class_='instruction__text')
+        logger.debug(f"Found {len(instruction_elements)} elements with class 'instruction__text'")
+        
+        for idx, elem in enumerate(instruction_elements, 1):
+            step_text = elem.get_text(strip=True)
+            if step_text and len(step_text) > 10:
+                steps.append(step_text)
+                logger.debug(f"  Step {idx}: {step_text[:80]}...")
             else:
-                logger.warning(f"  Step {step_number} does not have 2 span elements (found {len(spans)})")
-            
-            step_number += 1
+                logger.warning(f"  Step {idx} text too short or empty: '{step_text}'")
         
         logger.info(f"Total steps extracted: {len(steps)}")
         return steps
