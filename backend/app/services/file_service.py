@@ -149,8 +149,8 @@ class FileService:
                 await self._create_thumbnail(filepath, category)
                 logger.info("✓ Thumbnail created")
             
-            # Return relative path for database storage
-            relative_path = os.path.join(category, filename)
+            # Return relative path for database storage (with /uploads/ prefix for URL construction)
+            relative_path = os.path.join("/uploads", category, filename)
             logger.info(f"=== UPLOAD COMPLETE: {relative_path} ===")
             return filename, relative_path
             
@@ -342,8 +342,8 @@ class FileService:
                 await self._create_thumbnail(filepath, category)
                 logger.info("✓ Thumbnail created")
             
-            # Return relative path for database storage
-            relative_path = os.path.join(category, filename)
+            # Return relative path for database storage (with /uploads/ prefix for URL construction)
+            relative_path = os.path.join("/uploads", category, filename)
             logger.info(f"=== SAVE IMAGE DATA COMPLETE: {relative_path} ===")
             return relative_path
             
