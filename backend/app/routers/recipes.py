@@ -213,10 +213,11 @@ def get_recipe(recipe_id: int, db: Session = Depends(get_db)):
     return recipe
 
 
-@router.put("/recipes/{recipe_id}", response_model=RecipeResponse)
-def update_recipe(recipe_id: int, recipe_update: RecipeUpdate, db: Session = Depends(get_db)):
+@router.put("/recipes/{recipe_id}", response_model=RecipeDetailResponse)
+def update_recipe(recipe_id: int, recipe_update: RecipeCreate, db: Session = Depends(get_db)):
     """
-    Update a recipe's basic information.
+    Update a recipe with all its details (basic info, categories, ingredients, and steps).
+    This replaces all ingredients and steps with the provided data.
     """
     db_recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
     if not db_recipe:
@@ -225,10 +226,81 @@ def update_recipe(recipe_id: int, recipe_update: RecipeUpdate, db: Session = Dep
             detail=f"Recipe with id {recipe_id} not found"
         )
     
-    # Update fields
-    update_data = recipe_update.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_recipe, field, value)
+    # Update basic fields
+    db_recipe.name = recipe_update.name
+    db_recipe.description = recipe_update.description
+    if hasattr(recipe_update, 'preparation_time'):
+        db_recipe.preparation_time = recipe_update.preparation_time
+    if hasattr(recipe_update, 'cooking_time'):
+        db_recipe.cooking_time = recipe_update.cooking_time
+    
+    # Update categories - delete old and add new
+    db.query(RecipeCategory).filter(RecipeCategory.recipe_id == recipe_id).delete()
+    for category_name in recipe_update.categories:
+        db_category = RecipeCategory(
+            recipe_id=recipe_id,
+            category_name=category_name
+        )
+        db.add(db_category)
+    
+    # Update ingredients - delete old and add new
+    db.query(RecipeIngredient).filter(RecipeIngredient.recipe_id == recipe_id).delete()
+    for ingredient in recipe_update.ingredients:
+        db_ingredient = RecipeIngredient(
+            recipe_id=recipe_id,
+            name=ingredient.name,
+            description=ingredient.description,
+            amount=ingredient.amount,
+            unit=ingredient.unit,
+            order_index=ingredient.order_index
+        )
+        db.add(db_ingredient)
+    
+    # Update steps - delete old and add new
+    # First, delete step references
+    db.query(StepIngredientRef).filter(
+        StepIngredientRef.step_id.in_(
+            db.query(RecipeStep.id).filter(RecipeStep.recipe_id == recipe_id)
+        )
+    ).delete(synchronize_session=False)
+    
+    db.query(StepStorageRef).filter(
+        StepStorageRef.step_id.in_(
+            db.query(RecipeStep.id).filter(RecipeStep.recipe_id == recipe_id)
+        )
+    ).delete(synchronize_session=False)
+    
+    # Delete steps
+    db.query(RecipeStep).filter(RecipeStep.recipe_id == recipe_id).delete()
+    
+    # Add new steps
+    for step in recipe_update.steps:
+        db_step = RecipeStep(
+            recipe_id=recipe_id,
+            step_number=step.step_number,
+            content=step.content,
+            step_image_id=step.step_image_id if hasattr(step, 'step_image_id') else None
+        )
+        db.add(db_step)
+        db.flush()
+        
+        # Add ingredient references if provided
+        if hasattr(step, 'ingredient_ids') and step.ingredient_ids:
+            for ingredient_id in step.ingredient_ids:
+                db_ref = StepIngredientRef(
+                    step_id=db_step.id,
+                    ingredient_id=ingredient_id
+                )
+                db.add(db_ref)
+        
+        # Add storage references if provided
+        if hasattr(step, 'storage_item_ids') and step.storage_item_ids:
+            for storage_id in step.storage_item_ids:
+                db_ref = StepStorageRef(
+                    step_id=db_step.id,
+                    storage_item_id=storage_id
+                )
+                db.add(db_ref)
     
     db.commit()
     db.refresh(db_recipe)
