@@ -85,16 +85,18 @@ class ChefkochImporter(RecipeImporter):
             raise Exception(f"Failed to import recipe from Chefkoch.de: {str(e)}")
     
     def _extract_title(self, soup: BeautifulSoup) -> str:
-        """Extract recipe title"""
-        # Try h1 tag first
+        """Extract recipe title from header section"""
+        # Look for h1 in header
+        header = soup.find('header')
+        if header:
+            title_tag = header.find('h1')
+            if title_tag:
+                return title_tag.get_text(strip=True)
+        
+        # Fallback to any h1
         title_tag = soup.find('h1')
         if title_tag:
             return title_tag.get_text(strip=True)
-        
-        # Try meta og:title
-        meta_title = soup.find('meta', property='og:title')
-        if meta_title:
-            return meta_title.get('content', '')
         
         return "Imported Recipe"
     
@@ -113,26 +115,41 @@ class ChefkochImporter(RecipeImporter):
         return ""
     
     def _extract_prep_time(self, soup: BeautifulSoup) -> Optional[int]:
-        """Extract preparation time in minutes"""
-        # Look for time elements or specific classes
-        time_elements = soup.find_all(['time', 'span'], class_=re.compile(r'time|arbeitszeit', re.I))
-        for elem in time_elements:
-            text = elem.get_text(strip=True).lower()
-            # Extract minutes from text like "5 Min." or "15 Minuten"
-            match = re.search(r'(\d+)\s*min', text)
-            if match:
-                return int(match.group(1))
+        """Extract preparation time (Arbeitszeit) in minutes"""
+        # Look for ds-preparation-times section
+        prep_times = soup.find('div', class_='ds-preparation-times')
+        if prep_times:
+            # Find Arbeitszeit
+            for elem in prep_times.find_all(['span', 'div', 'time']):
+                text = elem.get_text(strip=True)
+                if 'arbeitszeit' in text.lower():
+                    # Look for time in this element or next sibling
+                    match = re.search(r'(\d+)\s*(?:min|std)', text, re.I)
+                    if match:
+                        time_val = int(match.group(1))
+                        # Check if it's hours (Std.)
+                        if 'std' in text.lower():
+                            return time_val * 60
+                        return time_val
         return None
     
     def _extract_cook_time(self, soup: BeautifulSoup) -> Optional[int]:
-        """Extract cooking time in minutes"""
-        # Look for cooking time
-        time_elements = soup.find_all(['time', 'span'], class_=re.compile(r'koch|gar', re.I))
-        for elem in time_elements:
-            text = elem.get_text(strip=True).lower()
-            match = re.search(r'(\d+)\s*min', text)
-            if match:
-                return int(match.group(1))
+        """Extract cooking/baking time (Koch-/Backzeit) in minutes"""
+        # Look for ds-preparation-times section
+        prep_times = soup.find('div', class_='ds-preparation-times')
+        if prep_times:
+            # Find Koch-/Backzeit
+            for elem in prep_times.find_all(['span', 'div', 'time']):
+                text = elem.get_text(strip=True)
+                if 'koch' in text.lower() or 'back' in text.lower():
+                    # Look for time in this element or next sibling
+                    match = re.search(r'(\d+)\s*(?:min|std)', text, re.I)
+                    if match:
+                        time_val = int(match.group(1))
+                        # Check if it's hours (Std.)
+                        if 'std' in text.lower():
+                            return time_val * 60
+                        return time_val
         return None
     
     def _extract_servings(self, soup: BeautifulSoup) -> Optional[int]:
@@ -161,62 +178,67 @@ class ChefkochImporter(RecipeImporter):
         return 'medium'
     
     def _extract_ingredients(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
-        """Extract ingredients list"""
+        """Extract ingredients from ds-ingredients-table"""
         ingredients = []
         
-        # Look for ingredient table or list
-        ingredient_container = soup.find(['table', 'div', 'ul'], class_=re.compile(r'ingredient', re.I))
+        # Look for ds-ingredients-table
+        ingredient_table = soup.find('table', class_='ds-ingredients-table')
         
-        if ingredient_container:
-            # Try to find rows or list items
-            items = ingredient_container.find_all(['tr', 'li', 'div'], class_=re.compile(r'ingredient', re.I))
+        if ingredient_table:
+            # Find all rows
+            rows = ingredient_table.find_all('tr')
             
-            for item in items:
-                # Extract amount and name
-                amount_elem = item.find(['td', 'span'], class_=re.compile(r'amount|menge', re.I))
-                name_elem = item.find(['td', 'span'], class_=re.compile(r'name|zutat', re.I))
-                
-                amount = amount_elem.get_text(strip=True) if amount_elem else ""
-                name = name_elem.get_text(strip=True) if name_elem else item.get_text(strip=True)
-                
-                if name:
-                    ingredients.append({
-                        'amount': amount,
-                        'name': name
-                    })
+            for row in rows:
+                # Get both columns
+                cols = row.find_all('td')
+                if len(cols) >= 2:
+                    # First column: amount and unit (separated by space)
+                    amount_text = cols[0].get_text(strip=True)
+                    # Second column: ingredient name
+                    name_text = cols[1].get_text(strip=True)
+                    
+                    if name_text:  # Only add if we have a name
+                        ingredients.append({
+                            'amount': amount_text,
+                            'name': name_text
+                        })
         
         return ingredients
     
     def _extract_steps(self, soup: BeautifulSoup) -> List[str]:
-        """Extract preparation steps"""
+        """Extract preparation steps from step-X divs"""
         steps = []
         
-        # Look for instructions/steps container
-        steps_container = soup.find(['div', 'ol'], class_=re.compile(r'instruction|preparation|zubereitung|anleitung', re.I))
+        # Find the Zubereitung section
+        zubereitung_h2 = soup.find('h2', string=re.compile(r'zubereitung', re.I))
         
-        if steps_container:
-            # Try ordered list first
-            step_items = steps_container.find_all(['li', 'p', 'div'], recursive=True)
+        if zubereitung_h2:
+            # Find all step divs (id starts with "step-")
+            step_divs = soup.find_all('div', id=re.compile(r'^step-\d+$'))
             
-            for idx, item in enumerate(step_items, 1):
-                text = item.get_text(strip=True)
-                # Filter out very short texts (likely not actual steps)
-                if text and len(text) > 10:
-                    steps.append(text)
+            for step_div in step_divs:
+                # Find instruction__text element
+                instruction = step_div.find(class_='instruction__text')
+                if instruction:
+                    text = instruction.get_text(strip=True)
+                    if text and len(text) > 10:
+                        steps.append(text)
         
         return steps
     
     def _extract_image_url(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extract main recipe image URL"""
-        # Try og:image first
+        """Extract main recipe image URL from header"""
+        # Look in header first
+        header = soup.find('header')
+        if header:
+            img = header.find('img')
+            if img:
+                return img.get('src') or img.get('data-src')
+        
+        # Try og:image as fallback
         og_image = soup.find('meta', property='og:image')
         if og_image:
             return og_image.get('content')
-        
-        # Try to find main recipe image
-        img = soup.find('img', class_=re.compile(r'recipe|main|hero', re.I))
-        if img:
-            return img.get('src') or img.get('data-src')
         
         return None
     
