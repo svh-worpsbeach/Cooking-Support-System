@@ -189,6 +189,37 @@ export interface ToolWishlistCreate {
   priority?: number;
 }
 
+// Guest types
+export interface Guest {
+  id: number;
+  name: string;
+  email?: string;
+  phone?: string;
+  address_street?: string;
+  address_city?: string;
+  address_postal_code?: string;
+  address_country?: string;
+  intolerances?: string;
+  favorites?: string;
+  dietary_notes?: string;
+  image_path?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GuestCreate {
+  name: string;
+  email?: string;
+  phone?: string;
+  address_street?: string;
+  address_city?: string;
+  address_postal_code?: string;
+  address_country?: string;
+  intolerances?: string;
+  favorites?: string;
+  dietary_notes?: string;
+}
+
 // Storage types
 export interface StorageItem {
   id: number;

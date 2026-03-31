@@ -22,6 +22,7 @@ class Event(Base):
     participants = relationship("EventParticipant", back_populates="event", cascade="all, delete-orphan")
     courses = relationship("EventCourse", back_populates="event", cascade="all, delete-orphan")
     shopping_list = relationship("ShoppingList", back_populates="event", uselist=False, cascade="all, delete-orphan")
+    guests = relationship("Guest", secondary="event_guests", back_populates="events")
 
     def __repr__(self):
         return f"<Event(id={self.id}, name='{self.name}')>"

@@ -91,6 +91,7 @@ app.add_middleware(
 os.makedirs("uploads/recipes", exist_ok=True)
 os.makedirs("uploads/tools", exist_ok=True)
 os.makedirs("uploads/locations", exist_ok=True)
+os.makedirs("uploads/guests", exist_ok=True)
 
 # Mount static files for images under /api/uploads to match frontend URLs
 app.mount("/api/uploads", StaticFiles(directory="uploads"), name="uploads")
@@ -117,13 +118,14 @@ async def health_check():
 
 
 # Include routers
-from app.routers import locations, recipes, events, tools, storage, admin
+from app.routers import locations, recipes, events, tools, storage, admin, guests
 
 app.include_router(locations.router, prefix="/api", tags=["locations"])
 app.include_router(recipes.router, prefix="/api", tags=["recipes"])
 app.include_router(events.router, prefix="/api", tags=["events"])
 app.include_router(tools.router, prefix="/api", tags=["tools"])
 app.include_router(storage.router, prefix="/api", tags=["storage"])
+app.include_router(guests.router, prefix="/api", tags=["guests"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 
 # Made with Bob

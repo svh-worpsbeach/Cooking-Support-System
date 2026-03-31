@@ -22,6 +22,7 @@ from app.models.event import (
 )
 from app.models.tool import CookingTool, ToolWishlist
 from app.models.storage import StorageItem
+from app.models.guest import Guest, event_guests
 
 __all__ = [
     "Location",
@@ -41,6 +42,8 @@ __all__ = [
     "CookingTool",
     "ToolWishlist",
     "StorageItem",
+    "Guest",
+    "event_guests",
 ]
 
 # Made with Bob

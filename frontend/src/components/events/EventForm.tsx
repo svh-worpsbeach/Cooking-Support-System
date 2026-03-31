@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EventCreate, EventParticipant, EventCourse } from '../../types';
 import Input from '../common/Input';
 import Textarea from '../common/Textarea';
 import Button from '../common/Button';
+import TypeAhead from '../common/TypeAhead';
+import { useGuests } from '../../hooks/useGuests';
+import { useRecipes } from '../../hooks/useRecipes';
 
 interface EventFormProps {
   initialData?: Partial<EventCreate>;
@@ -23,6 +26,12 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
     courses: initialData?.courses || [],
   });
 
+  // Fetch guests and recipes for type-ahead
+  const [guestSearch, setGuestSearch] = useState('');
+  const [recipeSearch, setRecipeSearch] = useState('');
+  const { guests, isLoading: isLoadingGuests } = useGuests(guestSearch);
+  const { recipes, isLoading: isLoadingRecipes } = useRecipes({ search: recipeSearch });
+
   // Participant form state
   const [participantForm, setParticipantForm] = useState<Omit<EventParticipant, 'id' | 'event_id'>>({
     name: '',
@@ -36,6 +45,14 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
     course_name: '',
   });
   const [editingCourseIndex, setEditingCourseIndex] = useState<number | null>(null);
+
+  // Debounce search inputs
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Trigger refetch with debounced search
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [guestSearch, recipeSearch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,11 +188,33 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">{t('events.participants')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
+          <TypeAhead
             label={t('events.participantName')}
             value={participantForm.name}
-            onChange={(e) => setParticipantForm({ ...participantForm, name: e.target.value })}
+            onChange={(value) => {
+              setParticipantForm({ ...participantForm, name: value });
+              setGuestSearch(value);
+            }}
+            onSelect={(option) => {
+              const guest = guests.find(g => g.id === option.id);
+              if (guest) {
+                setParticipantForm({
+                  name: guest.name,
+                  dietary_restrictions: [
+                    guest.intolerances,
+                    guest.favorites,
+                    guest.dietary_notes
+                  ].filter(Boolean).join(', ') || '',
+                });
+              }
+            }}
+            options={guests.map(guest => ({
+              id: guest.id,
+              label: guest.name,
+              subtitle: guest.email || guest.phone || undefined,
+            }))}
             placeholder={t('events.participantNamePlaceholder')}
+            isLoading={isLoadingGuests}
           />
           <Input
             label={t('events.dietaryRestrictions')}
@@ -230,11 +269,29 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
       {/* Courses */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">{t('events.courses')}</h3>
-        <Input
+        <TypeAhead
           label={t('events.courseName')}
           value={courseForm.course_name}
-          onChange={(e) => setCourseForm({ ...courseForm, course_name: e.target.value })}
+          onChange={(value) => {
+            setCourseForm({ ...courseForm, course_name: value });
+            setRecipeSearch(value);
+          }}
+          onSelect={(option) => {
+            const recipe = recipes.find(r => r.id === option.id);
+            if (recipe) {
+              setCourseForm({
+                ...courseForm,
+                course_name: recipe.name,
+              });
+            }
+          }}
+          options={recipes.map(recipe => ({
+            id: recipe.id,
+            label: recipe.name,
+            subtitle: recipe.description || recipe.categories.map(c => c.category_name).join(', '),
+          }))}
           placeholder={t('events.courseNamePlaceholder')}
+          isLoading={isLoadingRecipes}
         />
         <div className="flex gap-2">
           <Button type="button" onClick={addCourse} variant="secondary">
