@@ -271,21 +271,52 @@ class ChefkochImporter(RecipeImporter):
         """Extract preparation steps from step-X divs"""
         steps = []
         
-        # Find the Zubereitung section
-        zubereitung_h2 = soup.find('h2', string=re.compile(r'zubereitung', re.I))
+        logger.debug("Searching for preparation steps...")
         
-        if zubereitung_h2:
-            # Find all step divs (id starts with "step-")
-            step_divs = soup.find_all('div', id=re.compile(r'^step-\d+$'))
-            
-            for step_div in step_divs:
-                # Find instruction__text element
-                instruction = step_div.find(class_='instruction__text')
+        # Strategy 1: Find step divs with id="step-X"
+        step_divs = soup.find_all('div', id=re.compile(r'^step-\d+$'))
+        logger.debug(f"Found {len(step_divs)} divs with id='step-X'")
+        
+        if step_divs:
+            for idx, step_div in enumerate(step_divs, 1):
+                # Try multiple selectors for instruction text
+                instruction = (
+                    step_div.find(class_='instruction__text') or
+                    step_div.find(class_='ds-recipe-meta__info') or
+                    step_div.find('p') or
+                    step_div
+                )
+                
                 if instruction:
                     text = instruction.get_text(strip=True)
                     if text and len(text) > 10:
                         steps.append(text)
+                        logger.debug(f"  Step {idx}: {text[:80]}...")
         
+        # Strategy 2: If no steps found, look for ordered list
+        if not steps:
+            logger.debug("No step divs found, trying ordered list...")
+            ol = soup.find('ol', class_=re.compile(r'instruction|preparation|recipe-steps', re.I))
+            if ol:
+                for idx, li in enumerate(ol.find_all('li'), 1):
+                    text = li.get_text(strip=True)
+                    if text and len(text) > 10:
+                        steps.append(text)
+                        logger.debug(f"  Step {idx}: {text[:80]}...")
+        
+        # Strategy 3: Look for any div with instruction-related classes
+        if not steps:
+            logger.debug("No ordered list found, trying instruction divs...")
+            instruction_divs = soup.find_all('div', class_=re.compile(r'instruction|step|preparation', re.I))
+            logger.debug(f"Found {len(instruction_divs)} instruction-related divs")
+            
+            for idx, div in enumerate(instruction_divs, 1):
+                text = div.get_text(strip=True)
+                if text and len(text) > 20 and len(text) < 1000:  # Reasonable step length
+                    steps.append(text)
+                    logger.debug(f"  Step {idx}: {text[:80]}...")
+        
+        logger.debug(f"Total steps extracted: {len(steps)}")
         return steps
     
     def _extract_image_url(self, soup: BeautifulSoup) -> Optional[str]:
