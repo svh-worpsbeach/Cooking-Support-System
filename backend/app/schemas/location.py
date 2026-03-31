@@ -8,6 +8,7 @@ class LocationBase(BaseModel):
     """Base schema for Location."""
     name: str = Field(..., min_length=1, max_length=255, description="Location name")
     description: Optional[str] = Field(None, description="Location description")
+    image_path: Optional[str] = Field(None, description="Path to location image")
 
 
 class LocationCreate(LocationBase):
@@ -28,6 +29,11 @@ class LocationResponse(LocationBase):
     updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class LocationImageUpdate(BaseModel):
+    """Schema for updating location image."""
+    image_path: str = Field(..., description="Path to the uploaded image")
 
 
 # Made with Bob

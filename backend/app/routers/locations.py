@@ -2,11 +2,12 @@
 Location router for managing physical locations.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import get_db
+from app.services.file_service import file_service
 from app.models.location import Location
 from app.schemas.location import LocationCreate, LocationUpdate, LocationResponse
 
@@ -99,7 +100,73 @@ def delete_location(location_id: int, db: Session = Depends(get_db)):
             detail=f"Location with id {location_id} not found"
         )
     
+    # Delete image if exists
+    if db_location.image_path:
+        file_service.delete_file(db_location.image_path, "locations")
+    
     db.delete(db_location)
+    db.commit()
+    return None
+
+
+@router.post("/locations/{location_id}/image", response_model=LocationResponse)
+async def upload_location_image(
+    location_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload an image for a location with automatic thumbnail generation.
+    """
+    # Verify location exists
+    location = db.query(Location).filter(Location.id == location_id).first()
+    if not location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Location with id {location_id} not found"
+        )
+    
+    # Delete old image if exists
+    if location.image_path:
+        file_service.delete_file(location.image_path, "locations")
+    
+    # Save file using file service
+    filename, filepath = await file_service.save_upload(
+        file=file,
+        category="locations",
+        create_thumbnail=True
+    )
+    
+    # Update location record
+    location.image_path = filepath
+    db.commit()
+    db.refresh(location)
+    return location
+
+
+@router.delete("/locations/{location_id}/image", status_code=status.HTTP_204_NO_CONTENT)
+def delete_location_image(location_id: int, db: Session = Depends(get_db)):
+    """
+    Delete a location's image.
+    """
+    location = db.query(Location).filter(Location.id == location_id).first()
+    if not location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Location with id {location_id} not found"
+        )
+    
+    if not location.image_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Location has no image"
+        )
+    
+    # Delete image using file service (handles both image and thumbnail)
+    file_service.delete_file(location.image_path, "locations")
+    
+    # Update location record
+    location.image_path = None
     db.commit()
     return None
 
