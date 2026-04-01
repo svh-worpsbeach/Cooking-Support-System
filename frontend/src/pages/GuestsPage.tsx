@@ -10,21 +10,31 @@ import type { Guest, GuestCreate } from '../types';
 
 export default function GuestsPage() {
   const { t } = useTranslation();
-  const { guests, isLoading, error, createGuest, updateGuest, deleteGuest } = useGuests();
+  const { guests, isLoading, error, createGuest, updateGuest, deleteGuest } = useGuests('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [deletingGuestId, setDeletingGuestId] = useState<number | null>(null);
 
   const handleCreateGuest = async (data: GuestCreate) => {
-    await createGuest(data);
-    setIsModalOpen(false);
+    try {
+      await createGuest(data);
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Failed to create guest:', err);
+      alert(t('errors.saveFailed'));
+    }
   };
 
   const handleUpdateGuest = async (data: GuestCreate) => {
     if (editingGuest) {
-      await updateGuest(editingGuest.id, data);
-      setEditingGuest(null);
-      setIsModalOpen(false);
+      try {
+        await updateGuest(editingGuest.id, data);
+        setEditingGuest(null);
+        setIsModalOpen(false);
+      } catch (err) {
+        console.error('Failed to update guest:', err);
+        alert(t('errors.saveFailed'));
+      }
     }
   };
 
