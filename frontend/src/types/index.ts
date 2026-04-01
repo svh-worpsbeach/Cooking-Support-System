@@ -192,13 +192,14 @@ export interface ToolWishlistCreate {
 // Guest types
 export interface Guest {
   id: number;
-  name: string;
+  first_name: string;
+  last_name: string;
   email?: string;
   phone?: string;
-  address_street?: string;
-  address_city?: string;
-  address_postal_code?: string;
-  address_country?: string;
+  street?: string;
+  city?: string;
+  postal_code?: string;
+  country?: string;
   intolerances?: string;
   favorites?: string;
   dietary_notes?: string;
@@ -208,13 +209,14 @@ export interface Guest {
 }
 
 export interface GuestCreate {
-  name: string;
+  first_name: string;
+  last_name: string;
   email?: string;
   phone?: string;
-  address_street?: string;
-  address_city?: string;
-  address_postal_code?: string;
-  address_country?: string;
+  street?: string;
+  city?: string;
+  postal_code?: string;
+  country?: string;
   intolerances?: string;
   favorites?: string;
   dietary_notes?: string;

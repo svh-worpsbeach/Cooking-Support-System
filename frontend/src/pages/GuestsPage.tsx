@@ -92,7 +92,7 @@ export default function GuestsPage() {
             <Card key={guest.id}>
               <div className="flex items-start justify-between mb-3">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {guest.name}
+                  {guest.first_name} {guest.last_name}
                 </h3>
                 <div className="flex gap-2">
                   <button
@@ -124,11 +124,11 @@ export default function GuestsPage() {
                     <span>{guest.phone}</span>
                   </div>
                 )}
-                {(guest.address_city || guest.address_country) && (
+                {(guest.city || guest.country) && (
                   <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                     <span>📍</span>
                     <span>
-                      {[guest.address_city, guest.address_country].filter(Boolean).join(', ')}
+                      {[guest.city, guest.country].filter(Boolean).join(', ')}
                     </span>
                   </div>
                 )}
