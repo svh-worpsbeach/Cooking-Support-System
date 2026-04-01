@@ -164,7 +164,7 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg">Event Information</h3>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Event Information</h2>
         <Input
           label="Event Name"
           value={formData.name}
@@ -195,7 +195,7 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
 
       {/* Guest Management Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg">{t('events.guestManagement')}</h3>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('events.guestManagement')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label={t('events.participantName')}
@@ -258,7 +258,7 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Participants List */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg">{t('events.participants')}</h3>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('events.participants')}</h2>
           <div className="space-y-2">
             {formData.participants?.map((participant, index) => (
               <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded">
@@ -294,7 +294,7 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
 
         {/* Courses List */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg">{t('events.courses')}</h3>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('events.courses')}</h2>
           <Input
             label={t('events.courseName')}
             value={courseForm.course_name}
