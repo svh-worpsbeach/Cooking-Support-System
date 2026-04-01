@@ -34,7 +34,7 @@ export default function ToolForm({ initialData, onSubmit, onCancel }: ToolFormPr
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Tool Information</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Tool Information</h3>
         <Input
           label="Tool Name"
           value={formData.name}

@@ -35,7 +35,7 @@ export default function StorageForm({ initialData, onSubmit, onCancel }: Storage
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Storage Item Information</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Storage Item Information</h3>
         <Input
           label="Item Name"
           value={formData.name}

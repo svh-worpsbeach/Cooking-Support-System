@@ -241,7 +241,7 @@ export default function EventDetailPage() {
 
       {/* Event Details */}
       <Card>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('events.eventDetails')}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('events.eventDetails')}</h2>
         <div className="space-y-3">
           {isEditMode ? (
             <>
@@ -293,7 +293,7 @@ export default function EventDetailPage() {
       {/* Participants */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {t('events.participants')} ({isEditMode ? (editData.participants || []).length : event.participants?.length || 0})
           </h2>
           {isEditMode && (
@@ -364,7 +364,7 @@ export default function EventDetailPage() {
       {/* Courses */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {t('events.menu')} ({isEditMode ? (editData.courses || []).length : event.courses?.length || 0} {t('events.courses')})
           </h2>
           {isEditMode && (

@@ -139,7 +139,7 @@ export default function TypeAhead({
                   index === highlightedIndex ? 'bg-gray-100' : ''
                 }`}
               >
-                <div className="font-medium text-gray-900">{option.label}</div>
+                <div className="font-medium text-gray-900 dark:text-gray-100">{option.label}</div>
                 {option.subtitle && (
                   <div className="text-sm text-gray-500">{option.subtitle}</div>
                 )}

@@ -188,7 +188,7 @@ export default function LocationDetailPage() {
 
       {/* Location Details */}
       <Card>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('locations.details')}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('locations.details')}</h2>
         <div className="space-y-4">
           <div className="flex items-start gap-3">
             <span className="text-2xl">📅</span>
@@ -224,7 +224,7 @@ export default function LocationDetailPage() {
       {/* Tools at this Location */}
       {locationTools.length > 0 && (
         <Card>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             {t('locations.tools')} ({locationTools.length})
           </h2>
           <div className="space-y-2">
@@ -260,7 +260,7 @@ export default function LocationDetailPage() {
       {/* Storage Items at this Location */}
       {locationStorage.length > 0 && (
         <Card>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             {t('locations.storageItems')} ({locationStorage.length})
           </h2>
           <div className="space-y-2">

@@ -229,7 +229,7 @@ export default function StorageDetailPage() {
 
       {/* Item Details */}
       <Card>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('storage.details')}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('storage.details')}</h2>
         <div className="space-y-4">
           {isEditMode ? (
             <>

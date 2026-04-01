@@ -343,7 +343,7 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
                 )}
               </div>
               <div className="flex-1">
-                <div className="font-medium text-gray-900">{ingredient.name}</div>
+                <div className="font-medium text-gray-900 dark:text-gray-100">{ingredient.name}</div>
                 {ingredient.description && (
                   <p className="text-sm text-gray-500 mt-1">
                     {ingredient.description}
