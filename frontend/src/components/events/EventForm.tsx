@@ -165,7 +165,7 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Event Information</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg">Event Information</h3>
         <Input
           label="Event Name"
           value={formData.name}
@@ -194,37 +194,18 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
         />
       </div>
 
-      {/* Participants */}
+      {/* Guest Management Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('events.participants')}</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg">{t('events.guestManagement')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TypeAhead
+          <Input
             label={t('events.participantName')}
             value={participantForm.name}
-            onChange={(value) => {
-              setParticipantForm({ ...participantForm, name: value });
-              setGuestSearch(value);
+            onChange={(e) => {
+              setParticipantForm({ ...participantForm, name: e.target.value });
+              setGuestSearch(e.target.value);
             }}
-            onSelect={(option) => {
-              const guest = guests.find(g => g.id === option.id);
-              if (guest) {
-                setParticipantForm({
-                  name: guest.name,
-                  dietary_restrictions: [
-                    guest.intolerances,
-                    guest.favorites,
-                    guest.dietary_notes
-                  ].filter(Boolean).join(', ') || '',
-                });
-              }
-            }}
-            options={guests.map(guest => ({
-              id: guest.id,
-              label: guest.name,
-              subtitle: guest.email || guest.phone || undefined,
-            }))}
             placeholder={t('events.participantNamePlaceholder')}
-            isLoading={isLoadingGuests}
           />
           <Input
             label={t('events.dietaryRestrictions')}
@@ -233,6 +214,35 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
             placeholder={t('events.dietaryRestrictionsPlaceholder')}
           />
         </div>
+        {guestSearch && guests.length > 0 && (
+          <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            {guests.map((guest) => (
+              <button
+                key={guest.id}
+                type="button"
+                onClick={() => {
+                  setParticipantForm({
+                    name: guest.name,
+                    dietary_restrictions: [
+                      guest.intolerances,
+                      guest.favorites,
+                      guest.dietary_notes
+                    ].filter(Boolean).join(', ') || '',
+                  });
+                  setGuestSearch('');
+                }}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-200 dark:border-gray-600 last:border-b-0"
+              >
+                <div className="font-medium text-gray-900 dark:text-gray-100">{guest.name}</div>
+                {(guest.email || guest.phone) && (
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {guest.email || guest.phone}
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex gap-2">
           <Button type="button" onClick={addParticipant} variant="secondary">
             {editingParticipantIndex !== null ? t('events.updateParticipant') : t('events.addParticipant')}
@@ -243,101 +253,119 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
             </Button>
           )}
         </div>
-        <div className="space-y-2">
-          {formData.participants?.map((participant, index) => (
-            <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded">
-              <span className="text-2xl">👤</span>
-              <div className="flex-1">
-                <div className="font-medium text-gray-900 dark:text-gray-100">{participant.name}</div>
-                {participant.dietary_restrictions && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    🥗 {participant.dietary_restrictions}
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => editParticipant(index)}
-                  className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
-                >
-                  {t('common.edit')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeParticipant(index)}
-                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
-                >
-                  {t('common.remove')}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
-      {/* Courses */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('events.courses')}</h3>
-        <TypeAhead
-          label={t('events.courseName')}
-          value={courseForm.course_name}
-          onChange={(value) => {
-            setCourseForm({ ...courseForm, course_name: value });
-            setRecipeSearch(value);
-          }}
-          onSelect={(option) => {
-            const recipe = recipes.find(r => r.id === option.id);
-            if (recipe) {
-              setCourseForm({
-                ...courseForm,
-                course_name: recipe.name,
-              });
-            }
-          }}
-          options={recipes.map(recipe => ({
-            id: recipe.id,
-            label: recipe.name,
-            subtitle: recipe.description || recipe.categories.map(c => c.category_name).join(', '),
-          }))}
-          placeholder={t('events.courseNamePlaceholder')}
-          isLoading={isLoadingRecipes}
-        />
-        <div className="flex gap-2">
-          <Button type="button" onClick={addCourse} variant="secondary">
-            {editingCourseIndex !== null ? t('events.updateCourse') : t('events.addCourse')}
-          </Button>
-          {editingCourseIndex !== null && (
-            <Button type="button" onClick={cancelEditCourse} variant="ghost">
-              {t('common.cancelEdit')}
-            </Button>
-          )}
-        </div>
-        <div className="space-y-2">
-          {formData.courses?.map((course, index) => (
-            <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded">
-              <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary-600 dark:bg-primary-500 text-white rounded-full font-medium">
-                {course.course_number}
-              </span>
-              <div className="flex-1 font-medium text-gray-900 dark:text-gray-100">{course.course_name}</div>
-              <div className="flex gap-2 flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => editCourse(index)}
-                  className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
-                >
-                  {t('common.edit')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeCourse(index)}
-                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
-                >
-                  {t('common.remove')}
-                </button>
+      {/* Two-column layout for Participants and Courses */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Participants List */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg">{t('events.participants')}</h3>
+          <div className="space-y-2">
+            {formData.participants?.map((participant, index) => (
+              <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                <span className="text-2xl">👤</span>
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900 dark:text-gray-100">{participant.name}</div>
+                  {participant.dietary_restrictions && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      🥗 {participant.dietary_restrictions}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => editParticipant(index)}
+                    className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
+                  >
+                    {t('common.edit')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeParticipant(index)}
+                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                  >
+                    {t('common.remove')}
+                  </button>
+                </div>
               </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Courses List */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg">{t('events.courses')}</h3>
+          <Input
+            label={t('events.courseName')}
+            value={courseForm.course_name}
+            onChange={(e) => {
+              setCourseForm({ ...courseForm, course_name: e.target.value });
+              setRecipeSearch(e.target.value);
+            }}
+            placeholder={t('events.courseNamePlaceholder')}
+          />
+          {recipeSearch && recipes.length > 0 && (
+            <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              {recipes.map((recipe) => (
+                <button
+                  key={recipe.id}
+                  type="button"
+                  onClick={() => {
+                    setCourseForm({
+                      ...courseForm,
+                      course_name: recipe.name,
+                    });
+                    setRecipeSearch('');
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-200 dark:border-gray-600 last:border-b-0"
+                >
+                  <div className="font-medium text-gray-900 dark:text-gray-100">{recipe.name}</div>
+                  {(recipe.description || recipe.categories.length > 0) && (
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {recipe.description || recipe.categories.map(c => c.category_name).join(', ')}
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
-          ))}
+          )}
+          <div className="flex gap-2">
+            <Button type="button" onClick={addCourse} variant="secondary">
+              {editingCourseIndex !== null ? t('events.updateCourse') : t('events.addCourse')}
+            </Button>
+            {editingCourseIndex !== null && (
+              <Button type="button" onClick={cancelEditCourse} variant="ghost">
+                {t('common.cancelEdit')}
+              </Button>
+            )}
+          </div>
+          <div className="space-y-2">
+            {formData.courses?.map((course, index) => (
+              <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary-600 dark:bg-primary-500 text-white rounded-full font-medium">
+                  {course.course_number}
+                </span>
+                <div className="flex-1 font-medium text-gray-900 dark:text-gray-100">{course.course_name}</div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => editCourse(index)}
+                    className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
+                  >
+                    {t('common.edit')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeCourse(index)}
+                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                  >
+                    {t('common.remove')}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
