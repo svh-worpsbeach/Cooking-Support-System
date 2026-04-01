@@ -29,8 +29,10 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
   // Fetch guests and recipes for type-ahead
   const [guestSearch, setGuestSearch] = useState('');
   const [recipeSearch, setRecipeSearch] = useState('');
-  const { guests, isLoading: isLoadingGuests } = useGuests(guestSearch);
-  const { recipes, isLoading: isLoadingRecipes } = useRecipes({ search: recipeSearch });
+  const [debouncedGuestSearch, setDebouncedGuestSearch] = useState('');
+  const [debouncedRecipeSearch, setDebouncedRecipeSearch] = useState('');
+  const { guests, isLoading: isLoadingGuests } = useGuests(debouncedGuestSearch);
+  const { recipes, isLoading: isLoadingRecipes } = useRecipes({ search: debouncedRecipeSearch });
 
   // Participant form state
   const [participantForm, setParticipantForm] = useState<Omit<EventParticipant, 'id' | 'event_id'>>({
@@ -46,13 +48,21 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
   });
   const [editingCourseIndex, setEditingCourseIndex] = useState<number | null>(null);
 
-  // Debounce search inputs
+  // Debounce guest search
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Trigger refetch with debounced search
+      setDebouncedGuestSearch(guestSearch);
     }, 300);
     return () => clearTimeout(timer);
-  }, [guestSearch, recipeSearch]);
+  }, [guestSearch]);
+
+  // Debounce recipe search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedRecipeSearch(recipeSearch);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [recipeSearch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

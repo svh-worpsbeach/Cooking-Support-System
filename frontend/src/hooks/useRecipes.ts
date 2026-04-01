@@ -54,7 +54,7 @@ export function useRecipes(filters?: RecipeFilters) {
 
   useEffect(() => {
     fetchRecipes();
-  }, []);
+  }, [filters?.search, filters?.categories, filters?.ingredients, filters?.allowSubstitutes, filters?.sortBy]);
 
   const createRecipe = async (data: RecipeCreate) => {
     const response = await api.post<Recipe>('/recipes', data);
