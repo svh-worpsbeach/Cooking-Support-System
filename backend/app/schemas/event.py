@@ -169,6 +169,8 @@ class EventUpdate(BaseModel):
     description: Optional[str] = None
     theme: Optional[str] = Field(None, max_length=255)
     event_date: Optional[datetime] = None
+    participants: Optional[List[EventParticipantCreate]] = Field(None, description="Event participants")
+    courses: Optional[List[EventCourseCreate]] = Field(None, description="Event courses")
 
 
 class EventResponse(EventBase):

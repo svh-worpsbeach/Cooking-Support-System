@@ -108,10 +108,10 @@ def get_event(event_id: int, db: Session = Depends(get_db)):
     return event
 
 
-@router.put("/events/{event_id}", response_model=EventResponse)
+@router.put("/events/{event_id}", response_model=EventDetailResponse)
 def update_event(event_id: int, event_update: EventUpdate, db: Session = Depends(get_db)):
     """
-    Update an event's basic information.
+    Update an event's basic information, participants, and courses.
     """
     db_event = db.query(Event).filter(Event.id == event_id).first()
     if not db_event:
@@ -120,10 +120,45 @@ def update_event(event_id: int, event_update: EventUpdate, db: Session = Depends
             detail=f"Event with id {event_id} not found"
         )
     
-    # Update fields
-    update_data = event_update.model_dump(exclude_unset=True)
+    # Update basic fields
+    update_data = event_update.model_dump(exclude_unset=True, exclude={'participants', 'courses'})
     for field, value in update_data.items():
         setattr(db_event, field, value)
+    
+    # Update participants if provided
+    if event_update.participants is not None:
+        # Remove existing participants
+        db.query(EventParticipant).filter(EventParticipant.event_id == event_id).delete()
+        # Add new participants
+        for participant in event_update.participants:
+            db_participant = EventParticipant(
+                event_id=event_id,
+                name=participant.name,
+                dietary_restrictions=participant.dietary_restrictions
+            )
+            db.add(db_participant)
+    
+    # Update courses if provided
+    if event_update.courses is not None:
+        # Remove existing courses (cascade will delete course_recipes)
+        db.query(EventCourse).filter(EventCourse.event_id == event_id).delete()
+        # Add new courses
+        for course in event_update.courses:
+            db_course = EventCourse(
+                event_id=event_id,
+                course_number=course.course_number,
+                course_name=course.course_name
+            )
+            db.add(db_course)
+            db.flush()
+            
+            # Add recipes to course
+            for recipe_id in course.recipe_ids:
+                db_course_recipe = CourseRecipe(
+                    course_id=db_course.id,
+                    recipe_id=recipe_id
+                )
+                db.add(db_course_recipe)
     
     db.commit()
     db.refresh(db_event)
