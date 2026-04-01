@@ -155,7 +155,7 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Event Information</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Event Information</h3>
         <Input
           label="Event Name"
           value={formData.name}
@@ -186,7 +186,7 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
 
       {/* Participants */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">{t('events.participants')}</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('events.participants')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <TypeAhead
             label={t('events.participantName')}
@@ -235,12 +235,12 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
         </div>
         <div className="space-y-2">
           {formData.participants?.map((participant, index) => (
-            <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded">
+            <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded">
               <span className="text-2xl">👤</span>
               <div className="flex-1">
-                <div className="font-medium text-gray-900">{participant.name}</div>
+                <div className="font-medium text-gray-900 dark:text-gray-100">{participant.name}</div>
                 {participant.dietary_restrictions && (
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     🥗 {participant.dietary_restrictions}
                   </p>
                 )}
@@ -249,14 +249,14 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
                 <button
                   type="button"
                   onClick={() => editParticipant(index)}
-                  className="text-primary-600 hover:text-primary-800"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
                 >
                   {t('common.edit')}
                 </button>
                 <button
                   type="button"
                   onClick={() => removeParticipant(index)}
-                  className="text-red-600 hover:text-red-800"
+                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                 >
                   {t('common.remove')}
                 </button>
@@ -268,7 +268,7 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
 
       {/* Courses */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">{t('events.courses')}</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('events.courses')}</h3>
         <TypeAhead
           label={t('events.courseName')}
           value={courseForm.course_name}
@@ -305,23 +305,23 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
         </div>
         <div className="space-y-2">
           {formData.courses?.map((course, index) => (
-            <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded">
-              <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary-600 text-white rounded-full font-medium">
+            <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded">
+              <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary-600 dark:bg-primary-500 text-white rounded-full font-medium">
                 {course.course_number}
               </span>
-              <div className="flex-1 font-medium text-gray-900">{course.course_name}</div>
+              <div className="flex-1 font-medium text-gray-900 dark:text-gray-100">{course.course_name}</div>
               <div className="flex gap-2 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => editCourse(index)}
-                  className="text-primary-600 hover:text-primary-800"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
                 >
                   {t('common.edit')}
                 </button>
                 <button
                   type="button"
                   onClick={() => removeCourse(index)}
-                  className="text-red-600 hover:text-red-800"
+                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                 >
                   {t('common.remove')}
                 </button>

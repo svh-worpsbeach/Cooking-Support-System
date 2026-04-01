@@ -31,7 +31,11 @@
     "storage": "Lager",
     "locations": "Standorte",
     "settings": "Einstellungen",
-    "admin": "Admin"
+    "admin": "Admin",
+    "menu": "Menü",
+    "toggleView": "Ansicht umschalten",
+    "showLabels": "Beschriftungen anzeigen",
+    "hideLabels": "Beschriftungen ausblenden"
   },
   "recipes": {
     "title": "Rezepte",

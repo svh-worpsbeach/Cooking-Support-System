@@ -31,7 +31,11 @@
     "storage": "Storage",
     "locations": "Locations",
     "settings": "Settings",
-    "admin": "Admin"
+    "admin": "Admin",
+    "menu": "Menu",
+    "toggleView": "Toggle View",
+    "showLabels": "Show Labels",
+    "hideLabels": "Hide Labels"
   },
   "recipes": {
     "title": "Recipes",
