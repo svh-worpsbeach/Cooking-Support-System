@@ -4,7 +4,6 @@ import type { EventCreate, EventParticipant, EventCourse } from '../../types';
 import Input from '../common/Input';
 import Textarea from '../common/Textarea';
 import Button from '../common/Button';
-import TypeAhead from '../common/TypeAhead';
 import { useGuests } from '../../hooks/useGuests';
 import { useRecipes } from '../../hooks/useRecipes';
 
@@ -31,8 +30,8 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
   const [recipeSearch, setRecipeSearch] = useState('');
   const [debouncedGuestSearch, setDebouncedGuestSearch] = useState('');
   const [debouncedRecipeSearch, setDebouncedRecipeSearch] = useState('');
-  const { guests, isLoading: isLoadingGuests } = useGuests(debouncedGuestSearch);
-  const { recipes, isLoading: isLoadingRecipes } = useRecipes({ search: debouncedRecipeSearch });
+  const { guests } = useGuests(debouncedGuestSearch);
+  const { recipes } = useRecipes({ search: debouncedRecipeSearch });
 
   // Participant form state
   const [participantForm, setParticipantForm] = useState<Omit<EventParticipant, 'id' | 'event_id'>>({
