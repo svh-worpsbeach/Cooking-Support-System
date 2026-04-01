@@ -13,6 +13,7 @@ import StoragePage from './pages/StoragePage';
 import StorageDetailPage from './pages/StorageDetailPage';
 import LocationsPage from './pages/LocationsPage';
 import LocationDetailPage from './pages/LocationDetailPage';
+import GuestsPage from './pages/GuestsPage';
 import SettingsPage from './pages/SettingsPage';
 import AdminPage from './pages/AdminPage';
 import './i18n';
@@ -45,6 +46,7 @@ function App() {
               <Route path="/storage/:id" element={<StorageDetailPage />} />
               <Route path="/locations" element={<LocationsPage />} />
               <Route path="/locations/:id" element={<LocationDetailPage />} />
+              <Route path="/guests" element={<GuestsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/admin" element={<AdminPage />} />
             </Routes>
