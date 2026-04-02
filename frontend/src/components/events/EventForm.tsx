@@ -193,72 +193,74 @@ export default function EventForm({ initialData, onSubmit, onCancel }: EventForm
         />
       </div>
 
-      {/* Guest Management Section */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('events.guestManagement')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label={t('events.participantName')}
-            value={participantForm.name}
-            onChange={(e) => {
-              setParticipantForm({ ...participantForm, name: e.target.value });
-              setGuestSearch(e.target.value);
-            }}
-            placeholder={t('events.participantNamePlaceholder')}
-          />
-          <Input
-            label={t('events.dietaryRestrictions')}
-            value={participantForm.dietary_restrictions}
-            onChange={(e) => setParticipantForm({ ...participantForm, dietary_restrictions: e.target.value })}
-            placeholder={t('events.dietaryRestrictionsPlaceholder')}
-          />
-        </div>
-        {guestSearch && guests.length > 0 && (
-          <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-            {guests.map((guest) => (
-              <button
-                key={guest.id}
-                type="button"
-                onClick={() => {
-                  setParticipantForm({
-                    name: `${guest.first_name} ${guest.last_name}`,
-                    dietary_restrictions: [
-                      guest.intolerances,
-                      guest.favorites,
-                      guest.dietary_notes
-                    ].filter(Boolean).join(', ') || '',
-                  });
-                  setGuestSearch('');
-                }}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-200 dark:border-gray-600 last:border-b-0"
-              >
-                <div className="font-medium text-gray-900 dark:text-gray-100">{guest.first_name} {guest.last_name}</div>
-                {(guest.email || guest.phone) && (
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {guest.email || guest.phone}
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="flex gap-2">
-          <Button type="button" onClick={addParticipant} variant="secondary">
-            {editingParticipantIndex !== null ? t('events.updateParticipant') : t('events.addParticipant')}
-          </Button>
-          {editingParticipantIndex !== null && (
-            <Button type="button" onClick={cancelEditParticipant} variant="ghost">
-              {t('common.cancelEdit')}
-            </Button>
-          )}
-        </div>
-      </div>
-
       {/* Two-column layout for Participants and Courses */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Participants List */}
+        {/* Participants List with Guest Management */}
         <div className="space-y-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('events.participants')}</h2>
+          
+          {/* Guest Management Section */}
+          <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('events.guestManagement')}</h3>
+            <div className="space-y-3">
+              <Input
+                label={t('events.participantName')}
+                value={participantForm.name}
+                onChange={(e) => {
+                  setParticipantForm({ ...participantForm, name: e.target.value });
+                  setGuestSearch(e.target.value);
+                }}
+                placeholder={t('events.participantNamePlaceholder')}
+              />
+              <Input
+                label={t('events.dietaryRestrictions')}
+                value={participantForm.dietary_restrictions}
+                onChange={(e) => setParticipantForm({ ...participantForm, dietary_restrictions: e.target.value })}
+                placeholder={t('events.dietaryRestrictionsPlaceholder')}
+              />
+            </div>
+            {guestSearch && guests.length > 0 && (
+              <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                {guests.map((guest) => (
+                  <button
+                    key={guest.id}
+                    type="button"
+                    onClick={() => {
+                      setParticipantForm({
+                        name: `${guest.first_name} ${guest.last_name}`,
+                        dietary_restrictions: [
+                          guest.intolerances,
+                          guest.favorites,
+                          guest.dietary_notes
+                        ].filter(Boolean).join(', ') || '',
+                      });
+                      setGuestSearch('');
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-200 dark:border-gray-600 last:border-b-0"
+                  >
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{guest.first_name} {guest.last_name}</div>
+                    {(guest.email || guest.phone) && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {guest.email || guest.phone}
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button type="button" onClick={addParticipant} variant="secondary" size="sm">
+                {editingParticipantIndex !== null ? t('events.updateParticipant') : t('events.addParticipant')}
+              </Button>
+              {editingParticipantIndex !== null && (
+                <Button type="button" onClick={cancelEditParticipant} variant="ghost" size="sm">
+                  {t('common.cancelEdit')}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Participants List */}
           <div className="space-y-2">
             {formData.participants?.map((participant, index) => (
               <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded">
