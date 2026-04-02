@@ -479,193 +479,100 @@ export default function RecipeDetailPage() {
         </div>
       </div>
 
-      {/* Section 1: Title and Categories */}
-      <div>
-        {isEditMode ? (
-          <div className="space-y-4">
-            <Input
-              label={t('recipes.name')}
-              value={editData.name}
-              onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-              required
-              className="text-4xl font-bold"
-            />
-            <Textarea
-              label={t('recipes.description')}
-              value={editData.description}
-              onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-              rows={3}
-              className="text-lg"
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label={t('recipes.prepTime')}
-                type="time"
-                value={editData.preparation_time}
-                onChange={(e) => setEditData({ ...editData, preparation_time: e.target.value })}
-              />
-              <Input
-                label={t('recipes.cookTime')}
-                type="time"
-                value={editData.cooking_time}
-                onChange={(e) => setEditData({ ...editData, cooking_time: e.target.value })}
-              />
-            </div>
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
-                💡 {t('recipes.advancedEditHint')}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{recipe.name}</h1>
-            {recipe.description && (
-              <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">{recipe.description}</p>
-            )}
-            
-            {/* Time Information */}
-            {showTimes && (
-              <div className="flex flex-wrap items-center gap-6 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mt-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">⏱️</span>
-                  <div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.totalTime')}</div>
-                    <div className="text-lg font-semibold">{formatTimeForDisplay(totalTime)}</div>
-                  </div>
-                </div>
-                <div className="h-12 w-px bg-gray-300 dark:bg-gray-600"></div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🔪</span>
-                  <div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.prepTime')}</div>
-                    <div className="text-lg font-semibold">{formatTimeForDisplay(recipe.preparation_time)}</div>
-                  </div>
-                </div>
-                <div className="h-12 w-px bg-gray-300 dark:bg-gray-600"></div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🔥</span>
-                  <div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.cookTime')}</div>
-                    <div className="text-lg font-semibold">{formatTimeForDisplay(recipe.cooking_time)}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Categories */}
-            {recipe.categories && recipe.categories.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-4">
-                {recipe.categories.map((cat) => (
-                  <span
-                    key={cat.id}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200"
-                  >
-                    {cat.category_name}
-                  </span>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Section 2: Ingredients and Title Image Side by Side */}
+      {/* Section 1: Title, Description and Title Image Side by Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Ingredients */}
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('recipes.ingredients')}</h2>
-            {isEditMode && (
-              <Button variant="secondary" size="sm" onClick={handleAddIngredient}>
-                + {t('recipes.addIngredient')}
-              </Button>
-            )}
-          </div>
-          
+        {/* Left: Title and Description (50%) */}
+        <div>
           {isEditMode ? (
             <div className="space-y-4">
-              {editIngredients.map((ingredient, index) => (
-                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Input
-                      label={t('recipes.ingredientName')}
-                      value={ingredient.name}
-                      onChange={(e) => handleUpdateIngredient(index, 'name', e.target.value)}
-                      required
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        label={t('recipes.amount')}
-                        type="number"
-                        step="0.01"
-                        value={ingredient.amount}
-                        onChange={(e) => handleUpdateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
-                      />
-                      <Input
-                        label={t('recipes.unit')}
-                        value={ingredient.unit}
-                        onChange={(e) => handleUpdateIngredient(index, 'unit', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <Input
-                    label={t('recipes.description')}
-                    value={ingredient.description}
-                    onChange={(e) => handleUpdateIngredient(index, 'description', e.target.value)}
-                  />
-                  <div className="flex justify-end">
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleRemoveIngredient(index)}
-                    >
-                      {t('common.remove')}
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {editIngredients.length === 0 && (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                  {t('recipes.noIngredients')}
+              <Input
+                label={t('recipes.name')}
+                value={editData.name}
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                required
+                className="text-4xl font-bold"
+              />
+              <Textarea
+                label={t('recipes.description')}
+                value={editData.description}
+                onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                rows={3}
+                className="text-lg"
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label={t('recipes.prepTime')}
+                  type="time"
+                  value={editData.preparation_time}
+                  onChange={(e) => setEditData({ ...editData, preparation_time: e.target.value })}
+                />
+                <Input
+                  label={t('recipes.cookTime')}
+                  type="time"
+                  value={editData.cooking_time}
+                  onChange={(e) => setEditData({ ...editData, cooking_time: e.target.value })}
+                />
+              </div>
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  💡 {t('recipes.advancedEditHint')}
                 </p>
-              )}
+              </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              {recipe.ingredients && recipe.ingredients.length > 0 ? (
-                recipe.ingredients
-                  .sort((a, b) => a.order_index - b.order_index)
-                  .map((ingredient) => (
-                    <div key={ingredient.id} className="flex items-start gap-4">
-                      <div className="w-24 flex-shrink-0 text-right text-gray-600 dark:text-gray-400">
-                        {ingredient.amount && (
-                          <span>
-                            {ingredient.amount}
-                            {ingredient.unit && ` ${ingredient.unit}`}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900 dark:text-gray-100">{ingredient.name}</div>
-                        {ingredient.description && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            {ingredient.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                  {t('recipes.noIngredients')}
-                </p>
+            <>
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{recipe.name}</h1>
+              {recipe.description && (
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">{recipe.description}</p>
               )}
-            </div>
-          )}
-        </Card>
+              
+              {/* Time Information */}
+              {showTimes && (
+                <div className="flex flex-wrap items-center gap-6 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mt-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">⏱️</span>
+                    <div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.totalTime')}</div>
+                      <div className="text-lg font-semibold">{formatTimeForDisplay(totalTime)}</div>
+                    </div>
+                  </div>
+                  <div className="h-12 w-px bg-gray-300 dark:bg-gray-600"></div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">🔪</span>
+                    <div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.prepTime')}</div>
+                      <div className="text-lg font-semibold">{formatTimeForDisplay(recipe.preparation_time)}</div>
+                    </div>
+                  </div>
+                  <div className="h-12 w-px bg-gray-300 dark:bg-gray-600"></div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">🔥</span>
+                    <div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{t('recipes.cookTime')}</div>
+                      <div className="text-lg font-semibold">{formatTimeForDisplay(recipe.cooking_time)}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-        {/* Title Image */}
+              {/* Categories */}
+              {recipe.categories && recipe.categories.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {recipe.categories.map((cat) => (
+                    <span
+                      key={cat.id}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200"
+                    >
+                      {cat.category_name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Right: Title Image (50%) */}
         {!isEditMode && imageUrl && (
           <Card className="flex items-center justify-center">
             <img
@@ -677,193 +584,322 @@ export default function RecipeDetailPage() {
         )}
       </div>
 
-      {/* Section 3: Preparation Steps */}
-      <Card>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('recipes.steps')}</h2>
-          {isEditMode && (
-            <Button variant="secondary" size="sm" onClick={handleAddStep}>
-              + {t('recipes.addStep')}
-            </Button>
-          )}
+      {/* Section 2: Ingredients and Steps in Tables with Wrap Layout */}
+      <div className="relative">
+        {/* Ingredients Table - Float Left, 50% Width */}
+        <div className="float-left w-full lg:w-1/2 lg:pr-6 mb-6">
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('recipes.ingredients')}</h2>
+              {isEditMode && (
+                <Button variant="secondary" size="sm" onClick={handleAddIngredient}>
+                  + {t('recipes.addIngredient')}
+                </Button>
+              )}
+            </div>
+            
+            {isEditMode ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-gray-300 dark:border-gray-600">
+                      <th className="text-left p-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{t('recipes.amount')}</th>
+                      <th className="text-left p-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{t('recipes.unit')}</th>
+                      <th className="text-left p-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{t('recipes.ingredientName')}</th>
+                      <th className="text-left p-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{t('recipes.description')}</th>
+                      <th className="w-10 p-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {editIngredients.map((ingredient, index) => (
+                      <tr key={index} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="p-2">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={ingredient.amount}
+                            onChange={(e) => handleUpdateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={ingredient.unit}
+                            onChange={(e) => handleUpdateIngredient(index, 'unit', e.target.value)}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={ingredient.name}
+                            onChange={(e) => handleUpdateIngredient(index, 'name', e.target.value)}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                            required
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={ingredient.description}
+                            onChange={(e) => handleUpdateIngredient(index, 'description', e.target.value)}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <button
+                            onClick={() => handleRemoveIngredient(index)}
+                            className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                            title={t('common.remove')}
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {editIngredients.length === 0 && (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                    {t('recipes.noIngredients')}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-gray-300 dark:border-gray-600">
+                      <th className="text-right p-2 text-sm font-semibold text-gray-700 dark:text-gray-300 w-20">{t('recipes.amount')}</th>
+                      <th className="text-left p-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{t('recipes.ingredientName')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recipe.ingredients && recipe.ingredients.length > 0 ? (
+                      recipe.ingredients
+                        .sort((a, b) => a.order_index - b.order_index)
+                        .map((ingredient) => (
+                          <tr key={ingredient.id} className="border-b border-gray-200 dark:border-gray-700">
+                            <td className="p-2 text-right text-gray-600 dark:text-gray-400 text-sm">
+                              {ingredient.amount && (
+                                <span>
+                                  {ingredient.amount}
+                                  {ingredient.unit && ` ${ingredient.unit}`}
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-2">
+                              <div className="font-medium text-gray-900 dark:text-gray-100">{ingredient.name}</div>
+                              {ingredient.description && (
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                  {ingredient.description}
+                                </p>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={2} className="text-gray-500 dark:text-gray-400 text-center py-4">
+                          {t('recipes.noIngredients')}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </div>
+
+        {/* Steps Table - Wraps around ingredients */}
+        <div className="clear-both lg:clear-none">
+          <Card>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('recipes.steps')}</h2>
+              {isEditMode && (
+                <Button variant="secondary" size="sm" onClick={handleAddStep}>
+                  + {t('recipes.addStep')}
+                </Button>
+              )}
+            </div>
+            
+            {isEditMode ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-gray-300 dark:border-gray-600">
+                      <th className="text-center p-2 text-sm font-semibold text-gray-700 dark:text-gray-300 w-12">#</th>
+                      <th className="text-left p-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{t('recipes.stepContent')}</th>
+                      <th className="text-center p-2 text-sm font-semibold text-gray-700 dark:text-gray-300 w-32">{t('recipes.stepImage')}</th>
+                      <th className="w-10 p-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {editSteps.map((step, index) => {
+                      const stepImageData = stepImages.get(index);
+                      const showImage = stepImageData && stepImageData.url && stepImageData.action !== 'delete';
+                      
+                      return (
+                        <tr key={index} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="p-2 text-center">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white text-sm font-semibold">
+                              {index + 1}
+                            </span>
+                          </td>
+                          <td className="p-2">
+                            <textarea
+                              value={step.content}
+                              onChange={(e) => handleUpdateStep(index, e.target.value)}
+                              rows={3}
+                              className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-y"
+                              required
+                            />
+                          </td>
+                          <td className="p-2 text-center">
+                            {showImage ? (
+                              <div className="flex flex-col items-center gap-2">
+                                <img
+                                  src={stepImageData.url}
+                                  alt={`Step ${index + 1}`}
+                                  className="w-24 h-24 object-cover rounded border border-gray-300 dark:border-gray-600"
+                                />
+                                <div className="flex gap-1">
+                                  <button
+                                    onClick={() => {
+                                      const input = document.createElement('input');
+                                      input.type = 'file';
+                                      input.accept = 'image/*';
+                                      input.onchange = (e) => {
+                                        const file = (e.target as HTMLInputElement).files?.[0];
+                                        if (file) handleStepImageCapture(index, file);
+                                      };
+                                      input.click();
+                                    }}
+                                    className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded"
+                                    title={t('recipes.updateImage')}
+                                  >
+                                    🔄
+                                  </button>
+                                  <button
+                                    onClick={() => handleStepImageDelete(index)}
+                                    className="text-xs px-2 py-1 bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-300 rounded"
+                                    title={t('recipes.deleteImage')}
+                                  >
+                                    🗑️
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <ImageCapture
+                                onImageCapture={(file) => handleStepImageCapture(index, file)}
+                              />
+                            )}
+                          </td>
+                          <td className="p-2">
+                            <button
+                              onClick={() => handleRemoveStep(index)}
+                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                              title={t('common.remove')}
+                            >
+                              ✕
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {editSteps.length === 0 && (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                    {t('recipes.noSteps')}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-gray-300 dark:border-gray-600">
+                      <th className="text-center p-2 text-sm font-semibold text-gray-700 dark:text-gray-300 w-12">#</th>
+                      <th className="text-left p-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{t('recipes.stepContent')}</th>
+                      <th className="text-center p-2 text-sm font-semibold text-gray-700 dark:text-gray-300 w-32">{t('recipes.stepImage')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recipe.steps && recipe.steps.length > 0 ? (
+                      recipe.steps
+                        .sort((a, b) => a.step_number - b.step_number)
+                        .map((step) => {
+                          const stepImage = step.step_image_id
+                            ? recipe.images?.find(img => img.id === step.step_image_id)
+                            : null;
+                          const stepImageUrl = stepImage
+                            ? `${import.meta.env.VITE_API_URL}${stepImage.filepath}`
+                            : null;
+
+                          return (
+                            <tr key={step.id} className="border-b border-gray-200 dark:border-gray-700">
+                              <td className="p-2 text-center align-top">
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white text-sm font-semibold">
+                                  {step.step_number}
+                                </span>
+                              </td>
+                              <td className="p-2 align-top">
+                                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                                  {step.content}
+                                </p>
+                                {step.ingredient_refs && step.ingredient_refs.length > 0 && (
+                                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                    <span className="font-medium">{t('recipes.ingredients')}: </span>
+                                    {step.ingredient_refs.map((ref, idx) => {
+                                      const ingredient = recipe.ingredients?.find(
+                                        (i) => i.id === ref.ingredient_id
+                                      );
+                                      return ingredient ? (
+                                        <span key={ref.id}>
+                                          {idx > 0 && ', '}
+                                          {ingredient.name}
+                                        </span>
+                                      ) : null;
+                                    })}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-2 text-center align-top">
+                                {stepImageUrl ? (
+                                  <img
+                                    src={stepImageUrl}
+                                    alt={`Step ${step.step_number}`}
+                                    className={`${getStepImageClasses()} object-cover rounded border-2 border-gray-200 dark:border-gray-700 mx-auto`}
+                                  />
+                                ) : (
+                                  <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center text-gray-400 dark:text-gray-600 mx-auto">
+                                    <span className="text-2xl">📷</span>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })
+                    ) : (
+                      <tr>
+                        <td colSpan={3} className="text-gray-500 dark:text-gray-400 text-center py-4">
+                          {t('recipes.noSteps')}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
         </div>
         
-        {isEditMode ? (
-          <div className="space-y-8">
-            {editSteps.map((step, index) => {
-              const stepImageData = stepImages.get(index);
-              const showImage = stepImageData && stepImageData.url && stepImageData.action !== 'delete';
-              
-              return (
-                <div key={index} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  {/* Left Column: Step Text */}
-                  <div className="flex gap-4">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center font-semibold">
-                      {index + 1}
-                    </span>
-                    <div className="flex-1 space-y-3">
-                      <Textarea
-                        label={t('recipes.stepContent')}
-                        value={step.content}
-                        onChange={(e) => handleUpdateStep(index, e.target.value)}
-                        rows={4}
-                        required
-                      />
-                      <div className="flex justify-end">
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleRemoveStep(index)}
-                        >
-                          {t('common.remove')}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Step Image */}
-                  <div className="flex flex-col items-center justify-center space-y-3">
-                    {showImage ? (
-                      <div className="relative w-full">
-                        <div className={`rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700`}>
-                          <img
-                            src={stepImageData.url}
-                            alt={`Step ${index + 1}`}
-                            className={`${getStepImageClasses()} object-cover w-full`}
-                          />
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => {
-                              const input = document.createElement('input');
-                              input.type = 'file';
-                              input.accept = 'image/*';
-                              input.onchange = (e) => {
-                                const file = (e.target as HTMLInputElement).files?.[0];
-                                if (file) handleStepImageCapture(index, file);
-                              };
-                              input.click();
-                            }}
-                          >
-                            {t('recipes.updateImage')}
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleStepImageDelete(index)}
-                          >
-                            {t('recipes.deleteImage')}
-                          </Button>
-                          {stepImageData.imageId && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleStepImageDetach(index)}
-                              title={t('recipes.detachImageHint')}
-                            >
-                              {t('recipes.detachImage')}
-                            </Button>
-                          )}
-                        </div>
-                        {stepImageData.action === 'detach' && (
-                          <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
-                            ⚠️ {t('recipes.detachImageHint')}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="w-full">
-                        <div className={`${getStepImageClasses()} bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-600 mb-2`}>
-                          <span className="text-4xl">📷</span>
-                        </div>
-                        <ImageCapture
-                          onImageCapture={(file) => handleStepImageCapture(index, file)}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-            {editSteps.length === 0 && (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                {t('recipes.noSteps')}
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {recipe.steps && recipe.steps.length > 0 ? (
-              recipe.steps
-                .sort((a, b) => a.step_number - b.step_number)
-                .map((step) => {
-                  const stepImage = step.step_image_id
-                    ? recipe.images?.find(img => img.id === step.step_image_id)
-                    : null;
-                  const stepImageUrl = stepImage
-                    ? `${import.meta.env.VITE_API_URL}${stepImage.filepath}`
-                    : null;
-
-                  return (
-                    <div key={step.id} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                      {/* Left Column: Step Text */}
-                      <div className="flex gap-4">
-                        <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center font-semibold">
-                          {step.step_number}
-                        </span>
-                        <div className="flex-1 pt-1 space-y-3">
-                          <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                            {step.content}
-                          </p>
-                          
-                          {step.ingredient_refs && step.ingredient_refs.length > 0 && (
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              <span className="font-medium">{t('recipes.ingredients')}: </span>
-                              {step.ingredient_refs.map((ref, idx) => {
-                                const ingredient = recipe.ingredients?.find(
-                                  (i) => i.id === ref.ingredient_id
-                                );
-                                return ingredient ? (
-                                  <span key={ref.id}>
-                                    {idx > 0 && ', '}
-                                    {ingredient.name}
-                                  </span>
-                                ) : null;
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Right Column: Step Image */}
-                      <div className="flex items-center justify-center">
-                        {stepImageUrl ? (
-                          <div className="rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
-                            <img
-                              src={stepImageUrl}
-                              alt={`Step ${step.step_number}`}
-                              className={`${getStepImageClasses()} object-cover`}
-                            />
-                          </div>
-                        ) : (
-                          <div className={`${getStepImageClasses()} bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-600`}>
-                            <span className="text-4xl">📷</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                {t('recipes.noSteps')}
-              </p>
-            )}
-          </div>
-        )}
-      </Card>
+        {/* Clear float */}
+        <div className="clear-both"></div>
+      </div>
 
       {/* Process Images - Removed from main view, only in advanced edit */}
 
