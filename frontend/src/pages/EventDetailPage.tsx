@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEvent } from '../hooks/useEvents';
+import { useShoppingLists } from '../hooks/useShoppingLists';
 import { api } from '../services/api';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
@@ -15,8 +16,10 @@ export default function EventDetailPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { event, isLoading, error } = useEvent(Number(id));
+  const { createFromEvent } = useShoppingLists();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreatingShoppingList, setIsCreatingShoppingList] = useState(false);
 
   const handleEditEvent = async (data: EventCreate) => {
     try {
@@ -45,6 +48,25 @@ export default function EventDetailPage() {
     }
   };
 
+  const handleCreateShoppingList = async () => {
+    if (!id) return;
+    
+    setIsCreatingShoppingList(true);
+    try {
+      const shoppingList = await createFromEvent(Number(id));
+      if (shoppingList) {
+        navigate(`/shopping-lists/${shoppingList.id}`);
+      } else {
+        alert(t('shoppingLists.createError'));
+      }
+    } catch (err) {
+      console.error('Failed to create shopping list:', err);
+      alert(t('shoppingLists.createError'));
+    } finally {
+      setIsCreatingShoppingList(false);
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner size="lg" className="py-12" />;
   }
@@ -69,6 +91,28 @@ export default function EventDetailPage() {
           ← {t('common.back')} {t('nav.events')}
         </Link>
         <div className="flex gap-2">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleCreateShoppingList}
+            disabled={isCreatingShoppingList}
+            className="flex items-center gap-2"
+          >
+            {isCreatingShoppingList ? (
+              <>
+                <LoadingSpinner size="sm" />
+                {t('shoppingLists.creating')}
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                {t('shoppingLists.createFromEvent')}
+              </>
+            )}
+          </Button>
           <Button
             variant="secondary"
             size="sm"

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useRecipe } from '../hooks/useRecipes';
+import { useShoppingLists } from '../hooks/useShoppingLists';
 import { useTheme } from '../contexts/ThemeContext';
 import { api } from '../services/api';
 import Button from '../components/common/Button';
@@ -48,6 +49,8 @@ export default function RecipeDetailPage() {
   const [isAdvancedEditModalOpen, setIsAdvancedEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCreatingShoppingList, setIsCreatingShoppingList] = useState(false);
+  const { createFromRecipe } = useShoppingLists();
 
   // Simple edit form state (for basic fields only)
   const [editData, setEditData] = useState({
@@ -355,6 +358,20 @@ export default function RecipeDetailPage() {
     }
   };
 
+  const handleCreateShoppingList = async () => {
+    if (!recipe) return;
+    
+    setIsCreatingShoppingList(true);
+    try {
+      const newList = await createFromRecipe(recipe.id);
+      navigate(`/shopping-lists/${newList.id}`);
+    } catch (err) {
+      console.error('Failed to create shopping list:', err);
+      alert(t('shoppingLists.createError'));
+      setIsCreatingShoppingList(false);
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner size="lg" className="py-12" />;
   }
@@ -448,6 +465,14 @@ export default function RecipeDetailPage() {
             </>
           ) : (
             <>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleCreateShoppingList}
+                disabled={isCreatingShoppingList}
+              >
+                {isCreatingShoppingList ? t('shoppingLists.creating') : t('shoppingLists.createFromRecipe')}
+              </Button>
               <Button
                 variant="secondary"
                 size="sm"

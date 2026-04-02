@@ -50,12 +50,14 @@
     "notFound": "Shopping list not found",
     "confirmDelete": "Do you really want to delete this shopping list?",
     "deleteError": "Error deleting shopping list",
+    "createError": "Error creating shopping list",
+    "creating": "Creating...",
     "empty": {
       "title": "No Shopping Lists",
       "description": "Create your first shopping list or generate one from an event or recipe"
     },
-    "createFromEvent": "Create Shopping List from Event",
-    "createFromRecipe": "Create Shopping List from Recipe"
+    "createFromEvent": "Create Shopping List",
+    "createFromRecipe": "Create Shopping List"
   },
   "recipes": {
     "title": "Recipes",

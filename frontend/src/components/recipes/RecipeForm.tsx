@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RecipeCreate, RecipeIngredient } from '../../types';
 import Input from '../common/Input';
 import Textarea from '../common/Textarea';
 import Button from '../common/Button';
 import ImageCapture from '../common/ImageCapture';
+import TypeAhead from '../common/TypeAhead';
+import { useIngredients } from '../../hooks/useIngredients';
 import api from '../../services/api';
 
 interface RecipeFormProps {
@@ -15,6 +17,7 @@ interface RecipeFormProps {
 
 export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFormProps) {
   const { t } = useTranslation();
+  const { searchIngredients } = useIngredients();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<RecipeCreate>({
     name: initialData?.name || '',
@@ -27,6 +30,8 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
   });
 
   const [categoryInput, setCategoryInput] = useState('');
+  const [ingredientOptions, setIngredientOptions] = useState<Array<{ id: number | string; label: string; subtitle?: string }>>([]);
+  const [isLoadingIngredients, setIsLoadingIngredients] = useState(false);
   const [ingredientForm, setIngredientForm] = useState<Omit<RecipeIngredient, 'id' | 'recipe_id'>>({
     name: '',
     description: '',
@@ -37,6 +42,33 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
   const [editingIngredientIndex, setEditingIngredientIndex] = useState<number | null>(null);
   const [stepContent, setStepContent] = useState('');
   const [stepImages, setStepImages] = useState<Map<number, { file?: File; url?: string; imageId?: number }>>(new Map());
+
+  // Search ingredients when name changes
+  useEffect(() => {
+    const searchTimer = setTimeout(async () => {
+      if (ingredientForm.name.length >= 2) {
+        setIsLoadingIngredients(true);
+        try {
+          const results = await searchIngredients(ingredientForm.name);
+          setIngredientOptions(
+            results.map(ing => ({
+              id: ing.id,
+              label: ing.name,
+              subtitle: ing.description || undefined,
+            }))
+          );
+        } catch (error) {
+          console.error('Error searching ingredients:', error);
+        } finally {
+          setIsLoadingIngredients(false);
+        }
+      } else {
+        setIngredientOptions([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(searchTimer);
+  }, [ingredientForm.name, searchIngredients]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -294,11 +326,14 @@ export default function RecipeForm({ initialData, onSubmit, onCancel }: RecipeFo
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('recipes.ingredients')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
+          <TypeAhead
             label={t('recipes.ingredientName')}
             value={ingredientForm.name}
-            onChange={(e) => setIngredientForm({ ...ingredientForm, name: e.target.value })}
+            onChange={(value) => setIngredientForm({ ...ingredientForm, name: value })}
+            options={ingredientOptions}
             placeholder={t('recipes.ingredientName')}
+            isLoading={isLoadingIngredients}
+            required
           />
           <Input
             label={t('recipes.ingredientDescription')}
