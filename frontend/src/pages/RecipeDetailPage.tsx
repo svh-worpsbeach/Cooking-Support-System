@@ -573,10 +573,10 @@ export default function RecipeDetailPage() {
         )}
       </div>
 
-      {/* Section 2: Ingredients and Steps in Tables with Wrap Layout */}
-      <div className="relative">
-        {/* Ingredients Table - Float Left, 50% Width */}
-        <div className="float-left w-full lg:w-1/2 lg:pr-6 mb-6">
+      {/* Section 2: Ingredients and Steps in Tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Ingredients Table - 50% Width */}
+        <div className="lg:col-span-1">
           <Card>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('recipes.ingredients')}</h2>
@@ -702,8 +702,8 @@ export default function RecipeDetailPage() {
           </Card>
         </div>
 
-        {/* Steps Table - Wraps around ingredients */}
-        <div className="clear-both lg:clear-none">
+        {/* Steps Table - 50% Width */}
+        <div className="lg:col-span-1">
           <Card>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('recipes.steps')}</h2>
@@ -885,9 +885,6 @@ export default function RecipeDetailPage() {
             )}
           </Card>
         </div>
-        
-        {/* Clear float */}
-        <div className="clear-both"></div>
       </div>
 
       {/* Process Images - Removed from main view, only in advanced edit */}
