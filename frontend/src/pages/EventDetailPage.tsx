@@ -217,28 +217,28 @@ export default function EventDetailPage() {
               <div
                 key={item.id}
                 className={`flex items-center gap-3 p-2 rounded ${
-                  item.is_purchased ? 'bg-green-50 dark:bg-green-900/20' : 'bg-gray-50 dark:bg-gray-700'
+                  item.checked === 1 ? 'bg-green-50 dark:bg-green-900/20' : 'bg-gray-50 dark:bg-gray-700'
                 }`}
               >
                 <input
                   type="checkbox"
-                  checked={item.is_purchased}
+                  checked={item.checked === 1}
                   readOnly
                   className="w-5 h-5 text-primary-600 dark:text-primary-400 rounded"
                 />
                 <div className="flex-1">
-                  <span className={item.is_purchased ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'}>
-                    {item.item_name}
+                  <span className={item.checked === 1 ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'}>
+                    {item.name}
                   </span>
-                  {item.quantity && (
+                  {item.amount && (
                     <span className="text-gray-600 dark:text-gray-300 ml-2">
-                      ({item.quantity}
+                      ({item.amount}
                       {item.unit && ` ${item.unit}`})
                     </span>
                   )}
-                  {item.source && (
+                  {item.shop && (
                     <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                      {t('events.from')} {item.source}
+                      {item.shop}
                     </span>
                   )}
                 </div>
