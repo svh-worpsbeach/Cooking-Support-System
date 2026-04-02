@@ -124,22 +124,64 @@ export interface CourseRecipe {
   recipe?: Recipe;
 }
 
+// Ingredient types
+export interface Ingredient {
+  id: number;
+  name: string;
+  description?: string;
+  default_shop?: string;
+  default_unit?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface IngredientCreate {
+  name: string;
+  description?: string;
+  default_shop?: string;
+  default_unit?: string;
+}
+
+// Shopping List types (updated)
 export interface ShoppingList {
   id: number;
-  event_id: number;
+  title: string;
+  due_date: string;
+  event_id?: number;
+  recipe_id?: number;
   created_at: string;
-  updated_at: string;
-  items: ShoppingListItem[];
+  updated_at?: string;
+  items?: ShoppingListItem[];
 }
 
 export interface ShoppingListItem {
   id: number;
   shopping_list_id: number;
-  item_name: string;
-  quantity?: number;
+  name: string;
+  amount?: number;
   unit?: string;
-  is_purchased: boolean;
-  source?: string;
+  shop?: string;
+  checked: number; // 0 = unchecked, 1 = checked
+  order_index: number;
+}
+
+export interface ShoppingListCreate {
+  title: string;
+  due_date: string;
+  event_id?: number;
+  recipe_id?: number;
+  items?: Omit<ShoppingListItem, 'id' | 'shopping_list_id'>[];
+}
+
+export interface ShoppingListFromEvent {
+  title?: string;
+  due_date?: string;
+}
+
+export interface ShoppingListFromRecipe {
+  title?: string;
+  due_date?: string;
+  servings_multiplier?: number;
 }
 
 export interface EventCreate {

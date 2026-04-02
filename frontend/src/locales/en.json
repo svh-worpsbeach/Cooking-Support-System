@@ -31,12 +31,31 @@
     "storage": "Storage",
     "locations": "Locations",
     "guests": "Guests",
+    "shoppingLists": "Shopping Lists",
     "settings": "Settings",
     "admin": "Admin",
     "menu": "Menu",
     "toggleView": "Toggle View",
     "showLabels": "Show Labels",
     "hideLabels": "Hide Labels"
+  },
+  "shoppingLists": {
+    "title": "Shopping Lists",
+    "subtitle": "Manage your shopping lists",
+    "create": "Create Shopping List",
+    "items": "items",
+    "progress": "Progress",
+    "noShop": "Other",
+    "noItems": "No items in this list",
+    "notFound": "Shopping list not found",
+    "confirmDelete": "Do you really want to delete this shopping list?",
+    "deleteError": "Error deleting shopping list",
+    "empty": {
+      "title": "No Shopping Lists",
+      "description": "Create your first shopping list or generate one from an event or recipe"
+    },
+    "createFromEvent": "Create Shopping List from Event",
+    "createFromRecipe": "Create Shopping List from Recipe"
   },
   "recipes": {
     "title": "Recipes",

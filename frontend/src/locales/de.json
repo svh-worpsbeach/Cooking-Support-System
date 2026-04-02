@@ -31,12 +31,31 @@
     "storage": "Lager",
     "locations": "Standorte",
     "guests": "Gäste",
+    "shoppingLists": "Einkaufslisten",
     "settings": "Einstellungen",
     "admin": "Admin",
     "menu": "Menü",
     "toggleView": "Ansicht umschalten",
     "showLabels": "Beschriftungen anzeigen",
     "hideLabels": "Beschriftungen ausblenden"
+  },
+  "shoppingLists": {
+    "title": "Einkaufslisten",
+    "subtitle": "Verwalte deine Einkaufslisten",
+    "create": "Einkaufsliste erstellen",
+    "items": "Artikel",
+    "progress": "Fortschritt",
+    "noShop": "Sonstiges",
+    "noItems": "Keine Artikel in dieser Liste",
+    "notFound": "Einkaufsliste nicht gefunden",
+    "confirmDelete": "Möchtest du diese Einkaufsliste wirklich löschen?",
+    "deleteError": "Fehler beim Löschen der Einkaufsliste",
+    "empty": {
+      "title": "Keine Einkaufslisten",
+      "description": "Erstelle deine erste Einkaufsliste oder generiere eine aus einem Event oder Rezept"
+    },
+    "createFromEvent": "Einkaufsliste aus Event erstellen",
+    "createFromRecipe": "Einkaufsliste aus Rezept erstellen"
   },
   "recipes": {
     "title": "Rezepte",

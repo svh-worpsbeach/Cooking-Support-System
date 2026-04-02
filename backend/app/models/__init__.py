@@ -3,6 +3,7 @@ Database models for the Cooking Management System.
 """
 
 from app.models.location import Location
+from app.models.ingredient import Ingredient
 from app.models.recipe import (
     Recipe,
     RecipeCategory,
@@ -25,6 +26,7 @@ from app.models.guest import Guest, event_guests
 
 __all__ = [
     "Location",
+    "Ingredient",
     "Recipe",
     "RecipeCategory",
     "RecipeIngredient",

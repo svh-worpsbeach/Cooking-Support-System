@@ -12,6 +12,14 @@ from .location import (
     LocationResponse,
 )
 
+# Ingredient schemas
+from .ingredient import (
+    IngredientBase,
+    IngredientCreate,
+    IngredientUpdate,
+    IngredientResponse,
+)
+
 # Recipe schemas
 from .recipe import (
     RecipeCategoryBase,
@@ -90,12 +98,32 @@ from .storage import (
     StorageItemQuantityUpdate,
 )
 
+# Shopping List schemas (new standalone version)
+from .shopping_list import (
+    ShoppingListItemBase,
+    ShoppingListItemCreate,
+    ShoppingListItemUpdate,
+    ShoppingListItemResponse,
+    ShoppingListBase,
+    ShoppingListCreate,
+    ShoppingListUpdate,
+    ShoppingListResponse,
+    ShoppingListDetailResponse,
+    ShoppingListFromEventCreate,
+    ShoppingListFromRecipeCreate,
+)
+
 __all__ = [
     # Location
     "LocationBase",
     "LocationCreate",
     "LocationUpdate",
     "LocationResponse",
+    # Ingredient
+    "IngredientBase",
+    "IngredientCreate",
+    "IngredientUpdate",
+    "IngredientResponse",
     # Recipe
     "RecipeCategoryBase",
     "RecipeCategoryCreate",
@@ -162,6 +190,18 @@ __all__ = [
     "StorageItemResponse",
     "StorageItemWithLocation",
     "StorageItemQuantityUpdate",
+    # Shopping List (new)
+    "ShoppingListItemBase",
+    "ShoppingListItemCreate",
+    "ShoppingListItemUpdate",
+    "ShoppingListItemResponse",
+    "ShoppingListBase",
+    "ShoppingListCreate",
+    "ShoppingListUpdate",
+    "ShoppingListResponse",
+    "ShoppingListDetailResponse",
+    "ShoppingListFromEventCreate",
+    "ShoppingListFromRecipeCreate",
 ]
 
 # Made with Bob
