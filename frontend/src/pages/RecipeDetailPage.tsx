@@ -364,7 +364,9 @@ export default function RecipeDetailPage() {
     setIsCreatingShoppingList(true);
     try {
       const newList = await createFromRecipe(recipe.id);
-      navigate(`/shopping-lists/${newList.id}`);
+      if (newList) {
+        navigate(`/shopping-lists/${newList.id}`);
+      }
     } catch (err) {
       console.error('Failed to create shopping list:', err);
       alert(t('shoppingLists.createError'));
