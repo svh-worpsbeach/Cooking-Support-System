@@ -17,9 +17,8 @@ from app.models.event import (
     EventParticipant,
     EventCourse,
     CourseRecipe,
-    ShoppingList,
-    ShoppingListItem,
 )
+from app.models.shopping_list import ShoppingList, ShoppingListItem
 from app.models.tool import CookingTool, ToolWishlist
 from app.models.storage import StorageItem
 from app.models.guest import Guest, event_guests

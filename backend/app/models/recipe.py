@@ -25,6 +25,7 @@ class Recipe(Base):
     ingredients = relationship("RecipeIngredient", back_populates="recipe", cascade="all, delete-orphan")
     steps = relationship("RecipeStep", back_populates="recipe", cascade="all, delete-orphan")
     images = relationship("RecipeImage", back_populates="recipe", foreign_keys="RecipeImage.recipe_id", cascade="all, delete-orphan")
+    shopping_lists = relationship("ShoppingList", back_populates="recipe", cascade="all, delete-orphan")
     # Note: title_image relationship removed to avoid circular FK dependency with DB2
 
     def __repr__(self):
