@@ -328,17 +328,6 @@ export default function RecipeDetailPage() {
     }
   };
   
-  const handleStepImageDetach = (stepIndex: number) => {
-    const imageData = stepImages.get(stepIndex);
-    if (imageData?.imageId) {
-      setStepImages(new Map(stepImages.set(stepIndex, {
-        action: 'detach',
-        imageId: imageData.imageId,
-        url: imageData.url
-      })));
-    }
-  };
-
   const handleAdvancedEdit = async (data: RecipeCreate) => {
     try {
       await api.put(`/recipes/${id}`, data);
