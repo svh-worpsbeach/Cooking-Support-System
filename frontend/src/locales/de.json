@@ -106,7 +106,10 @@
       "examples": "Beispiele",
       "failed": "Import fehlgeschlagen",
       "info": "Das Rezept wird mit allen Zutaten, Schritten und Bildern importiert. Die Quelle wird gespeichert."
-    }
+    },
+    "createEventWithSelected": "Event mit ausgewählten Rezepten erstellen",
+    "addToEvent": "Zu Event hinzufügen",
+    "selectEventToAdd": "Wählen Sie ein Event aus, um die ausgewählten Rezepte hinzuzufügen:"
   },
   "events": {
     "title": "Veranstaltungen",
@@ -226,6 +229,9 @@
     "addGuests": "Fügen Sie Gäste hinzu, um Ernährungspräferenzen und Kontaktinformationen zu verwalten",
     "noGuests": "Keine Gäste gefunden",
     "deleteConfirm": "Möchten Sie diesen Gast wirklich löschen?",
+    "createEventWithSelected": "Event mit ausgewählten Gästen erstellen",
+    "addToEvent": "Zu Event hinzufügen",
+    "selectEventToAdd": "Wählen Sie ein Event aus, um die ausgewählten Gäste hinzuzufügen:",
     "guestInformation": "Gast-Informationen",
     "firstName": "Vorname",
     "firstNamePlaceholder": "Vorname eingeben",

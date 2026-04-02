@@ -5,9 +5,12 @@ import { calculateTotalTime, formatTimeForDisplay } from '../../utils/timeUtils'
 
 interface RecipeCardProps {
   recipe: Recipe;
+  selectable?: boolean;
+  selected?: boolean;
+  onSelect?: (recipeId: number) => void;
 }
 
-export default function RecipeCard({ recipe }: RecipeCardProps) {
+export default function RecipeCard({ recipe, selectable = false, selected = false, onSelect }: RecipeCardProps) {
   const titleImage = recipe.images?.find(img => img.id === recipe.title_image_id);
   const imageUrl = titleImage
     ? `${import.meta.env.VITE_API_URL}${titleImage.filepath}`
@@ -16,18 +19,32 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
   const totalTime = calculateTotalTime(recipe.preparation_time, recipe.cooking_time);
   const showTimes = recipe.preparation_time !== '0:00' || recipe.cooking_time !== '0:00';
 
-  return (
-    <Link to={`/recipes/${recipe.id}`}>
-      <Card hover className="h-full">
-        {imageUrl && (
-          <div className="mb-4 -mx-6 -mt-6">
-            <img
-              src={imageUrl}
-              alt={recipe.name}
-              className="w-full h-48 object-cover rounded-t-lg"
-            />
-          </div>
-        )}
+  const cardContent = (
+    <>
+      {selectable && (
+        <div className="absolute top-3 left-3 z-10">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onSelect?.(recipe.id);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+          />
+        </div>
+      )}
+      {imageUrl && (
+        <div className="mb-4 -mx-6 -mt-6">
+          <img
+            src={imageUrl}
+            alt={recipe.name}
+            className="w-full h-48 object-cover rounded-t-lg"
+          />
+        </div>
+      )}
         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
           {recipe.name}
         </h3>
@@ -70,7 +87,26 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
               {recipe.steps && <span>📝 {recipe.steps.length} steps</span>}
             </div>
           )}
-        </div>
+      </div>
+    </>
+  );
+
+  if (selectable) {
+    return (
+      <Card
+        hover
+        className={`h-full relative cursor-pointer ${selected ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}`}
+        onClick={() => onSelect?.(recipe.id)}
+      >
+        {cardContent}
+      </Card>
+    );
+  }
+
+  return (
+    <Link to={`/recipes/${recipe.id}`}>
+      <Card hover className="h-full">
+        {cardContent}
       </Card>
     </Link>
   );

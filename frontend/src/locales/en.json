@@ -106,7 +106,10 @@
       "examples": "Examples",
       "failed": "Import failed",
       "info": "The recipe will be imported with all ingredients, steps, and images. The source will be saved."
-    }
+    },
+    "createEventWithSelected": "Create Event with Selected Recipes",
+    "addToEvent": "Add to Event",
+    "selectEventToAdd": "Select an event to add the selected recipes to:"
   },
   "events": {
     "title": "Events",
@@ -232,6 +235,9 @@
     "addGuests": "Add guests to manage dietary preferences and contact information",
     "noGuests": "No guests found",
     "deleteConfirm": "Are you sure you want to delete this guest?",
+    "createEventWithSelected": "Create Event with Selected Guests",
+    "addToEvent": "Add to Event",
+    "selectEventToAdd": "Select an event to add the selected guests to:",
     "guestInformation": "Guest Information",
     "firstName": "First Name",
     "firstNamePlaceholder": "Enter first name",

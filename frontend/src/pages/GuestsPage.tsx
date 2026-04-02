@@ -1,19 +1,28 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useGuests } from '../hooks/useGuests';
+import { useEvents } from '../hooks/useEvents';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Card from '../components/common/Card';
 import GuestForm from '../components/guests/GuestForm';
-import type { Guest, GuestCreate } from '../types';
+import EventForm from '../components/events/EventForm';
+import type { Guest, GuestCreate, Event, EventCreate } from '../types';
 
 export default function GuestsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { guests, isLoading, error, createGuest, updateGuest, deleteGuest } = useGuests('');
+  const { events, createEvent, updateEvent } = useEvents();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [deletingGuestId, setDeletingGuestId] = useState<number | null>(null);
+  const [selectedGuests, setSelectedGuests] = useState<Set<number>>(new Set());
+  const [isCreateEventModalOpen, setIsCreateEventModalOpen] = useState(false);
+  const [isAddToEventModalOpen, setIsAddToEventModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const handleCreateGuest = async (data: GuestCreate) => {
     try {
@@ -59,6 +68,62 @@ export default function GuestsPage() {
     setEditingGuest(null);
   };
 
+  // Multi-select handlers
+  const toggleGuestSelection = (guestId: number) => {
+    const newSelection = new Set(selectedGuests);
+    if (newSelection.has(guestId)) {
+      newSelection.delete(guestId);
+    } else {
+      newSelection.add(guestId);
+    }
+    setSelectedGuests(newSelection);
+  };
+
+  const handleCreateEventWithGuests = async (data: EventCreate) => {
+    const selectedGuestData = guests
+      .filter(g => selectedGuests.has(g.id))
+      .map(g => ({
+        name: `${g.first_name} ${g.last_name}`,
+        dietary_restrictions: [g.intolerances, g.favorites, g.dietary_notes].filter(Boolean).join(', ') || '',
+      }));
+
+    const eventData = {
+      ...data,
+      participants: [...(data.participants || []), ...selectedGuestData],
+    };
+
+    await createEvent(eventData);
+    setIsCreateEventModalOpen(false);
+    setSelectedGuests(new Set());
+    navigate('/events');
+  };
+
+  const handleAddGuestsToEvent = async (data: EventCreate) => {
+    if (!selectedEvent) return;
+
+    const selectedGuestData = guests
+      .filter(g => selectedGuests.has(g.id))
+      .map(g => ({
+        name: `${g.first_name} ${g.last_name}`,
+        dietary_restrictions: [g.intolerances, g.favorites, g.dietary_notes].filter(Boolean).join(', ') || '',
+      }));
+
+    const eventData = {
+      ...data,
+      participants: [...(data.participants || []), ...selectedGuestData],
+    };
+
+    await updateEvent(selectedEvent.id, eventData);
+    setIsAddToEventModalOpen(false);
+    setSelectedEvent(null);
+    setSelectedGuests(new Set());
+  };
+
+  const openAddToEventModal = (event: Event) => {
+    setSelectedEvent(event);
+    setIsAddToEventModalOpen(true);
+  };
+
   if (isLoading) {
     return <LoadingSpinner size="lg" className="py-12" />;
   }
@@ -75,9 +140,23 @@ export default function GuestsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('nav.guests')}</h1>
-        <Button onClick={() => setIsModalOpen(true)}>
-          {t('guests.createGuest')}
-        </Button>
+        <div className="flex gap-2">
+          {selectedGuests.size > 0 && (
+            <>
+              <Button onClick={() => setIsCreateEventModalOpen(true)} variant="secondary">
+                🎉 {t('guests.createEventWithSelected')} ({selectedGuests.size})
+              </Button>
+              <div className="relative">
+                <Button onClick={() => setIsAddToEventModalOpen(true)} variant="secondary">
+                  ➕ {t('guests.addToEvent')} ({selectedGuests.size})
+                </Button>
+              </div>
+            </>
+          )}
+          <Button onClick={() => setIsModalOpen(true)}>
+            {t('guests.createGuest')}
+          </Button>
+        </div>
       </div>
 
       {guests.length === 0 ? (
@@ -89,8 +168,19 @@ export default function GuestsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {guests.map((guest: Guest) => (
-            <Card key={guest.id}>
-              <div className="flex items-start justify-between mb-3">
+            <Card
+              key={guest.id}
+              className={`relative ${selectedGuests.has(guest.id) ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}`}
+            >
+              <div className="absolute top-3 left-3">
+                <input
+                  type="checkbox"
+                  checked={selectedGuests.has(guest.id)}
+                  onChange={() => toggleGuestSelection(guest.id)}
+                  className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+                />
+              </div>
+              <div className="flex items-start justify-between mb-3 ml-8">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                   {guest.first_name} {guest.last_name}
                 </h3>
@@ -162,6 +252,81 @@ export default function GuestsPage() {
           onCancel={closeModal}
         />
       </Modal>
+
+      {/* Create Event with Selected Guests Modal */}
+      <Modal
+        isOpen={isCreateEventModalOpen}
+        onClose={() => setIsCreateEventModalOpen(false)}
+        title={t('guests.createEventWithSelected')}
+        size="xl"
+      >
+        <EventForm
+          onSubmit={handleCreateEventWithGuests}
+          onCancel={() => setIsCreateEventModalOpen(false)}
+        />
+      </Modal>
+
+      {/* Add to Event Modal */}
+      <Modal
+        isOpen={isAddToEventModalOpen}
+        onClose={() => {
+          setIsAddToEventModalOpen(false);
+          setSelectedEvent(null);
+        }}
+        title={t('guests.addToEvent')}
+        size="lg"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700 dark:text-gray-300">
+            {t('guests.selectEventToAdd')}
+          </p>
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {events.map((event) => (
+              <button
+                key={event.id}
+                onClick={() => openAddToEventModal(event)}
+                className="w-full text-left p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                <div className="font-semibold text-gray-900 dark:text-gray-100">{event.name}</div>
+                {event.event_date && (
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    📅 {new Date(event.event_date).toLocaleDateString()}
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Event Modal (for adding guests) */}
+      {selectedEvent && (
+        <Modal
+          isOpen={isAddToEventModalOpen && selectedEvent !== null}
+          onClose={() => {
+            setIsAddToEventModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          title={`${t('guests.addToEvent')}: ${selectedEvent.name}`}
+          size="xl"
+        >
+          <EventForm
+            initialData={{
+              name: selectedEvent.name,
+              description: selectedEvent.description,
+              theme: selectedEvent.theme,
+              event_date: selectedEvent.event_date,
+              participants: selectedEvent.participants || [],
+              courses: selectedEvent.courses || [],
+            }}
+            onSubmit={handleAddGuestsToEvent}
+            onCancel={() => {
+              setIsAddToEventModalOpen(false);
+              setSelectedEvent(null);
+            }}
+          />
+        </Modal>
+      )}
     </div>
   );
 }
