@@ -7,14 +7,14 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.database import get_db
-from app.models.event import (
-    Event, EventParticipant, EventCourse, CourseRecipe,
-    ShoppingList, ShoppingListItem
-)
+from app.models.event import Event, EventParticipant, EventCourse, CourseRecipe
+from app.models.shopping_list import ShoppingList, ShoppingListItem
 from app.schemas.event import (
     EventCreate, EventUpdate, EventResponse, EventDetailResponse,
     EventParticipantCreate, EventParticipantUpdate, EventParticipantResponse,
     EventCourseCreate, EventCourseUpdate, EventCourseResponse,
+)
+from app.schemas.shopping_list import (
     ShoppingListCreate, ShoppingListResponse, ShoppingListDetailResponse,
     ShoppingListItemCreate, ShoppingListItemUpdate, ShoppingListItemResponse
 )
