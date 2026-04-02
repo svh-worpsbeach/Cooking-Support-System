@@ -20,7 +20,8 @@ from app.schemas.admin import (
     SystemStats,
 )
 from app.models.recipe import Recipe, RecipeCategory, RecipeIngredient, RecipeStep, RecipeImage
-from app.models.event import Event, EventParticipant, EventCourse, CourseRecipe, ShoppingList, ShoppingListItem
+from app.models.event import Event, EventParticipant, EventCourse, CourseRecipe
+from app.models.shopping_list import ShoppingList, ShoppingListItem
 from app.models.tool import CookingTool, ToolWishlist
 from app.models.storage import StorageItem
 from app.models.location import Location
