@@ -126,8 +126,8 @@ app.include_router(events.router, prefix="/api", tags=["events"])
 app.include_router(tools.router, prefix="/api", tags=["tools"])
 app.include_router(storage.router, prefix="/api", tags=["storage"])
 app.include_router(guests.router, prefix="/api", tags=["guests"])
-app.include_router(ingredients.router)
-app.include_router(shopping_lists.router)
+app.include_router(ingredients.router, prefix="/api")
+app.include_router(shopping_lists.router, prefix="/api")
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 
 # Made with Bob

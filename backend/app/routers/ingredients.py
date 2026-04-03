@@ -9,7 +9,7 @@ from app.schemas.ingredient import (
     IngredientResponse,
 )
 
-router = APIRouter(prefix="/api/ingredients", tags=["ingredients"])
+router = APIRouter(prefix="/ingredients", tags=["ingredients"])
 
 
 @router.get("/", response_model=List[IngredientResponse])

@@ -18,7 +18,7 @@ from app.schemas.shopping_list import (
     ShoppingListFromRecipeCreate,
 )
 
-router = APIRouter(prefix="/api/shopping-lists", tags=["shopping-lists"])
+router = APIRouter(prefix="/shopping-lists", tags=["shopping-lists"])
 
 
 def get_next_saturday() -> date:
