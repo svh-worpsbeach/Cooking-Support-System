@@ -40,7 +40,7 @@ services:
     environment:
       - DATABASE_TYPE=postgresql
       - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
+      - POSTGRES_PORT=5532
       - POSTGRES_DATABASE=cooking_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -71,7 +71,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://192.168.178.88:5580/api
+        - VITE_API_URL=http://backend:5580/api
     container_name: cooking-frontend
     hostname: frontend
     ports:
