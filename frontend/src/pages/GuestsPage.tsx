@@ -297,6 +297,19 @@ export default function GuestsPage() {
         size="xl"
       >
         <EventForm
+          initialData={{
+            name: '',
+            description: '',
+            theme: '',
+            event_date: '',
+            participants: guests
+              .filter(g => selectedGuests.has(g.id))
+              .map(g => ({
+                name: `${g.first_name} ${g.last_name}`,
+                dietary_restrictions: [g.intolerances, g.favorites, g.dietary_notes].filter(Boolean).join(', ') || '',
+              })),
+            courses: [],
+          }}
           onSubmit={handleCreateEventWithGuests}
           onCancel={() => setIsCreateEventModalOpen(false)}
         />

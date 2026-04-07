@@ -254,6 +254,20 @@ export default function RecipesPage() {
         size="xl"
       >
         <EventForm
+          initialData={{
+            name: '',
+            description: '',
+            theme: '',
+            event_date: '',
+            participants: [],
+            courses: recipes
+              .filter(r => selectedRecipes.has(r.id))
+              .map((r, index) => ({
+                course_number: index + 1,
+                course_name: r.name,
+                recipe_ids: [r.id],
+              })),
+          }}
           onSubmit={handleCreateEventWithRecipes}
           onCancel={() => setIsCreateEventModalOpen(false)}
         />
