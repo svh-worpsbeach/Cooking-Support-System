@@ -16,7 +16,7 @@ export const useShoppingLists = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get<ShoppingList[]>('/shopping-lists');
+      const response = await api.get<ShoppingList[]>('/shopping-lists/');
       setShoppingLists(response.data);
     } catch (err) {
       setError('Failed to fetch shopping lists');
@@ -32,7 +32,7 @@ export const useShoppingLists = () => {
 
   const getShoppingList = async (id: number): Promise<ShoppingList | null> => {
     try {
-      const response = await api.get<ShoppingList>(`/shopping-lists/${id}`);
+      const response = await api.get<ShoppingList>(`/shopping-lists/${id}/`);
       return response.data;
     } catch (err) {
       console.error('Error fetching shopping list:', err);
@@ -42,7 +42,7 @@ export const useShoppingLists = () => {
 
   const createShoppingList = async (data: ShoppingListCreate): Promise<ShoppingList | null> => {
     try {
-      const response = await api.post<ShoppingList>('/shopping-lists', data);
+      const response = await api.post<ShoppingList>('/shopping-lists/', data);
       await fetchShoppingLists();
       return response.data;
     } catch (err) {
@@ -57,7 +57,7 @@ export const useShoppingLists = () => {
   ): Promise<ShoppingList | null> => {
     try {
       const response = await api.post<ShoppingList>(
-        `/shopping-lists/from-event/${eventId}`,
+        `/shopping-lists/from-event/${eventId}/`,
         data
       );
       await fetchShoppingLists();
@@ -74,7 +74,7 @@ export const useShoppingLists = () => {
   ): Promise<ShoppingList | null> => {
     try {
       const response = await api.post<ShoppingList>(
-        `/shopping-lists/from-recipe/${recipeId}`,
+        `/shopping-lists/from-recipe/${recipeId}/`,
         data
       );
       await fetchShoppingLists();
@@ -90,7 +90,7 @@ export const useShoppingLists = () => {
     data: Partial<ShoppingListCreate>
   ): Promise<boolean> => {
     try {
-      await api.put(`/shopping-lists/${id}`, data);
+      await api.put(`/shopping-lists/${id}/`, data);
       await fetchShoppingLists();
       return true;
     } catch (err) {
@@ -101,7 +101,7 @@ export const useShoppingLists = () => {
 
   const deleteShoppingList = async (id: number): Promise<boolean> => {
     try {
-      await api.delete(`/shopping-lists/${id}`);
+      await api.delete(`/shopping-lists/${id}/`);
       await fetchShoppingLists();
       return true;
     } catch (err) {
@@ -116,7 +116,7 @@ export const useShoppingLists = () => {
     checked: number
   ): Promise<boolean> => {
     try {
-      await api.put(`/shopping-lists/${listId}/items/${itemId}`, { checked });
+      await api.put(`/shopping-lists/${listId}/items/${itemId}/`, { checked });
       return true;
     } catch (err) {
       console.error('Error toggling item:', err);
