@@ -12,6 +12,7 @@ import EventForm from '../components/events/EventForm';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import MultiSelectToolbar from '../components/common/MultiSelectToolbar';
 import type { RecipeCreate, Event, EventCreate } from '../types';
 
 export default function RecipesPage() {
@@ -19,11 +20,12 @@ export default function RecipesPage() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<RecipeFilters>({});
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const { recipes, isLoading, error, createRecipe, refetch } = useRecipes(filters);
+  const { recipes, isLoading, error, createRecipe, deleteRecipe, refetch } = useRecipes(filters);
   const { events, createEvent, updateEvent } = useEvents();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isMultiSelectActive, setIsMultiSelectActive] = useState(false);
   const [selectedRecipes, setSelectedRecipes] = useState<Set<number>>(new Set());
   const [isCreateEventModalOpen, setIsCreateEventModalOpen] = useState(false);
   const [isAddToEventModalOpen, setIsAddToEventModalOpen] = useState(false);
@@ -77,6 +79,31 @@ export default function RecipesPage() {
       newSelection.add(recipeId);
     }
     setSelectedRecipes(newSelection);
+  };
+
+  const handleToggleMultiSelect = () => {
+    setIsMultiSelectActive(!isMultiSelectActive);
+    if (isMultiSelectActive) {
+      setSelectedRecipes(new Set());
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedRecipes.size === 0) return;
+    
+    const count = selectedRecipes.size;
+    if (!window.confirm(t('multiSelect.confirmDelete', { count }))) return;
+
+    try {
+      await Promise.all(
+        Array.from(selectedRecipes).map(id => deleteRecipe(id))
+      );
+      setSelectedRecipes(new Set());
+      setIsMultiSelectActive(false);
+    } catch (err) {
+      console.error('Failed to delete recipes:', err);
+      alert(t('errors.deleteFailed'));
+    }
   };
 
   const handleCreateEventWithRecipes = async (data: EventCreate) => {
@@ -141,16 +168,6 @@ export default function RecipesPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('nav.recipes')}</h1>
         <div className="flex gap-2">
-          {selectedRecipes.size > 0 && (
-            <>
-              <Button onClick={() => setIsCreateEventModalOpen(true)} variant="secondary">
-                🎉 {t('recipes.createEventWithSelected')} ({selectedRecipes.size})
-              </Button>
-              <Button onClick={() => setIsAddToEventModalOpen(true)} variant="secondary">
-                ➕ {t('recipes.addToEvent')} ({selectedRecipes.size})
-              </Button>
-            </>
-          )}
           <Button onClick={() => setIsSearchModalOpen(true)} variant="secondary">
             🔍 {t('common.search')}
           </Button>
@@ -163,6 +180,27 @@ export default function RecipesPage() {
         </div>
       </div>
 
+      {/* Multi-Select Toolbar */}
+      <MultiSelectToolbar
+        isMultiSelectActive={isMultiSelectActive}
+        selectedCount={selectedRecipes.size}
+        onToggleMultiSelect={handleToggleMultiSelect}
+        onDelete={handleDeleteSelected}
+        onClearSelection={() => setSelectedRecipes(new Set())}
+        additionalActions={
+          selectedRecipes.size > 0 && (
+            <>
+              <Button onClick={() => setIsCreateEventModalOpen(true)} variant="secondary">
+                🎉 {t('recipes.createEventWithSelected')} ({selectedRecipes.size})
+              </Button>
+              <Button onClick={() => setIsAddToEventModalOpen(true)} variant="secondary">
+                ➕ {t('recipes.addToEvent')} ({selectedRecipes.size})
+              </Button>
+            </>
+          )
+        }
+      />
+
       <CategoryCloud
         onCategoryClick={handleCategoryClick}
         selectedCategories={selectedCategories}
@@ -171,7 +209,7 @@ export default function RecipesPage() {
       <RecipeList
         recipes={recipes}
         onCreateNew={() => setIsCreateModalOpen(true)}
-        selectable={true}
+        selectable={isMultiSelectActive}
         selectedRecipes={selectedRecipes}
         onRecipeSelect={toggleRecipeSelection}
       />

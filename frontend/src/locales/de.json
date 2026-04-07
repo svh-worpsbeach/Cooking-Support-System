@@ -21,7 +21,8 @@
     "close": "Schließen",
     "confirm": "Bestätigen",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "view": "Ansehen"
   },
   "nav": {
     "home": "Startseite",
@@ -299,6 +300,14 @@
     "serverError": "Serverfehler. Bitte versuchen Sie es später erneut.",
     "validationError": "Bitte überprüfen Sie Ihre Eingabe",
     "required": "Dieses Feld ist erforderlich"
+  },
+  "multiSelect": {
+    "activate": "Mehrfachauswahl",
+    "active": "Mehrfachauswahl aktiv",
+    "selected": "ausgewählt",
+    "delete": "Löschen",
+    "clearSelection": "Auswahl aufheben",
+    "confirmDelete": "Möchten Sie wirklich {{count}} Element(e) löschen?"
   },
   "settings": {
     "title": "Einstellungen",

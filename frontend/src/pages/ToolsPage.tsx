@@ -7,16 +7,54 @@ import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Card from '../components/common/Card';
 import ToolForm from '../components/tools/ToolForm';
+import MultiSelectToolbar from '../components/common/MultiSelectToolbar';
 import type { CookingTool, CookingToolCreate } from '../types';
 
 export default function ToolsPage() {
   const { t } = useTranslation();
-  const { tools, isLoading, error, createTool } = useTools();
+  const { tools, isLoading, error, createTool, deleteTool } = useTools();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMultiSelectActive, setIsMultiSelectActive] = useState(false);
+  const [selectedTools, setSelectedTools] = useState<Set<number>>(new Set());
 
   const handleCreateTool = async (data: CookingToolCreate) => {
     await createTool(data);
     setIsModalOpen(false);
+  };
+
+  const handleToggleMultiSelect = () => {
+    setIsMultiSelectActive(!isMultiSelectActive);
+    if (isMultiSelectActive) {
+      setSelectedTools(new Set());
+    }
+  };
+
+  const toggleToolSelection = (toolId: number) => {
+    const newSelection = new Set(selectedTools);
+    if (newSelection.has(toolId)) {
+      newSelection.delete(toolId);
+    } else {
+      newSelection.add(toolId);
+    }
+    setSelectedTools(newSelection);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedTools.size === 0) return;
+    
+    const count = selectedTools.size;
+    if (!window.confirm(t('multiSelect.confirmDelete', { count }))) return;
+
+    try {
+      await Promise.all(
+        Array.from(selectedTools).map(id => deleteTool(id))
+      );
+      setSelectedTools(new Set());
+      setIsMultiSelectActive(false);
+    } catch (err) {
+      console.error('Failed to delete tools:', err);
+      alert(t('errors.deleteFailed'));
+    }
   };
 
   if (isLoading) {
@@ -40,6 +78,15 @@ export default function ToolsPage() {
         </Button>
       </div>
 
+      {/* Multi-Select Toolbar */}
+      <MultiSelectToolbar
+        isMultiSelectActive={isMultiSelectActive}
+        selectedCount={selectedTools.size}
+        onToggleMultiSelect={handleToggleMultiSelect}
+        onDelete={handleDeleteSelected}
+        onClearSelection={() => setSelectedTools(new Set())}
+      />
+
       {tools.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🔪</div>
@@ -49,8 +96,22 @@ export default function ToolsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tools.map((tool: CookingTool) => (
-            <Link key={tool.id} to={`/tools/${tool.id}`}>
-              <Card hover>
+            <div key={tool.id} className="relative">
+              {isMultiSelectActive && (
+                <div className="absolute top-3 left-3 z-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedTools.has(tool.id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleToolSelection(tool.id);
+                    }}
+                    className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                </div>
+              )}
+              <Link to={`/tools/${tool.id}`} onClick={(e) => isMultiSelectActive && e.preventDefault()}>
+                <Card hover className={isMultiSelectActive && selectedTools.has(tool.id) ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}>
               {tool.image_path && (
                 <div className="mb-4 -mx-6 -mt-6">
                   <img
@@ -80,6 +141,7 @@ export default function ToolsPage() {
               )}
               </Card>
             </Link>
+          </div>
           ))}
         </div>
       )}

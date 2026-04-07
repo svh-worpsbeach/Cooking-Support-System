@@ -7,12 +7,15 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
+import MultiSelectToolbar from '../components/common/MultiSelectToolbar';
 
 const ShoppingListsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { shoppingLists, loading, deleteShoppingList } = useShoppingLists();
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [isMultiSelectActive, setIsMultiSelectActive] = useState(false);
+  const [selectedLists, setSelectedLists] = useState<Set<number>>(new Set());
 
   const handleDelete = async (id: number) => {
     if (!confirm(t('shoppingLists.confirmDelete'))) return;
@@ -23,6 +26,41 @@ const ShoppingListsPage = () => {
     
     if (!success) {
       alert(t('shoppingLists.deleteError'));
+    }
+  };
+
+  const handleToggleMultiSelect = () => {
+    setIsMultiSelectActive(!isMultiSelectActive);
+    if (isMultiSelectActive) {
+      setSelectedLists(new Set());
+    }
+  };
+
+  const toggleListSelection = (listId: number) => {
+    const newSelection = new Set(selectedLists);
+    if (newSelection.has(listId)) {
+      newSelection.delete(listId);
+    } else {
+      newSelection.add(listId);
+    }
+    setSelectedLists(newSelection);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedLists.size === 0) return;
+    
+    const count = selectedLists.size;
+    if (!window.confirm(t('multiSelect.confirmDelete', { count }))) return;
+
+    try {
+      for (const id of Array.from(selectedLists)) {
+        await deleteShoppingList(id);
+      }
+      setSelectedLists(new Set());
+      setIsMultiSelectActive(false);
+    } catch (err) {
+      console.error('Failed to delete shopping lists:', err);
+      alert(t('errors.deleteFailed'));
     }
   };
 
@@ -75,6 +113,15 @@ const ShoppingListsPage = () => {
           </Button>
         </div>
 
+        {/* Multi-Select Toolbar */}
+        <MultiSelectToolbar
+          isMultiSelectActive={isMultiSelectActive}
+          selectedCount={selectedLists.size}
+          onToggleMultiSelect={handleToggleMultiSelect}
+          onDelete={handleDeleteSelected}
+          onClearSelection={() => setSelectedLists(new Set())}
+        />
+
         {/* Shopping Lists Grid */}
         {shoppingLists.length === 0 ? (
           <EmptyState
@@ -100,11 +147,24 @@ const ShoppingListsPage = () => {
               const overdue = isOverdue(list.due_date);
 
               return (
-                <Card
-                  key={list.id}
-                  className="hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/shopping-lists/${list.id}`)}
-                >
+                <div key={list.id} className="relative">
+                  {isMultiSelectActive && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedLists.has(list.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          toggleListSelection(list.id);
+                        }}
+                        className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+                      />
+                    </div>
+                  )}
+                  <Card
+                    className={`hover:shadow-lg transition-shadow cursor-pointer ${isMultiSelectActive && selectedLists.has(list.id) ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}`}
+                    onClick={() => !isMultiSelectActive && navigate(`/shopping-lists/${list.id}`)}
+                  >
                   <div className="space-y-4">
                     {/* Title and Date */}
                     <div>
@@ -170,8 +230,9 @@ const ShoppingListsPage = () => {
                         )}
                       </Button>
                     </div>
-                  </div>
-                </Card>
+                    </div>
+                  </Card>
+                </div>
               );
             })}
           </div>

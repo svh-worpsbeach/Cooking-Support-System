@@ -9,6 +9,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import Card from '../components/common/Card';
 import GuestForm from '../components/guests/GuestForm';
 import EventForm from '../components/events/EventForm';
+import MultiSelectToolbar from '../components/common/MultiSelectToolbar';
 import type { Guest, GuestCreate, Event, EventCreate } from '../types';
 
 export default function GuestsPage() {
@@ -19,6 +20,7 @@ export default function GuestsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [deletingGuestId, setDeletingGuestId] = useState<number | null>(null);
+  const [isMultiSelectActive, setIsMultiSelectActive] = useState(false);
   const [selectedGuests, setSelectedGuests] = useState<Set<number>>(new Set());
   const [isCreateEventModalOpen, setIsCreateEventModalOpen] = useState(false);
   const [isAddToEventModalOpen, setIsAddToEventModalOpen] = useState(false);
@@ -68,6 +70,13 @@ export default function GuestsPage() {
     setEditingGuest(null);
   };
 
+  const handleToggleMultiSelect = () => {
+    setIsMultiSelectActive(!isMultiSelectActive);
+    if (isMultiSelectActive) {
+      setSelectedGuests(new Set());
+    }
+  };
+
   // Multi-select handlers
   const toggleGuestSelection = (guestId: number) => {
     const newSelection = new Set(selectedGuests);
@@ -77,6 +86,24 @@ export default function GuestsPage() {
       newSelection.add(guestId);
     }
     setSelectedGuests(newSelection);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedGuests.size === 0) return;
+    
+    const count = selectedGuests.size;
+    if (!window.confirm(t('multiSelect.confirmDelete', { count }))) return;
+
+    try {
+      await Promise.all(
+        Array.from(selectedGuests).map(id => deleteGuest(id))
+      );
+      setSelectedGuests(new Set());
+      setIsMultiSelectActive(false);
+    } catch (err) {
+      console.error('Failed to delete guests:', err);
+      alert(t('errors.deleteFailed'));
+    }
   };
 
   const handleCreateEventWithGuests = async (data: EventCreate) => {
@@ -140,24 +167,31 @@ export default function GuestsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('nav.guests')}</h1>
-        <div className="flex gap-2">
-          {selectedGuests.size > 0 && (
+        <Button onClick={() => setIsModalOpen(true)}>
+          {t('guests.createGuest')}
+        </Button>
+      </div>
+
+      {/* Multi-Select Toolbar */}
+      <MultiSelectToolbar
+        isMultiSelectActive={isMultiSelectActive}
+        selectedCount={selectedGuests.size}
+        onToggleMultiSelect={handleToggleMultiSelect}
+        onDelete={handleDeleteSelected}
+        onClearSelection={() => setSelectedGuests(new Set())}
+        additionalActions={
+          selectedGuests.size > 0 && (
             <>
               <Button onClick={() => setIsCreateEventModalOpen(true)} variant="secondary">
                 🎉 {t('guests.createEventWithSelected')} ({selectedGuests.size})
               </Button>
-              <div className="relative">
-                <Button onClick={() => setIsAddToEventModalOpen(true)} variant="secondary">
-                  ➕ {t('guests.addToEvent')} ({selectedGuests.size})
-                </Button>
-              </div>
+              <Button onClick={() => setIsAddToEventModalOpen(true)} variant="secondary">
+                ➕ {t('guests.addToEvent')} ({selectedGuests.size})
+              </Button>
             </>
-          )}
-          <Button onClick={() => setIsModalOpen(true)}>
-            {t('guests.createGuest')}
-          </Button>
-        </div>
-      </div>
+          )
+        }
+      />
 
       {guests.length === 0 ? (
         <div className="text-center py-12">
@@ -170,17 +204,19 @@ export default function GuestsPage() {
           {guests.map((guest: Guest) => (
             <Card
               key={guest.id}
-              className={`relative ${selectedGuests.has(guest.id) ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}`}
+              className={`relative ${isMultiSelectActive && selectedGuests.has(guest.id) ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}`}
             >
-              <div className="absolute top-3 left-3">
-                <input
-                  type="checkbox"
-                  checked={selectedGuests.has(guest.id)}
-                  onChange={() => toggleGuestSelection(guest.id)}
-                  className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-                />
-              </div>
-              <div className="flex items-start justify-between mb-3 ml-8">
+              {isMultiSelectActive && (
+                <div className="absolute top-3 left-3 z-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedGuests.has(guest.id)}
+                    onChange={() => toggleGuestSelection(guest.id)}
+                    className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                </div>
+              )}
+              <div className={`flex items-start justify-between mb-3 ${isMultiSelectActive ? 'ml-8' : ''}`}>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                   {guest.first_name} {guest.last_name}
                 </h3>

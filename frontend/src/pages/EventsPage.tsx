@@ -7,16 +7,54 @@ import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Card from '../components/common/Card';
 import EventForm from '../components/events/EventForm';
+import MultiSelectToolbar from '../components/common/MultiSelectToolbar';
 import type { Event, EventCreate } from '../types';
 
 export default function EventsPage() {
   const { t } = useTranslation();
-  const { events, isLoading, error, createEvent } = useEvents();
+  const { events, isLoading, error, createEvent, deleteEvent } = useEvents();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMultiSelectActive, setIsMultiSelectActive] = useState(false);
+  const [selectedEvents, setSelectedEvents] = useState<Set<number>>(new Set());
 
   const handleCreateEvent = async (data: EventCreate) => {
     await createEvent(data);
     setIsModalOpen(false);
+  };
+
+  const handleToggleMultiSelect = () => {
+    setIsMultiSelectActive(!isMultiSelectActive);
+    if (isMultiSelectActive) {
+      setSelectedEvents(new Set());
+    }
+  };
+
+  const toggleEventSelection = (eventId: number) => {
+    const newSelection = new Set(selectedEvents);
+    if (newSelection.has(eventId)) {
+      newSelection.delete(eventId);
+    } else {
+      newSelection.add(eventId);
+    }
+    setSelectedEvents(newSelection);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedEvents.size === 0) return;
+    
+    const count = selectedEvents.size;
+    if (!window.confirm(t('multiSelect.confirmDelete', { count }))) return;
+
+    try {
+      await Promise.all(
+        Array.from(selectedEvents).map(id => deleteEvent(id))
+      );
+      setSelectedEvents(new Set());
+      setIsMultiSelectActive(false);
+    } catch (err) {
+      console.error('Failed to delete events:', err);
+      alert(t('errors.deleteFailed'));
+    }
   };
 
   if (isLoading) {
@@ -40,6 +78,15 @@ export default function EventsPage() {
         </Button>
       </div>
 
+      {/* Multi-Select Toolbar */}
+      <MultiSelectToolbar
+        isMultiSelectActive={isMultiSelectActive}
+        selectedCount={selectedEvents.size}
+        onToggleMultiSelect={handleToggleMultiSelect}
+        onDelete={handleDeleteSelected}
+        onClearSelection={() => setSelectedEvents(new Set())}
+      />
+
       {events.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🎉</div>
@@ -49,8 +96,22 @@ export default function EventsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event: Event) => (
-            <Link key={event.id} to={`/events/${event.id}`}>
-              <Card hover>
+            <div key={event.id} className="relative">
+              {isMultiSelectActive && (
+                <div className="absolute top-3 left-3 z-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedEvents.has(event.id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleEventSelection(event.id);
+                    }}
+                    className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                </div>
+              )}
+              <Link to={`/events/${event.id}`} onClick={(e) => isMultiSelectActive && e.preventDefault()}>
+                <Card hover className={isMultiSelectActive && selectedEvents.has(event.id) ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   {event.name}
                 </h3>
@@ -70,8 +131,9 @@ export default function EventsPage() {
                     {event.courses && <span>🍽️ {event.courses.length} {t('events.courses')}</span>}
                   </div>
                 )}
-              </Card>
-            </Link>
+                </Card>
+              </Link>
+            </div>
           ))}
         </div>
       )}

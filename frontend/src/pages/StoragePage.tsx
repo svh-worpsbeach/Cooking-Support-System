@@ -7,16 +7,54 @@ import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Card from '../components/common/Card';
 import StorageForm from '../components/storage/StorageForm';
+import MultiSelectToolbar from '../components/common/MultiSelectToolbar';
 import type { StorageItem, StorageItemCreate } from '../types';
 
 export default function StoragePage() {
   const { t } = useTranslation();
-  const { items, isLoading, error, createItem } = useStorage();
+  const { items, isLoading, error, createItem, deleteItem } = useStorage();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMultiSelectActive, setIsMultiSelectActive] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
   const handleCreateItem = async (data: StorageItemCreate) => {
     await createItem(data);
     setIsModalOpen(false);
+  };
+
+  const handleToggleMultiSelect = () => {
+    setIsMultiSelectActive(!isMultiSelectActive);
+    if (isMultiSelectActive) {
+      setSelectedItems(new Set());
+    }
+  };
+
+  const toggleItemSelection = (itemId: number) => {
+    const newSelection = new Set(selectedItems);
+    if (newSelection.has(itemId)) {
+      newSelection.delete(itemId);
+    } else {
+      newSelection.add(itemId);
+    }
+    setSelectedItems(newSelection);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedItems.size === 0) return;
+    
+    const count = selectedItems.size;
+    if (!window.confirm(t('multiSelect.confirmDelete', { count }))) return;
+
+    try {
+      await Promise.all(
+        Array.from(selectedItems).map(id => deleteItem(id))
+      );
+      setSelectedItems(new Set());
+      setIsMultiSelectActive(false);
+    } catch (err) {
+      console.error('Failed to delete storage items:', err);
+      alert(t('errors.deleteFailed'));
+    }
   };
 
   if (isLoading) {
@@ -48,6 +86,15 @@ export default function StoragePage() {
         </Button>
       </div>
 
+      {/* Multi-Select Toolbar */}
+      <MultiSelectToolbar
+        isMultiSelectActive={isMultiSelectActive}
+        selectedCount={selectedItems.size}
+        onToggleMultiSelect={handleToggleMultiSelect}
+        onDelete={handleDeleteSelected}
+        onClearSelection={() => setSelectedItems(new Set())}
+      />
+
       {items.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🏺</div>
@@ -61,8 +108,22 @@ export default function StoragePage() {
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{category}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {categoryItems.map((item: StorageItem) => (
-                  <Link key={item.id} to={`/storage/${item.id}`}>
-                    <Card hover>
+                  <div key={item.id} className="relative">
+                    {isMultiSelectActive && (
+                      <div className="absolute top-3 left-3 z-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.has(item.id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            toggleItemSelection(item.id);
+                          }}
+                          className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+                        />
+                      </div>
+                    )}
+                    <Link to={`/storage/${item.id}`} onClick={(e) => isMultiSelectActive && e.preventDefault()}>
+                      <Card hover className={isMultiSelectActive && selectedItems.has(item.id) ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                       {item.name}
                     </h3>
@@ -81,6 +142,7 @@ export default function StoragePage() {
                     </div>
                     </Card>
                   </Link>
+                </div>
                 ))}
               </div>
             </div>
