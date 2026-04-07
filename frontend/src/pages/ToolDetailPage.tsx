@@ -152,7 +152,7 @@ export default function ToolDetailPage() {
       {tool.image_path && !isEditMode && (
         <div className="w-full h-96 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
           <img
-            src={tool.image_path}
+            src={`/api${tool.image_path}`}
             alt={tool.name}
             className="w-full h-full object-contain"
           />

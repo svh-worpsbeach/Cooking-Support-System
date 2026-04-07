@@ -105,7 +105,7 @@ export default function RecipeDetailPage() {
       const titleImg = recipe.images?.find(img => img.id === recipe.title_image_id);
       if (titleImg) {
         setTitleImageData({
-          url: titleImg.filepath,
+          url: `/api${titleImg.filepath}`,
           imageId: titleImg.id,
           action: 'keep'
         });
@@ -120,7 +120,7 @@ export default function RecipeDetailPage() {
           const stepImg = recipe.images?.find(img => img.id === step.step_image_id);
           if (stepImg) {
             newStepImages.set(index, {
-              url: stepImg.filepath,
+              url: `/api${stepImg.filepath}`,
               imageId: stepImg.id,
               action: 'keep'
             });
@@ -388,7 +388,7 @@ export default function RecipeDetailPage() {
   }
 
   const titleImage = recipe.images?.find(img => img.id === recipe.title_image_id);
-  const imageUrl = titleImage?.filepath || null;
+  const imageUrl = titleImage?.filepath ? `/api${titleImage.filepath}` : null;
 
   // Prepare initial data for advanced edit form
   const initialFormData: Partial<RecipeCreate> = recipe ? {
