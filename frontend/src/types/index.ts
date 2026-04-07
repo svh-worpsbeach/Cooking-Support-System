@@ -184,13 +184,19 @@ export interface ShoppingListFromRecipe {
   servings_multiplier?: number;
 }
 
+export interface EventCourseCreate {
+  course_number: number;
+  course_name: string;
+  recipe_ids?: number[];
+}
+
 export interface EventCreate {
   name: string;
   description?: string;
   theme?: string;
   event_date?: string;
   participants?: Omit<EventParticipant, 'id' | 'event_id'>[];
-  courses?: Omit<EventCourse, 'id' | 'event_id' | 'recipes'>[];
+  courses?: EventCourseCreate[];
 }
 
 // Tool types

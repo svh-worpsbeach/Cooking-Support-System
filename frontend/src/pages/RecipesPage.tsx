@@ -112,6 +112,7 @@ export default function RecipesPage() {
       .map((r, index) => ({
         course_number: index + 1,
         course_name: r.name,
+        recipe_ids: [r.id],
       }));
 
     const eventData = {
@@ -133,6 +134,7 @@ export default function RecipesPage() {
       .map((r, index) => ({
         course_number: (data.courses?.length || 0) + index + 1,
         course_name: r.name,
+        recipe_ids: [r.id],
       }));
 
     const eventData = {
