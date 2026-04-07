@@ -12,9 +12,7 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe, selectable = false, selected = false, onSelect }: RecipeCardProps) {
   const titleImage = recipe.images?.find(img => img.id === recipe.title_image_id);
-  const imageUrl = titleImage
-    ? `${import.meta.env.VITE_API_URL}${titleImage.filepath}`
-    : null;
+  const imageUrl = titleImage?.filepath || null;
 
   const totalTime = calculateTotalTime(recipe.preparation_time, recipe.cooking_time);
   const showTimes = recipe.preparation_time !== '0:00' || recipe.cooking_time !== '0:00';

@@ -115,7 +115,7 @@ export default function ToolsPage() {
               {tool.image_path && (
                 <div className="mb-4 -mx-6 -mt-6">
                   <img
-                    src={`${import.meta.env.VITE_API_URL}${tool.image_path}`}
+                    src={tool.image_path}
                     alt={tool.name}
                     className="w-full h-48 object-cover rounded-t-lg"
                   />
