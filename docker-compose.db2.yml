@@ -48,8 +48,9 @@ services:
       - POOL_SIZE=10
       - MAX_OVERFLOW=20
       - POOL_PRE_PING=true
-      - ECHO_SQL=true
+      - ECHO_SQL=false
       - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=ERROR
     volumes:
       - ./backend/uploads:/app/uploads
     depends_on:
