@@ -92,16 +92,12 @@ struct iPadGridLayout<Item: Identifiable, Content: View>: View {
 struct iPadKeyboardShortcuts: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .keyboardShortcut("n", modifiers: .command) // New
-            .keyboardShortcut("s", modifiers: .command) // Save
-            .keyboardShortcut("f", modifiers: .command) // Find/Search
-            .keyboardShortcut("w", modifiers: .command) // Close
     }
 }
 
 extension View {
     func iPadKeyboardShortcuts() -> some View {
-        modifier(iPadKeyboardShortcuts())
+        self.modifier(iPadKeyboardShortcuts())
     }
 }
 
