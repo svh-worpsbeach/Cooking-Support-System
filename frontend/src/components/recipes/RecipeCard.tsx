@@ -19,21 +19,6 @@ export default function RecipeCard({ recipe, selectable = false, selected = fals
 
   const cardContent = (
     <>
-      {selectable && (
-        <div className="absolute top-3 left-3 z-10">
-          <input
-            type="checkbox"
-            checked={selected}
-            onChange={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onSelect?.(recipe.id);
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-          />
-        </div>
-      )}
       {imageUrl && (
         <div className="mb-4 -mx-6 -mt-6">
           <img
@@ -93,7 +78,7 @@ export default function RecipeCard({ recipe, selectable = false, selected = fals
     return (
       <Card
         hover
-        className={`h-full relative cursor-pointer ${selected ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}`}
+        className={`h-full relative cursor-pointer ${selected ? 'ring-4 ring-blue-500 dark:ring-blue-400' : ''}`}
         onClick={() => onSelect?.(recipe.id)}
       >
         {cardContent}

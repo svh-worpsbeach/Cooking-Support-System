@@ -5,8 +5,21 @@
 # ============================================
 # This script helps you quickly switch between different database backends
 # for the Cooking Management System
+# Supports both Docker Compose and Podman Compose
 
 set -e
+
+# Detect compose command (docker-compose, docker compose, or podman-compose)
+if command -v podman-compose >/dev/null 2>&1; then
+    COMPOSE_CMD="podman-compose"
+elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE_CMD="docker-compose"
+else
+    echo "Error: Neither docker-compose, docker compose, nor podman-compose found."
+    exit 1
+fi
 
 # Colors for output
 RED='\033[0;31m'
@@ -57,9 +70,9 @@ EOF
 # Function to stop all containers
 stop_containers() {
     print_info "Stopping all running containers..."
-    docker-compose down 2>/dev/null || true
-    docker-compose -f docker-compose.db2.yml down 2>/dev/null || true
-    docker-compose -f docker-compose.dev.yml down 2>/dev/null || true
+    $COMPOSE_CMD down 2>/dev/null || true
+    $COMPOSE_CMD -f docker-compose.db2.yml down 2>/dev/null || true
+    $COMPOSE_CMD -f docker-compose.dev.yml down 2>/dev/null || true
     print_success "Containers stopped"
 }
 
@@ -78,7 +91,7 @@ EOF
     print_success "Configuration updated for SQLite"
     print_info "Building and starting services with SQLite..."
     
-    docker-compose -f docker-compose.dev.yml up -d --build
+    $COMPOSE_CMD -f docker-compose.dev.yml up -d --build
     
     print_success "Services started!"
     print_info "Backend: http://localhost:5580"
@@ -108,7 +121,7 @@ EOF
     print_success "Configuration updated for PostgreSQL"
     print_info "Building and starting services with PostgreSQL..."
     
-    docker-compose up -d --build
+    $COMPOSE_CMD up -d --build
     
     print_success "Services started!"
     print_info "Backend: http://localhost:5580"
@@ -139,7 +152,7 @@ EOF
     print_success "Configuration updated for DB2"
     print_info "Building and starting services with DB2..."
     
-    docker-compose -f docker-compose.db2.yml up -d --build
+    $COMPOSE_CMD -f docker-compose.db2.yml up -d --build
     
     print_success "Services started!"
     print_info "Backend: http://localhost:5580"
@@ -160,10 +173,19 @@ switch_to_mysql() {
 
 # Main script
 main() {
-    # Check if Docker is running
-    if ! docker info > /dev/null 2>&1; then
-        print_error "Docker is not running. Please start Docker first."
-        exit 1
+    # Check if Docker or Podman is running
+    if [[ "$COMPOSE_CMD" == "podman-compose" ]]; then
+        if ! podman info > /dev/null 2>&1; then
+            print_error "Podman is not running. Please start Podman first."
+            exit 1
+        fi
+        print_info "Using Podman Compose"
+    else
+        if ! docker info > /dev/null 2>&1; then
+            print_error "Docker is not running. Please start Docker first."
+            exit 1
+        fi
+        print_info "Using Docker Compose"
     fi
     
     # Check arguments
@@ -200,8 +222,8 @@ main() {
     
     echo ""
     print_success "Database switched to ${DB_TYPE}!"
-    print_info "Check logs with: docker-compose logs -f"
-    print_info "Stop services with: docker-compose down"
+    print_info "Check logs with: $COMPOSE_CMD logs -f"
+    print_info "Stop services with: $COMPOSE_CMD down"
 }
 
 # Run main function

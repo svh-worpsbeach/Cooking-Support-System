@@ -109,21 +109,12 @@ export default function StoragePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {categoryItems.map((item: StorageItem) => (
                   <div key={item.id} className="relative">
-                    {isMultiSelectActive && (
-                      <div className="absolute top-3 left-3 z-10">
-                        <input
-                          type="checkbox"
-                          checked={selectedItems.has(item.id)}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            toggleItemSelection(item.id);
-                          }}
-                          className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-                        />
-                      </div>
-                    )}
-                    <Link to={`/storage/${item.id}`} onClick={(e) => isMultiSelectActive && e.preventDefault()}>
-                      <Card hover className={isMultiSelectActive && selectedItems.has(item.id) ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}>
+                    {isMultiSelectActive ? (
+                      <Card
+                        hover
+                        className={`cursor-pointer ${selectedItems.has(item.id) ? 'ring-4 ring-blue-500 dark:ring-blue-400' : ''}`}
+                        onClick={() => toggleItemSelection(item.id)}
+                      >
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                       {item.name}
                     </h3>
@@ -140,9 +131,30 @@ export default function StoragePage() {
                         <p>🏠 {item.location.name}</p>
                       )}
                     </div>
-                    </Card>
-                  </Link>
-                </div>
+                      </Card>
+                    ) : (
+                      <Link to={`/storage/${item.id}`}>
+                        <Card hover>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      {item.name}
+                    </h3>
+                    <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                      {item.quantity && (
+                        <p>📦 {item.quantity} {item.unit}</p>
+                      )}
+                      {item.expiry_date && (
+                        <p className={new Date(item.expiry_date) < new Date() ? 'text-red-600 dark:text-red-400' : ''}>
+                          📅 {t('locations.expires')}: {new Date(item.expiry_date).toLocaleDateString()}
+                        </p>
+                      )}
+                      {item.location && (
+                        <p>🏠 {item.location.name}</p>
+                      )}
+                    </div>
+                        </Card>
+                      </Link>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>

@@ -204,37 +204,37 @@ export default function GuestsPage() {
           {guests.map((guest: Guest) => (
             <Card
               key={guest.id}
-              className={`relative ${isMultiSelectActive && selectedGuests.has(guest.id) ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}`}
+              hover={isMultiSelectActive}
+              className={`relative ${isMultiSelectActive ? 'cursor-pointer' : ''} ${isMultiSelectActive && selectedGuests.has(guest.id) ? 'ring-4 ring-blue-500 dark:ring-blue-400' : ''}`}
+              onClick={isMultiSelectActive ? () => toggleGuestSelection(guest.id) : undefined}
             >
-              {isMultiSelectActive && (
-                <div className="absolute top-3 left-3 z-10">
-                  <input
-                    type="checkbox"
-                    checked={selectedGuests.has(guest.id)}
-                    onChange={() => toggleGuestSelection(guest.id)}
-                    className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                </div>
-              )}
-              <div className={`flex items-start justify-between mb-3 ${isMultiSelectActive ? 'ml-8' : ''}`}>
+              <div className="flex items-start justify-between mb-3">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                   {guest.first_name} {guest.last_name}
                 </h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => openEditModal(guest)}
-                    className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm"
-                  >
-                    {t('common.edit')}
-                  </button>
-                  <button
-                    onClick={() => handleDeleteGuest(guest.id)}
-                    disabled={deletingGuestId === guest.id}
-                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm disabled:opacity-50"
-                  >
-                    {deletingGuestId === guest.id ? '...' : t('common.delete')}
-                  </button>
-                </div>
+                {!isMultiSelectActive && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(guest);
+                      }}
+                      className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm"
+                    >
+                      {t('common.edit')}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteGuest(guest.id);
+                      }}
+                      disabled={deletingGuestId === guest.id}
+                      className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm disabled:opacity-50"
+                    >
+                      {deletingGuestId === guest.id ? '...' : t('common.delete')}
+                    </button>
+                  </div>
+                )}
               </div>
               
               <div className="space-y-2 text-sm">

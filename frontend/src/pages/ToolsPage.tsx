@@ -97,21 +97,12 @@ export default function ToolsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tools.map((tool: CookingTool) => (
             <div key={tool.id} className="relative">
-              {isMultiSelectActive && (
-                <div className="absolute top-3 left-3 z-10">
-                  <input
-                    type="checkbox"
-                    checked={selectedTools.has(tool.id)}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      toggleToolSelection(tool.id);
-                    }}
-                    className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                </div>
-              )}
-              <Link to={`/tools/${tool.id}`} onClick={(e) => isMultiSelectActive && e.preventDefault()}>
-                <Card hover className={isMultiSelectActive && selectedTools.has(tool.id) ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}>
+              {isMultiSelectActive ? (
+                <Card
+                  hover
+                  className={`cursor-pointer ${selectedTools.has(tool.id) ? 'ring-4 ring-blue-500 dark:ring-blue-400' : ''}`}
+                  onClick={() => toggleToolSelection(tool.id)}
+                >
               {tool.image_path && (
                 <div className="mb-4 -mx-6 -mt-6">
                   <img
@@ -139,9 +130,41 @@ export default function ToolsPage() {
                   🏠 {tool.location.name}
                 </p>
               )}
-              </Card>
-            </Link>
-          </div>
+                </Card>
+              ) : (
+                <Link to={`/tools/${tool.id}`}>
+                  <Card hover>
+              {tool.image_path && (
+                <div className="mb-4 -mx-6 -mt-6">
+                  <img
+                    src={`/api${tool.image_path}`}
+                    alt={tool.name}
+                    className="w-full h-48 object-cover rounded-t-lg"
+                  />
+                </div>
+              )}
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                {tool.name}
+              </h3>
+              {tool.description && (
+                <p className="text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                  {tool.description}
+                </p>
+              )}
+              {tool.storage_location && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  📍 {tool.storage_location}
+                </p>
+              )}
+              {tool.location && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  🏠 {tool.location.name}
+                </p>
+              )}
+                  </Card>
+                </Link>
+              )}
+            </div>
           ))}
         </div>
       )}

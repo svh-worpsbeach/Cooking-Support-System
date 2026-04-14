@@ -104,11 +104,15 @@ cooking-management-system/
 
 ### Prerequisites
 
-- Docker and Docker Compose (recommended)
-- OR: Python 3.11+, Node.js 18+, and a database (SQLite/PostgreSQL/DB2)
+- **Container Runtime** (wähle eine Option):
+  - Docker und Docker Compose (empfohlen)
+  - Podman und podman-compose (Docker-Alternative, rootless)
+- **ODER für manuelle Installation**: Python 3.11+, Node.js 18+, und eine Datenbank (SQLite/PostgreSQL/DB2)
 - Git
 
-### Quick Start with Docker
+### Quick Start mit Docker oder Podman
+
+Das Projekt unterstützt sowohl Docker als auch Podman. Das [`switch-database.sh`](switch-database.sh) Skript erkennt automatisch, welches Tool verfügbar ist.
 
 **Option 1: SQLite (Development)**
 ```bash
@@ -124,6 +128,11 @@ cooking-management-system/
 ```bash
 ./switch-database.sh db2
 ```
+
+**Hinweis für Podman-Benutzer:**
+- Das Skript erkennt automatisch `podman-compose` und verwendet es anstelle von Docker
+- Siehe [PODMAN_GUIDE.md](PODMAN_GUIDE.md) für detaillierte Podman-spezifische Anweisungen
+- Podman läuft rootless und ist eine sichere Docker-Alternative
 
 The application will be available at:
 - Frontend: http://localhost:5500 (PostgreSQL), http://localhost:5501 (DB2), http://localhost:5502 (SQLite)
@@ -247,9 +256,9 @@ Key optimizations include:
 
 ## 🚢 Deployment
 
-### Docker Deployment (Empfohlen)
+### Container Deployment (Empfohlen)
 
-Das Projekt ist vollständig containerisiert und kann als Microservices bereitgestellt werden.
+Das Projekt ist vollständig containerisiert und kann mit Docker oder Podman als Microservices bereitgestellt werden.
 
 **Schnellstart mit Docker Compose:**
 ```bash
@@ -263,13 +272,34 @@ docker-compose logs -f
 docker-compose down
 ```
 
+**Schnellstart mit Podman Compose:**
+```bash
+# Container starten
+podman-compose up -d
+
+# Logs anzeigen
+podman-compose logs -f
+
+# Container stoppen
+podman-compose down
+```
+
+**Automatische Erkennung mit Wrapper-Skript:**
+```bash
+# Verwendet automatisch docker-compose oder podman-compose
+./compose-wrapper.sh up -d
+./compose-wrapper.sh logs -f
+./compose-wrapper.sh down
+```
+
 Die Anwendung ist dann verfügbar unter:
-- Frontend: http://localhost
-- Backend API: http://localhost:8000
-- API Dokumentation: http://localhost:8000/docs
+- Frontend: http://localhost:5500 (PostgreSQL), http://localhost:5501 (DB2), http://localhost:5502 (SQLite)
+- Backend API: http://localhost:5580
+- API Dokumentation: http://localhost:5580/docs
 
 **Deployment-Anleitungen:**
-- **[Allgemeines Deployment](DEPLOYMENT.md)** - Standard Docker Deployment, Produktions-Setup, Monitoring
+- **[Allgemeines Deployment](DEPLOYMENT.md)** - Standard Docker/Podman Deployment, Produktions-Setup, Monitoring
+- **[Podman Guide](PODMAN_GUIDE.md)** - Podman-spezifische Anweisungen und Best Practices
 - **[Synology NAS Deployment](SYNOLOGY_DEPLOYMENT.md)** - Detaillierte Anleitung für Synology DSM 8 mit Container Manager
 
 Siehe [DEPLOYMENT.md](DEPLOYMENT.md) für:
