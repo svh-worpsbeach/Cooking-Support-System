@@ -213,14 +213,12 @@ struct RegularLayout: View {
 struct iPadPointerStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .hoverEffect(.lift)
-            .contentShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
 extension View {
     func iPadPointerStyle() -> some View {
-        modifier(iPadPointerStyle())
+        self.modifier(iPadPointerStyle())
     }
 }
 
