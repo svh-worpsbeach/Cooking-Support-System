@@ -154,6 +154,24 @@ Kopiere die Dateien aus dem Repository in dein Projekt.
 
 ## 🐛 Troubleshooting
 
+### Problem: "Failed to send CA Event for app launch measurements"
+
+**Fehlermeldung:**
+```
+Failed to send CA Event for app launch measurements for ca_event_type: 0
+event_name: com.apple.app_launch_measurement.FirstFramePresentationMetric
+Failed to send CA Event for app launch measurements for ca_event_type: 1
+event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
+```
+
+**Lösung:**
+Diese Warnungen sind harmlos und können ignoriert werden. Sie betreffen nur Xcode's interne Analytics und beeinträchtigen die App-Funktionalität nicht. Dies ist ein bekanntes Problem in Xcode 16.1.
+
+**Optional - Warnungen unterdrücken:**
+1. In Xcode: Product → Scheme → Edit Scheme
+2. Run → Arguments → Environment Variables
+3. Füge hinzu: `OS_ACTIVITY_MODE` = `disable`
+
 ### Problem: "Cannot find type 'Recipe' in scope"
 
 **Lösung:** Stelle sicher, dass `Models.swift` zum Projekt hinzugefügt wurde.
