@@ -68,20 +68,23 @@ Die App verbindet sich standardmäßig mit `http://localhost:8000`. Um eine ande
 ## Projektstruktur
 
 ```
-ios/CookingManagementApp/
-├── CookingManagementApp/
-│   ├── CookingManagementApp.swift    # App-Einstiegspunkt
-│   ├── ContentView.swift              # Haupt-Tab-Navigation
-│   ├── Models/
-│   │   └── Models.swift               # Datenmodelle
-│   ├── Services/
-│   │   └── APIService.swift           # API-Client
-│   ├── Localization/
-│   │   └── Localizable.swift          # Übersetzungen
-│   └── Views/
-│       ├── Recipes/
-│       │   └── RecipesViews.swift     # Rezept-Views
-│       └── AllOtherViews.swift        # Alle anderen Views
+ios/
+├── com.svh.cookingmanagement/
+│   └── CookingManagementApp/
+│       ├── CookingManagementApp/
+│       │   ├── CookingManagementApp.swift    # App-Einstiegspunkt
+│       │   ├── ContentView.swift              # Haupt-Tab-Navigation
+│       │   ├── Models/
+│       │   │   └── Models.swift               # Datenmodelle
+│       │   ├── Services/
+│       │   │   └── APIService.swift           # API-Client
+│       │   ├── Localization/
+│       │   │   └── Localizable.swift          # Übersetzungen
+│       │   └── Views/
+│       │       ├── Recipes/
+│       │       │   └── RecipesViews.swift     # Rezept-Views
+│       │       └── AllOtherViews.swift        # Alle anderen Views
+├── .gitignore
 └── README.md
 ```
 
