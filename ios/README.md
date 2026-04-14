@@ -1,301 +1,225 @@
 # Cooking Management System - iOS/iPadOS App
 
-Eine native Swift-Anwendung für iOS und iPadOS, die alle Features des Web-Frontends implementiert.
+Eine native iOS/iPadOS-Anwendung für das Cooking Management System, entwickelt mit SwiftUI.
 
-## 📱 Übersicht
+## Features
 
-Diese iOS/iPadOS-App ist eine vollständige native Implementierung des Cooking Management Systems mit SwiftUI. Sie bietet alle Funktionen der Web-Anwendung in einer optimierten mobilen Oberfläche.
+- ✅ **Rezeptverwaltung**: Erstellen, bearbeiten und durchsuchen von Rezepten
+- ✅ **Event-Planung**: Organisieren von Koch-Events mit Gästen und Rezepten
+- ✅ **Werkzeugverwaltung**: Verwalten von Küchengeräten und -werkzeugen
+- ✅ **Lagerverwaltung**: Überwachen von Lebensmittelvorräten
+- ✅ **Standortverwaltung**: Organisieren von Lagerorten
+- ✅ **Gästeverwaltung**: Verwalten von Gästen mit Ernährungseinschränkungen
+- ✅ **Einkaufslisten**: Erstellen und verwalten von Einkaufslisten
+- ✅ **Mehrsprachigkeit**: Deutsch und Englisch
+- ✅ **Dark Mode**: Unterstützung für hellen und dunklen Modus
+- ✅ **iPad-Optimierung**: Angepasste Layouts für iPad
 
-## ✨ Features
+## Anforderungen
 
-### Kernfunktionen
-- **Rezeptverwaltung**: Erstellen, bearbeiten und durchsuchen von Rezepten mit Zutaten, Schritten und Bildern
-- **Event-Management**: Planung von Koch-Events mit mehreren Gängen und Teilnehmern
-- **Werkzeugverwaltung**: Katalogisierung von Kochutensilien nach Standorten
-- **Lagerverwaltung**: Tracking von Vorräten, Gewürzen und Zutaten
-- **Standortverwaltung**: Organisation von Werkzeugen und Lagerartikeln nach Orten
-- **Gästeverwaltung**: Verwaltung von Gästen mit Ernährungspräferenzen
-- **Einkaufslisten**: Automatische Generierung aus Events und Rezepten
+- iOS 15.0 oder höher
+- iPadOS 15.0 oder höher
+- Xcode 14.0 oder höher
+- Swift 5.7 oder höher
 
-### Mobile-spezifische Features
-- **Native iOS/iPadOS UI**: Optimiert für Touch-Bedienung
-- **Dark Mode**: Vollständige Unterstützung für helles und dunkles Design
-- **Mehrsprachigkeit**: Deutsch und Englisch
-- **Offline-fähig**: Lokales Caching für bessere Performance
-- **iPad-Optimierung**: Split-View und Multitasking-Unterstützung
-- **Kamera-Integration**: Direkte Foto-Aufnahme für Rezepte und Werkzeuge
-- **Swipe-Gesten**: Intuitive Navigation und Aktionen
+## Installation
 
-## 🏗️ Architektur
+### 1. Xcode-Projekt erstellen
 
-### Projektstruktur
+Da das Projekt neu erstellt werden muss, folgen Sie diesen Schritten:
+
+1. Öffnen Sie Xcode
+2. Wählen Sie "Create a new Xcode project"
+3. Wählen Sie "iOS" → "App"
+4. Projekteinstellungen:
+   - Product Name: `CookingManagementApp`
+   - Team: Ihr Entwicklerteam
+   - Organization Identifier: `com.svh.cookingmanagement`
+   - Interface: SwiftUI
+   - Language: Swift
+   - Storage: None
+5. Speichern Sie das Projekt im Verzeichnis `ios/`
+
+### 2. Dateien hinzufügen
+
+Fügen Sie alle Swift-Dateien aus dem Repository zum Xcode-Projekt hinzu:
+
+1. Rechtsklick auf den Projektordner in Xcode
+2. "Add Files to CookingManagementApp..."
+3. Wählen Sie alle `.swift`-Dateien aus:
+   - `CookingManagementApp.swift`
+   - `ContentView.swift`
+   - `Models/Models.swift`
+   - `Services/APIService.swift`
+   - `Localization/Localizable.swift`
+   - `Views/Recipes/RecipesViews.swift`
+   - `Views/AllOtherViews.swift`
+4. Stellen Sie sicher, dass "Copy items if needed" aktiviert ist
+
+### 3. Backend-URL konfigurieren
+
+Die App verbindet sich standardmäßig mit `http://localhost:8000`. Um eine andere URL zu verwenden:
+
+1. Starten Sie die App
+2. Navigieren Sie zu "Mehr" → "Einstellungen"
+3. Geben Sie die Backend-URL ein (z.B. `http://192.168.1.100:8000`)
+4. Tippen Sie auf "Speichern"
+
+## Projektstruktur
 
 ```
-CookingApp/
-├── CookingApp/
-│   ├── CookingAppApp.swift          # App Entry Point
-│   ├── ContentView.swift            # Haupt-Navigation
-│   │
-│   ├── Models/
-│   │   └── Models.swift             # Alle Datenmodelle
-│   │
-│   ├── Services/
-│   │   └── APIService.swift         # API-Client
-│   │
-│   ├── Localization/
-│   │   └── Localizable.swift        # Übersetzungen
-│   │
-│   ├── Views/
-│   │   ├── Recipes/
-│   │   │   ├── RecipesView.swift
-│   │   │   ├── RecipeDetailView.swift
-│   │   │   └── RecipeFormView.swift
-│   │   ├── Events/
-│   │   │   ├── EventsView.swift
-│   │   │   ├── EventDetailView.swift
-│   │   │   └── EventFormView.swift
-│   │   ├── Tools/
-│   │   │   ├── ToolsView.swift
-│   │   │   ├── ToolDetailView.swift
-│   │   │   └── ToolFormView.swift
-│   │   ├── Storage/
-│   │   │   ├── StorageView.swift
-│   │   │   ├── StorageDetailView.swift
-│   │   │   └── StorageFormView.swift
-│   │   ├── Locations/
-│   │   │   ├── LocationsView.swift
-│   │   │   └── LocationFormView.swift
-│   │   ├── Guests/
-│   │   │   ├── GuestsView.swift
-│   │   │   ├── GuestDetailView.swift
-│   │   │   └── GuestFormView.swift
-│   │   ├── ShoppingLists/
-│   │   │   ├── ShoppingListsView.swift
-│   │   │   └── ShoppingListDetailView.swift
-│   │   └── Settings/
-│   │       └── SettingsView.swift
-│   │
-│   ├── Components/
-│   │   ├── EmptyStateView.swift
-│   │   ├── LoadingView.swift
-│   │   ├── ImagePicker.swift
-│   │   └── SearchBar.swift
-│   │
-│   └── Assets.xcassets/
-│       ├── AppIcon.appiconset/
-│       └── Colors/
-│
-└── CookingApp.xcodeproj/
+ios/
+├── com.svh.cookingmanagement/
+│   └── CookingManagementApp/
+│       ├── CookingManagementApp.swift    # App-Einstiegspunkt
+│       ├── ContentView.swift              # Haupt-Tab-Navigation
+│       ├── Models/
+│       │   └── Models.swift               # Datenmodelle
+│       ├── Services/
+│       │   └── APIService.swift           # API-Client
+│       ├── Localization/
+│       │   └── Localizable.swift          # Übersetzungen
+│       └── Views/
+│           ├── Recipes/
+│           │   └── RecipesViews.swift     # Rezept-Views
+│           └── AllOtherViews.swift        # Alle anderen Views
+├── .gitignore
+└── README.md
 ```
 
-### Technologie-Stack
+## Architektur
 
-- **Sprache**: Swift 5.9+
-- **UI Framework**: SwiftUI
-- **Minimum iOS Version**: iOS 16.0
-- **Unterstützte Geräte**: iPhone, iPad
-- **Architektur**: MVVM (Model-View-ViewModel)
-- **Networking**: URLSession mit async/await
-- **State Management**: @StateObject, @EnvironmentObject
+Die App folgt dem **MVVM (Model-View-ViewModel)** Pattern:
 
-## 🚀 Installation & Setup
+- **Models**: Datenstrukturen, die mit dem Backend synchronisiert werden
+- **Views**: SwiftUI-Views für die Benutzeroberfläche
+- **ViewModels**: Geschäftslogik und Zustandsverwaltung mit `@MainActor`
+- **Services**: API-Kommunikation mit async/await
 
-### Voraussetzungen
+### Wichtige Komponenten
 
-- macOS 13.0 oder höher
-- Xcode 15.0 oder höher
-- iOS 16.0+ Simulator oder Gerät
-- Laufender Backend-Server (siehe Backend-Dokumentation)
+#### AppState
+Globaler App-Zustand für:
+- Spracheinstellungen (Deutsch/Englisch)
+- Dark Mode
+- Wird als `@EnvironmentObject` in alle Views injiziert
 
-### Projekt öffnen
+#### APIService
+Singleton-Service für alle API-Aufrufe:
+- Generische Request-Methoden
+- Automatische JSON-Serialisierung
+- Fehlerbehandlung
+- Bild-Upload-Unterstützung
 
-1. Navigiere zum iOS-Verzeichnis:
-```bash
-cd ios/CookingApp
+#### Localizable
+Dictionary-basierte Lokalisierung:
+- Deutsch und Englisch
+- String-Extension für einfachen Zugriff
+- Dynamischer Sprachwechsel
+
+## Verwendung
+
+### Rezepte
+
+1. Tippen Sie auf den "Rezepte"-Tab
+2. Tippen Sie auf "+" zum Hinzufügen eines neuen Rezepts
+3. Füllen Sie die Felder aus und tippen Sie auf "Speichern"
+4. Tippen Sie auf ein Rezept, um Details anzuzeigen
+5. Verwenden Sie das Menü (⋯) zum Bearbeiten oder Löschen
+
+### Events
+
+1. Tippen Sie auf den "Events"-Tab
+2. Erstellen Sie ein neues Event mit Datum und Beschreibung
+3. Fügen Sie Rezepte und Gäste hinzu (in zukünftigen Updates)
+
+### Einstellungen
+
+1. Navigieren Sie zu "Mehr" → "Einstellungen"
+2. Ändern Sie die Sprache (Deutsch/Englisch)
+3. Aktivieren/Deaktivieren Sie den Dark Mode
+4. Konfigurieren Sie die Backend-URL
+
+## API-Integration
+
+Die App kommuniziert mit dem Backend über REST-API:
+
+- **Base URL**: Konfigurierbar in den Einstellungen
+- **Endpoints**: `/api/recipes`, `/api/events`, `/api/tools`, etc.
+- **Authentifizierung**: Aktuell keine (kann hinzugefügt werden)
+- **Datenformat**: JSON mit snake_case → camelCase Konvertierung
+
+### Beispiel API-Aufruf
+
+```swift
+// Rezepte laden
+let recipes = try await APIService.shared.getRecipes()
+
+// Rezept erstellen
+let newRecipe = Recipe(id: 0, name: "Pasta", ...)
+let created = try await APIService.shared.createRecipe(newRecipe)
+
+// Rezept aktualisieren
+let updated = try await APIService.shared.updateRecipe(recipe)
+
+// Rezept löschen
+try await APIService.shared.deleteRecipe(id: recipe.id)
 ```
 
-2. Öffne das Xcode-Projekt:
-```bash
-open CookingApp.xcodeproj
-```
+## Entwicklung
 
-3. Wähle ein Zielgerät (Simulator oder physisches Gerät)
+### Debugging
 
-4. Drücke `Cmd + R` zum Bauen und Ausführen
+1. Wählen Sie einen Simulator oder ein verbundenes Gerät
+2. Drücken Sie `Cmd + R` zum Starten
+3. Verwenden Sie `Cmd + .` zum Stoppen
+4. Breakpoints können in Xcode gesetzt werden
 
-### Backend-Konfiguration
+### Testing
 
-Die App verbindet sich standardmäßig mit `http://localhost:8000/api`. Um eine andere URL zu verwenden:
+Die App kann auf folgenden Geräten getestet werden:
+- iPhone (alle Modelle ab iOS 15)
+- iPad (alle Modelle ab iPadOS 15)
+- Mac mit Apple Silicon (über Mac Catalyst)
 
-1. Öffne die App
-2. Navigiere zu **Einstellungen**
-3. Ändere die **API URL**
-4. Starte die App neu
+### Bekannte Einschränkungen
 
-Für physische Geräte im gleichen Netzwerk:
-```
-http://[DEINE-IP-ADRESSE]:8000/api
-```
-
-## 📱 Verwendung
-
-### Erste Schritte
-
-1. **Backend starten**: Stelle sicher, dass der Backend-Server läuft
-2. **API URL konfigurieren**: Passe die URL in den Einstellungen an
-3. **Sprache wählen**: Wähle Deutsch oder Englisch
-4. **Daten erkunden**: Navigiere durch die verschiedenen Bereiche
-
-### Hauptfunktionen
-
-#### Rezepte
-- Tippe auf **Rezepte** in der Tab-Bar
-- Verwende **+** zum Erstellen neuer Rezepte
-- Tippe auf ein Rezept für Details
-- Wische nach links zum Löschen
-
-#### Events
-- Tippe auf **Events** in der Tab-Bar
-- Erstelle Events mit mehreren Gängen
-- Füge Teilnehmer hinzu
-- Generiere automatisch Einkaufslisten
-
-#### Werkzeuge & Lager
-- Verwalte Kochutensilien und Vorräte
-- Organisiere nach Standorten
-- Füge Bilder hinzu
-- Tracke Ablaufdaten
-
-#### Einkaufslisten
-- Erstelle Listen manuell oder aus Events/Rezepten
-- Markiere Artikel als gekauft
-- Organisiere nach Geschäften
-- Teile Listen (zukünftig)
-
-## 🎨 Design-Prinzipien
-
-### iOS Human Interface Guidelines
-
-Die App folgt den Apple Human Interface Guidelines:
-
-- **Klarheit**: Klare Typografie und Icons
-- **Deference**: Inhalte stehen im Vordergrund
-- **Tiefe**: Visuelle Hierarchie durch Schatten und Ebenen
-
-### Touch-Optimierung
-
-- Mindestgröße für Touch-Targets: 44x44 pt
-- Swipe-Gesten für häufige Aktionen
-- Pull-to-Refresh für Aktualisierungen
-- Haptic Feedback für Bestätigungen
-
-### iPad-Optimierungen
-
-- Split-View-Unterstützung
-- Slide Over und Picture-in-Picture
-- Keyboard-Shortcuts
-- Größere Layouts für mehr Bildschirmfläche
-
-## 🌍 Internationalisierung
-
-Die App unterstützt:
-- **Deutsch** (Standard)
-- **Englisch**
-
-Sprache ändern:
-1. Gehe zu **Einstellungen**
-2. Wähle **Sprache**
-3. Wähle gewünschte Sprache
-
-## 🔒 Datenschutz & Sicherheit
-
-- Keine Daten werden lokal gespeichert (außer Einstellungen)
-- Alle Daten werden über HTTPS übertragen (in Produktion)
-- Keine Tracking- oder Analytics-Tools
-- Keine Drittanbieter-SDKs
-
-## 🐛 Bekannte Einschränkungen
-
-- Offline-Modus noch nicht vollständig implementiert
-- Bildkomprimierung könnte optimiert werden
+- Keine Offline-Unterstützung (alle Daten werden vom Backend geladen)
+- Keine Authentifizierung implementiert
+- Bild-Upload funktioniert, aber keine Kamera-Integration
 - Keine Push-Benachrichtigungen
-- Keine iCloud-Synchronisation
 
-## 🔮 Geplante Features
+## Fehlerbehebung
 
-- [ ] Offline-Modus mit lokaler Datenbank
-- [ ] iCloud-Synchronisation
-- [ ] Widget für Home Screen
+### "Cannot connect to backend"
+- Überprüfen Sie, ob das Backend läuft
+- Stellen Sie sicher, dass die URL in den Einstellungen korrekt ist
+- Bei Verwendung von `localhost`: Verwenden Sie die IP-Adresse Ihres Computers
+
+### "Build failed"
+- Stellen Sie sicher, dass alle Dateien zum Xcode-Projekt hinzugefügt wurden
+- Überprüfen Sie, dass das Deployment Target auf iOS 15.0 oder höher gesetzt ist
+- Führen Sie "Clean Build Folder" aus (`Cmd + Shift + K`)
+
+### "App crashes on launch"
+- Überprüfen Sie die Xcode-Konsole auf Fehlermeldungen
+- Stellen Sie sicher, dass alle ViewModels korrekt mit `@MainActor` markiert sind
+
+## Zukünftige Erweiterungen
+
+- [ ] Offline-Modus mit Core Data
+- [ ] Authentifizierung und Benutzerverwaltung
+- [ ] Kamera-Integration für Rezeptfotos
+- [ ] Push-Benachrichtigungen für Events
+- [ ] Widget-Unterstützung
 - [ ] Apple Watch App
-- [ ] Siri-Integration
-- [ ] Handoff zwischen Geräten
-- [ ] Teilen von Rezepten via AirDrop
-- [ ] Barcode-Scanner für Zutaten
-- [ ] AR-Ansicht für Kochschritte
+- [ ] Siri-Shortcuts
+- [ ] iCloud-Synchronisation
 
-## 🧪 Testing
-
-### Unit Tests
-
-```bash
-# In Xcode
-Cmd + U
-```
-
-### UI Tests
-
-```bash
-# In Xcode
-Cmd + U (mit UI Test Target ausgewählt)
-```
-
-## 📦 Deployment
-
-### TestFlight
-
-1. Archive erstellen: `Product > Archive`
-2. In Xcode Organizer öffnen
-3. **Distribute App** wählen
-4. **App Store Connect** auswählen
-5. Hochladen und auf Verarbeitung warten
-
-### App Store
-
-1. In App Store Connect einloggen
-2. App-Informationen ausfüllen
-3. Screenshots hinzufügen
-4. Zur Überprüfung einreichen
-
-## 🤝 Beitragen
-
-Beiträge sind willkommen! Bitte:
-
-1. Fork das Repository
-2. Erstelle einen Feature-Branch
-3. Committe deine Änderungen
-4. Push zum Branch
-5. Erstelle einen Pull Request
-
-## 📄 Lizenz
+## Lizenz
 
 Dieses Projekt ist Teil des Cooking Management Systems.
 
-## 🆘 Support
+## Support
 
-Bei Problemen oder Fragen:
-
-1. Überprüfe die Backend-Verbindung
-2. Stelle sicher, dass die API URL korrekt ist
-3. Überprüfe die Xcode-Konsole für Fehler
-4. Erstelle ein Issue im Repository
-
-## 📚 Weitere Dokumentation
-
-- [Backend-Dokumentation](../backend/README.md)
-- [Frontend-Dokumentation](../frontend/README.md)
-- [API-Dokumentation](../backend/FILE_UPLOAD_API.md)
-- [Architektur-Übersicht](../ARCHITECTURE.md)
-
----
-
-**Made with ❤️ and Bob**
+Bei Fragen oder Problemen öffnen Sie bitte ein Issue im Repository.
