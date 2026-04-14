@@ -34,7 +34,7 @@ Da das Projekt neu erstellt werden muss, folgen Sie diesen Schritten:
 4. Projekteinstellungen:
    - Product Name: `CookingManagementApp`
    - Team: Ihr Entwicklerteam
-   - Organization Identifier: `com.yourcompany`
+   - Organization Identifier: `com.svh.cookingmanagement`
    - Interface: SwiftUI
    - Language: Swift
    - Storage: None
