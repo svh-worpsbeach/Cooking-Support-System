@@ -17,6 +17,7 @@
 		A1000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000018 /* Assets.xcassets */; };
 		A1000009 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000019 /* Preview Assets.xcassets */; };
 		A100000A /* DateFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001A /* DateFormatters.swift */; };
+		A100000B /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = A100001B /* Settings.bundle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		A1000018 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1000019 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		A100001A /* DateFormatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatters.swift; sourceTree = "<group>"; };
+		A100001B /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +65,7 @@
 				A1000043 /* Views */,
 				A1000046 /* Utils */,
 				A1000018 /* Assets.xcassets */,
+				A100001B /* Settings.bundle */,
 				A1000044 /* Preview Content */,
 			);
 			path = CookingManagementApp;
@@ -193,6 +196,7 @@
 			files = (
 				A1000009 /* Preview Assets.xcassets in Resources */,
 				A1000008 /* Assets.xcassets in Resources */,
+				A100000B /* Settings.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

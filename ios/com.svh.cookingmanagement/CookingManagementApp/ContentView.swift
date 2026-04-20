@@ -89,8 +89,20 @@ struct MoreView: View {
                     Label("shopping.title".localized(appState.currentLanguage), systemImage: "cart.fill")
                 }
                 
-                NavigationLink(destination: SettingsView()) {
-                    Label("settings.title".localized(appState.currentLanguage), systemImage: "gear")
+                Section {
+                    Button(action: {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        HStack {
+                            Label("settings.title".localized(appState.currentLanguage), systemImage: "gear")
+                            Spacer()
+                            Image(systemName: "arrow.up.forward.app")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
             }
             .navigationTitle("nav.more".localized(appState.currentLanguage))
