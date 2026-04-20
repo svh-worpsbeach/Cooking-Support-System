@@ -664,35 +664,50 @@ struct GuestsView: View {
     @State private var showingAddGuest = false
     
     var body: some View {
-        Group {
-            if viewModel.isLoading {
-                ProgressView("common.loading".localized(appState.currentLanguage))
-            } else if viewModel.guests.isEmpty {
-                EmptyStateView(icon: "person.2.fill", message: "empty.guests".localized(appState.currentLanguage))
-            } else {
-                List(viewModel.guests) { guest in
-                    NavigationLink(destination: GuestDetailView(guest: guest)) {
-                        VStack(alignment: .leading) {
-                            Text(guest.name).font(.headline)
-                            if let email = guest.email {
-                                Text(email).font(.caption).foregroundColor(.secondary)
+        NavigationView {
+            Group {
+                if viewModel.isLoading {
+                    ProgressView("common.loading".localized(appState.currentLanguage))
+                } else if viewModel.guests.isEmpty {
+                    EmptyStateView(icon: "person.2.fill", message: "empty.guests".localized(appState.currentLanguage))
+                } else {
+                    List(viewModel.guests) { guest in
+                        NavigationLink(destination: GuestDetailView(guest: guest)) {
+                            HStack {
+                                if let imagePath = guest.imagePath {
+                                    AsyncImage(url: URL(string: "http://localhost:8000/\(imagePath)")) { image in
+                                        image.resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                    } placeholder: {
+                                        Color.gray
+                                    }
+                                    .frame(width: 50, height: 50)
+                                    .cornerRadius(25)
+                                }
+                                
+                                VStack(alignment: .leading) {
+                                    Text(guest.fullName).font(.headline)
+                                    if let email = guest.email {
+                                        Text(email).font(.caption).foregroundColor(.secondary)
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        .navigationTitle("guests.title".localized(appState.currentLanguage))
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { showingAddGuest = true }) {
-                    Image(systemName: "plus")
+            .navigationTitle("guests.title".localized(appState.currentLanguage))
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingAddGuest = true }) {
+                        Image(systemName: "plus")
+                    }
                 }
             }
-        }
-        .sheet(isPresented: $showingAddGuest) {
-            GuestFormView(guest: nil) { newGuest in
-                Task { await viewModel.createGuest(newGuest) }
+            .sheet(isPresented: $showingAddGuest) {
+                GuestFormView(guest: nil) { newGuest in
+                    Task { await viewModel.createGuest(newGuest) }
+                }
             }
         }
         .task {
@@ -708,7 +723,18 @@ struct GuestDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(guest.name)
+                if let imagePath = guest.imagePath {
+                    AsyncImage(url: URL(string: "http://localhost:8000/\(imagePath)")) { image in
+                        image.resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Color.gray
+                    }
+                    .frame(width: 120, height: 120)
+                    .cornerRadius(60)
+                }
+                
+                Text(guest.fullName)
                     .font(.title)
                     .fontWeight(.bold)
                 
@@ -724,19 +750,42 @@ struct GuestDetailView: View {
                     }
                 }
                 
-                if let dietary = guest.dietaryRestrictions {
+                if let street = guest.street, let city = guest.city {
                     Divider()
-                    Text("Ernährungseinschränkungen:")
+                    Text("Adresse:")
                         .font(.headline)
-                    Text(dietary)
+                    Text(street)
+                    if let postalCode = guest.postalCode {
+                        Text("\(postalCode) \(city)")
+                    } else {
+                        Text(city)
+                    }
+                    if let country = guest.country {
+                        Text(country)
+                    }
+                }
+                
+                if let intolerances = guest.intolerances {
+                    Divider()
+                    Text("Unverträglichkeiten:")
+                        .font(.headline)
+                    Text(intolerances)
                         .foregroundColor(.secondary)
                 }
                 
-                if let notes = guest.notes {
+                if let favorites = guest.favorites {
                     Divider()
-                    Text("Notizen:")
+                    Text("Favoriten:")
                         .font(.headline)
-                    Text(notes)
+                    Text(favorites)
+                        .foregroundColor(.secondary)
+                }
+                
+                if let dietaryNotes = guest.dietaryNotes {
+                    Divider()
+                    Text("Ernährungshinweise:")
+                        .font(.headline)
+                    Text(dietaryNotes)
                         .foregroundColor(.secondary)
                 }
             }
@@ -758,7 +807,7 @@ struct GuestFormView: View {
     init(guest: Guest?, onSave: @escaping (Guest) -> Void) {
         self.guest = guest
         self.onSave = onSave
-        _name = State(initialValue: guest?.name ?? "")
+        _name = State(initialValue: guest?.fullName ?? "")
         _email = State(initialValue: guest?.email ?? "")
         _phone = State(initialValue: guest?.phone ?? "")
     }
