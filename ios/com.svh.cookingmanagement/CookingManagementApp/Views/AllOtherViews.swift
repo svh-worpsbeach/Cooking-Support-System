@@ -18,7 +18,12 @@ struct EventsView: View {
                         NavigationLink(destination: EventDetailView(event: event)) {
                             VStack(alignment: .leading) {
                                 Text(event.name).font(.headline)
-                                Text(event.date).font(.caption).foregroundColor(.secondary)
+                                if let eventDate = event.eventDate {
+                                    Text(eventDate).font(.caption).foregroundColor(.secondary)
+                                }
+                                if let theme = event.theme {
+                                    Text(theme).font(.caption2).foregroundColor(.secondary)
+                                }
                             }
                         }
                     }
@@ -52,10 +57,53 @@ struct EventDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text(event.name).font(.title).fontWeight(.bold)
+                
                 if let description = event.description {
                     Text(description).foregroundColor(.secondary)
                 }
-                Text("Datum: \(event.date)").font(.subheadline)
+                
+                if let theme = event.theme {
+                    HStack {
+                        Label(theme, systemImage: "sparkles")
+                    }
+                }
+                
+                if let eventDate = event.eventDate {
+                    HStack {
+                        Label(eventDate, systemImage: "calendar")
+                    }
+                }
+                
+                if let participants = event.participants, !participants.isEmpty {
+                    Divider()
+                    Text("Teilnehmer (\(participants.count))")
+                        .font(.headline)
+                    ForEach(participants, id: \.id) { participant in
+                        VStack(alignment: .leading) {
+                            Text(participant.name)
+                            if let dietary = participant.dietaryRestrictions {
+                                Text(dietary)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+                
+                if let courses = event.courses, !courses.isEmpty {
+                    Divider()
+                    Text("Gänge (\(courses.count))")
+                        .font(.headline)
+                    ForEach(courses.sorted(by: { $0.courseNumber < $1.courseNumber }), id: \.id) { course in
+                        VStack(alignment: .leading) {
+                            Text("\(course.courseNumber). \(course.courseName)")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
             }
             .padding()
         }
@@ -99,11 +147,13 @@ struct EventFormView: View {
                             id: event?.id ?? 0,
                             name: name,
                             description: description.isEmpty ? nil : description,
-                            date: formatter.string(from: date),
-                            locationId: event?.locationId,
-                            location: event?.location,
-                            recipes: event?.recipes ?? [],
-                            guests: event?.guests ?? []
+                            theme: nil,
+                            eventDate: formatter.string(from: date),
+                            participants: event?.participants,
+                            courses: event?.courses,
+                            shoppingList: event?.shoppingList,
+                            createdAt: event?.createdAt,
+                            updatedAt: event?.updatedAt
                         )
                         onSave(newEvent)
                         dismiss()

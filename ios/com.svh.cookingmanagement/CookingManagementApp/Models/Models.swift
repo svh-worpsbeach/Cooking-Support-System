@@ -5,11 +5,15 @@ struct Location: Codable, Identifiable, Hashable {
     let id: Int
     var name: String
     var description: String?
-    var imageUrl: String?
+    var imagePath: String?
+    var createdAt: String?
+    var updatedAt: String?
     
     enum CodingKeys: String, CodingKey {
         case id, name, description
-        case imageUrl = "image_url"
+        case imagePath = "image_path"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
     }
 }
 
@@ -106,30 +110,126 @@ struct Event: Codable, Identifiable, Hashable {
     let id: Int
     var name: String
     var description: String?
-    var date: String
-    var locationId: Int?
-    var location: Location?
-    var recipes: [Recipe]
-    var guests: [Guest]
+    var theme: String?
+    var eventDate: String?
+    var participants: [EventParticipant]?
+    var courses: [EventCourse]?
+    var shoppingList: ShoppingListDetail?
+    var createdAt: String?
+    var updatedAt: String?
     
     enum CodingKeys: String, CodingKey {
-        case id, name, description, date, location, recipes, guests
-        case locationId = "location_id"
+        case id, name, description, theme, participants, courses
+        case eventDate = "event_date"
+        case shoppingList = "shopping_list"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+}
+
+struct EventParticipant: Codable, Hashable {
+    let id: Int
+    let eventId: Int
+    var name: String
+    var dietaryRestrictions: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name
+        case eventId = "event_id"
+        case dietaryRestrictions = "dietary_restrictions"
+    }
+}
+
+struct EventCourse: Codable, Hashable {
+    let id: Int
+    let eventId: Int
+    var courseNumber: Int
+    var courseName: String
+    var recipes: [CourseRecipe]?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, recipes
+        case eventId = "event_id"
+        case courseNumber = "course_number"
+        case courseName = "course_name"
+    }
+}
+
+struct CourseRecipe: Codable, Hashable {
+    let id: Int
+    let courseId: Int
+    let recipeId: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case courseId = "course_id"
+        case recipeId = "recipe_id"
+    }
+}
+
+struct ShoppingListDetail: Codable, Hashable {
+    let id: Int
+    let eventId: Int
+    var items: [ShoppingListItemDetail]?
+    var createdAt: String?
+    var updatedAt: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, items
+        case eventId = "event_id"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+}
+
+struct ShoppingListItemDetail: Codable, Hashable {
+    let id: Int
+    let shoppingListId: Int
+    var itemName: String
+    var quantity: Double
+    var unit: String
+    var isPurchased: Bool
+    var source: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, quantity, unit, source
+        case shoppingListId = "shopping_list_id"
+        case itemName = "item_name"
+        case isPurchased = "is_purchased"
     }
 }
 
 // MARK: - Guest
 struct Guest: Codable, Identifiable, Hashable {
     let id: Int
-    var name: String
+    var firstName: String
+    var lastName: String
     var email: String?
     var phone: String?
-    var dietaryRestrictions: String?
-    var notes: String?
+    var street: String?
+    var city: String?
+    var postalCode: String?
+    var country: String?
+    var intolerances: String?
+    var favorites: String?
+    var dietaryNotes: String?
+    var imagePath: String?
+    var createdAt: String?
+    var updatedAt: String?
+    
+    var fullName: String {
+        "\(firstName) \(lastName)"
+    }
     
     enum CodingKeys: String, CodingKey {
-        case id, name, email, phone, notes
-        case dietaryRestrictions = "dietary_restrictions"
+        case id, email, phone, street, city, country, intolerances, favorites
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case postalCode = "postal_code"
+        case dietaryNotes = "dietary_notes"
+        case imagePath = "image_path"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
     }
 }
 
