@@ -6,59 +6,35 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeView()
-                .tabItem {
-                    Label("nav.home".localized(appState.currentLanguage), systemImage: "house.fill")
-                }
-                .tag(0)
-            
             RecipesView()
                 .tabItem {
                     Label("nav.recipes".localized(appState.currentLanguage), systemImage: "book.fill")
                 }
-                .tag(1)
+                .tag(0)
             
             EventsView()
                 .tabItem {
                     Label("nav.events".localized(appState.currentLanguage), systemImage: "calendar")
                 }
-                .tag(2)
-            
-            LocationsView()
-                .tabItem {
-                    Label("locations.title".localized(appState.currentLanguage), systemImage: "mappin.circle.fill")
-                }
-                .tag(3)
-            
-            GuestsView()
-                .tabItem {
-                    Label("guests.title".localized(appState.currentLanguage), systemImage: "person.2.fill")
-                }
-                .tag(4)
+                .tag(1)
             
             ShoppingListsView()
                 .tabItem {
                     Label("shopping.title".localized(appState.currentLanguage), systemImage: "cart.fill")
                 }
-                .tag(5)
+                .tag(2)
             
             StorageView()
                 .tabItem {
                     Label("nav.storage".localized(appState.currentLanguage), systemImage: "archivebox.fill")
                 }
-                .tag(6)
-            
-            ToolsView()
-                .tabItem {
-                    Label("nav.tools".localized(appState.currentLanguage), systemImage: "wrench.fill")
-                }
-                .tag(7)
+                .tag(3)
             
             MoreView()
                 .tabItem {
                     Label("nav.more".localized(appState.currentLanguage), systemImage: "ellipsis.circle.fill")
                 }
-                .tag(8)
+                .tag(4)
         }
         .preferredColorScheme(appState.isDarkMode ? .dark : .light)
     }
@@ -95,6 +71,18 @@ struct MoreView: View {
     var body: some View {
         NavigationView {
             List {
+                NavigationLink(destination: ToolsView()) {
+                    Label("nav.tools".localized(appState.currentLanguage), systemImage: "wrench.fill")
+                }
+                
+                NavigationLink(destination: LocationsView()) {
+                    Label("locations.title".localized(appState.currentLanguage), systemImage: "mappin.circle.fill")
+                }
+                
+                NavigationLink(destination: GuestsView()) {
+                    Label("guests.title".localized(appState.currentLanguage), systemImage: "person.2.fill")
+                }
+                
                 Section {
                     Button(action: {
                         if let url = URL(string: UIApplication.openSettingsURLString) {
