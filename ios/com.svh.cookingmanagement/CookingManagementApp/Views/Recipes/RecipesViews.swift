@@ -126,6 +126,15 @@ struct RecipeRow: View {
 
 // MARK: - Recipe Detail View
 struct RecipeDetailView: View {
+    // Helper function to format ingredient amounts
+    private func formatAmount(_ amount: Double) -> String {
+        if amount.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f", amount)
+        } else {
+            return String(format: "%.1f", amount)
+        }
+    }
+    
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel: RecipeDetailViewModel
     @State private var showingEditSheet = false
@@ -183,7 +192,7 @@ struct RecipeDetailView: View {
                         ForEach(ingredients.sorted(by: { $0.orderIndex < $1.orderIndex }), id: \.id) { ingredient in
                             HStack {
                                 Text("•")
-                                Text("\(String(format: "%.1f", ingredient.amount)) \(ingredient.unit) \(ingredient.name)")
+                                Text("\(formatAmount(ingredient.amount)) \(ingredient.unit) \(ingredient.name)")
                             }
                         }
                     }
