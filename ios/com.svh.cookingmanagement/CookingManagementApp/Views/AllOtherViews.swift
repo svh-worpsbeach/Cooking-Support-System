@@ -438,8 +438,9 @@ struct StorageView: View {
                         NavigationLink(destination: StorageDetailView(item: item)) {
                             VStack(alignment: .leading) {
                                 Text(item.name).font(.headline)
-                                if let quantity = item.quantity, let unit = item.unit {
-                                    Text("\(quantity) \(unit)").font(.caption).foregroundColor(.secondary)
+                                Text("\(String(format: "%.1f", item.quantity)) \(item.unit)").font(.caption).foregroundColor(.secondary)
+                                if let locationName = item.locationName {
+                                    Text(locationName).font(.caption2).foregroundColor(.secondary)
                                 }
                             }
                         }
@@ -477,32 +478,23 @@ struct StorageDetailView: View {
                     .font(.title)
                     .fontWeight(.bold)
                 
-                if let description = item.description {
-                    Text(description)
-                        .foregroundColor(.secondary)
+                HStack {
+                    Label("\(String(format: "%.1f", item.quantity)) \(item.unit)", systemImage: "scalemass")
                 }
                 
-                if let quantity = item.quantity, let unit = item.unit {
-                    HStack {
-                        Label("\(quantity) \(unit)", systemImage: "scalemass")
-                    }
-                }
-                
-                if let category = item.category {
-                    HStack {
-                        Label(category, systemImage: "tag")
-                    }
+                HStack {
+                    Label(item.category, systemImage: "tag")
                 }
                 
                 if let expiryDate = item.expiryDate {
                     HStack {
-                        Label(expiryDate, systemImage: "calendar")
+                        Label(expiryDate.toGermanDate(), systemImage: "calendar")
                     }
                 }
                 
-                if let location = item.location {
+                if let locationName = item.locationName {
                     Divider()
-                    Text("Standort: \(location.name)")
+                    Text("Standort: \(locationName)")
                         .font(.subheadline)
                 }
             }
@@ -518,6 +510,7 @@ struct StorageFormView: View {
     let item: Storage?
     let onSave: (Storage) -> Void
     @State private var name: String
+    @State private var category: String
     @State private var quantity: String
     @State private var unit: String
     
@@ -525,7 +518,8 @@ struct StorageFormView: View {
         self.item = item
         self.onSave = onSave
         _name = State(initialValue: item?.name ?? "")
-        _quantity = State(initialValue: item?.quantity ?? "")
+        _category = State(initialValue: item?.category ?? "")
+        _quantity = State(initialValue: item.map { String(format: "%.1f", $0.quantity) } ?? "")
         _unit = State(initialValue: item?.unit ?? "")
     }
     
@@ -533,7 +527,9 @@ struct StorageFormView: View {
         NavigationView {
             Form {
                 TextField("common.name".localized(appState.currentLanguage), text: $name)
+                TextField("Kategorie", text: $category)
                 TextField("common.quantity".localized(appState.currentLanguage), text: $quantity)
+                    .keyboardType(.decimalPad)
                 TextField("common.unit".localized(appState.currentLanguage), text: $unit)
             }
             .navigationTitle(item == nil ? "storage.new".localized(appState.currentLanguage) : "common.edit".localized(appState.currentLanguage))
@@ -546,13 +542,14 @@ struct StorageFormView: View {
                         let newItem = Storage(
                             id: item?.id ?? 0,
                             name: name,
-                            description: item?.description,
-                            quantity: quantity.isEmpty ? nil : quantity,
-                            unit: unit.isEmpty ? nil : unit,
+                            category: category.isEmpty ? "other" : category,
+                            quantity: Double(quantity) ?? 0.0,
+                            unit: unit.isEmpty ? "pieces" : unit,
                             expiryDate: item?.expiryDate,
-                            locationId: item?.locationId,
-                            location: item?.location,
-                            category: item?.category
+                            locationId: item?.locationId ?? 1,
+                            locationName: item?.locationName,
+                            createdAt: item?.createdAt,
+                            updatedAt: item?.updatedAt
                         )
                         onSave(newItem)
                         dismiss()

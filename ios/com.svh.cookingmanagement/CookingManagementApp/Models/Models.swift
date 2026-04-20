@@ -260,18 +260,22 @@ struct Tool: Codable, Identifiable, Hashable {
 struct Storage: Codable, Identifiable, Hashable {
     let id: Int
     var name: String
-    var description: String?
-    var quantity: String?
-    var unit: String?
+    var category: String
+    var quantity: Double
+    var unit: String
     var expiryDate: String?
-    var locationId: Int?
-    var location: Location?
-    var category: String?
+    var locationId: Int
+    var locationName: String?
+    var createdAt: String?
+    var updatedAt: String?
     
     enum CodingKeys: String, CodingKey {
-        case id, name, description, quantity, unit, location, category
+        case id, name, category, quantity, unit
         case expiryDate = "expiry_date"
         case locationId = "location_id"
+        case locationName = "location_name"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
     }
 }
 
