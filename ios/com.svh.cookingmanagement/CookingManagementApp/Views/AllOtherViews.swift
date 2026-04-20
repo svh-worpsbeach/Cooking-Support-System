@@ -19,7 +19,7 @@ struct EventsView: View {
                             VStack(alignment: .leading) {
                                 Text(event.name).font(.headline)
                                 if let eventDate = event.eventDate {
-                                    Text(eventDate).font(.caption).foregroundColor(.secondary)
+                                    Text(eventDate.toGermanDateTime()).font(.caption).foregroundColor(.secondary)
                                 }
                                 if let theme = event.theme {
                                     Text(theme).font(.caption2).foregroundColor(.secondary)
@@ -51,63 +51,97 @@ struct EventsView: View {
 
 struct EventDetailView: View {
     @EnvironmentObject var appState: AppState
-    let event: Event
+    @StateObject private var viewModel: EventDetailViewModel
+    
+    init(event: Event) {
+        _viewModel = StateObject(wrappedValue: EventDetailViewModel(event: event))
+    }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text(event.name).font(.title).fontWeight(.bold)
+        Group {
+            if viewModel.isLoading {
+                ProgressView("Loading...")
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(viewModel.event.name).font(.title).fontWeight(.bold)
                 
-                if let description = event.description {
-                    Text(description).foregroundColor(.secondary)
-                }
-                
-                if let theme = event.theme {
-                    HStack {
-                        Label(theme, systemImage: "sparkles")
-                    }
-                }
-                
-                if let eventDate = event.eventDate {
-                    HStack {
-                        Label(eventDate, systemImage: "calendar")
-                    }
-                }
-                
-                if let participants = event.participants, !participants.isEmpty {
-                    Divider()
-                    Text("Teilnehmer (\(participants.count))")
-                        .font(.headline)
-                    ForEach(participants, id: \.id) { participant in
-                        VStack(alignment: .leading) {
-                            Text(participant.name)
-                            if let dietary = participant.dietaryRestrictions {
-                                Text(dietary)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                        if let description = viewModel.event.description {
+                            Text(description).foregroundColor(.secondary)
+                        }
+                        
+                        if let theme = viewModel.event.theme {
+                            HStack {
+                                Label(theme, systemImage: "sparkles")
                             }
                         }
-                        .padding(.vertical, 2)
-                    }
-                }
-                
-                if let courses = event.courses, !courses.isEmpty {
-                    Divider()
-                    Text("Gänge (\(courses.count))")
-                        .font(.headline)
-                    ForEach(courses.sorted(by: { $0.courseNumber < $1.courseNumber }), id: \.id) { course in
-                        VStack(alignment: .leading) {
-                            Text("\(course.courseNumber). \(course.courseName)")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
+                        
+                        if let eventDate = viewModel.event.eventDate {
+                            HStack {
+                                Label(eventDate.toGermanDateTime(), systemImage: "calendar")
+                            }
                         }
-                        .padding(.vertical, 2)
+                        
+                        if let participants = viewModel.event.participants, !participants.isEmpty {
+                            Divider()
+                            Text("Teilnehmer (\(participants.count))")
+                                .font(.headline)
+                            ForEach(participants, id: \.id) { participant in
+                                VStack(alignment: .leading) {
+                                    Text(participant.name)
+                                    if let dietary = participant.dietaryRestrictions {
+                                        Text(dietary)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .padding(.vertical, 2)
+                            }
+                        }
+                        
+                        if let courses = viewModel.event.courses, !courses.isEmpty {
+                            Divider()
+                            Text("Gänge (\(courses.count))")
+                                .font(.headline)
+                            ForEach(courses.sorted(by: { $0.courseNumber < $1.courseNumber }), id: \.id) { course in
+                                VStack(alignment: .leading) {
+                                    Text("\(course.courseNumber). \(course.courseName)")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                }
+                                .padding(.vertical, 2)
+                            }
+                        }
                     }
+                    .padding()
                 }
             }
-            .padding()
+        }
+        .task {
+            await viewModel.loadEventDetails()
         }
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+@MainActor
+class EventDetailViewModel: ObservableObject {
+    @Published var event: Event
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    
+    init(event: Event) {
+        self.event = event
+    }
+    
+    func loadEventDetails() async {
+        isLoading = true
+        do {
+            event = try await APIService.shared.getEvent(id: event.id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
     }
 }
 
@@ -234,46 +268,79 @@ struct ToolsView: View {
 
 struct ToolDetailView: View {
     @EnvironmentObject var appState: AppState
-    let tool: Tool
+    @StateObject private var viewModel: ToolDetailViewModel
+    
+    init(tool: Tool) {
+        _viewModel = StateObject(wrappedValue: ToolDetailViewModel(tool: tool))
+    }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if let imageUrl = tool.imageUrl {
-                    AsyncImage(url: URL(string: imageUrl)) { image in
-                        image.resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Color.gray
+        Group {
+            if viewModel.isLoading {
+                ProgressView("common.loading".localized(appState.currentLanguage))
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        if let imageUrl = viewModel.tool.imageUrl {
+                            AsyncImage(url: URL(string: imageUrl)) { image in
+                                image.resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            } placeholder: {
+                                Color.gray
+                            }
+                            .frame(height: 200)
+                            .clipped()
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(viewModel.tool.name)
+                                .font(.title)
+                                .fontWeight(.bold)
+                            
+                            if let description = viewModel.tool.description {
+                                Text(description)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            HStack {
+                                Label("Menge: \(viewModel.tool.quantity)", systemImage: "number")
+                            }
+                            
+                            if let location = viewModel.tool.location {
+                                Divider()
+                                Text("Standort: \(location.name)")
+                                    .font(.subheadline)
+                            }
+                        }
+                        .padding()
                     }
-                    .frame(height: 200)
-                    .clipped()
                 }
-                
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(tool.name)
-                        .font(.title)
-                        .fontWeight(.bold)
-                    
-                    if let description = tool.description {
-                        Text(description)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Label("Menge: \(tool.quantity)", systemImage: "number")
-                    }
-                    
-                    if let location = tool.location {
-                        Divider()
-                        Text("Standort: \(location.name)")
-                            .font(.subheadline)
-                    }
-                }
-                .padding()
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.loadToolDetails()
+        }
+    }
+}
+
+@MainActor
+class ToolDetailViewModel: ObservableObject {
+    @Published var tool: Tool
+    @Published var isLoading = false
+    
+    init(tool: Tool) {
+        self.tool = tool
+    }
+    
+    func loadToolDetails() async {
+        isLoading = true
+        do {
+            tool = try await APIService.shared.getTool(id: tool.id)
+        } catch {
+            print("Error loading tool details: \(error)")
+        }
+        isLoading = false
     }
 }
 
@@ -560,36 +627,69 @@ struct LocationsView: View {
 
 struct LocationDetailView: View {
     @EnvironmentObject var appState: AppState
-    let location: Location
+    @StateObject private var viewModel: LocationDetailViewModel
+    
+    init(location: Location) {
+        _viewModel = StateObject(wrappedValue: LocationDetailViewModel(location: location))
+    }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if let imagePath = location.imagePath {
-                    AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(imagePath)")) { image in
-                        image.resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Color.gray
+        Group {
+            if viewModel.isLoading {
+                ProgressView("common.loading".localized(appState.currentLanguage))
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        if let imagePath = viewModel.location.imagePath {
+                            AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(imagePath)")) { image in
+                                image.resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            } placeholder: {
+                                Color.gray
+                            }
+                            .frame(height: 200)
+                            .clipped()
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(viewModel.location.name)
+                                .font(.title)
+                                .fontWeight(.bold)
+                            
+                            if let description = viewModel.location.description {
+                                Text(description)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding()
                     }
-                    .frame(height: 200)
-                    .clipped()
                 }
-                
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(location.name)
-                        .font(.title)
-                        .fontWeight(.bold)
-                    
-                    if let description = location.description {
-                        Text(description)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding()
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.loadLocationDetails()
+        }
+    }
+}
+
+@MainActor
+class LocationDetailViewModel: ObservableObject {
+    @Published var location: Location
+    @Published var isLoading = false
+    
+    init(location: Location) {
+        self.location = location
+    }
+    
+    func loadLocationDetails() async {
+        isLoading = true
+        do {
+            location = try await APIService.shared.getLocation(id: location.id)
+        } catch {
+            print("Error loading location details: \(error)")
+        }
+        isLoading = false
     }
 }
 
@@ -720,80 +820,113 @@ struct GuestsView: View {
 
 struct GuestDetailView: View {
     @EnvironmentObject var appState: AppState
-    let guest: Guest
+    @StateObject private var viewModel: GuestDetailViewModel
+    
+    init(guest: Guest) {
+        _viewModel = StateObject(wrappedValue: GuestDetailViewModel(guest: guest))
+    }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if let imagePath = guest.imagePath {
-                    AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(imagePath)")) { image in
-                        image.resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Color.gray
+        Group {
+            if viewModel.isLoading {
+                ProgressView("common.loading".localized(appState.currentLanguage))
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        if let imagePath = viewModel.guest.imagePath {
+                            AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(imagePath)")) { image in
+                                image.resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            } placeholder: {
+                                Color.gray
+                            }
+                            .frame(width: 120, height: 120)
+                            .cornerRadius(60)
+                        }
+                        
+                        Text(viewModel.guest.fullName)
+                            .font(.title)
+                            .fontWeight(.bold)
+                        
+                        if let email = viewModel.guest.email {
+                            HStack {
+                                Label(email, systemImage: "envelope")
+                            }
+                        }
+                        
+                        if let phone = viewModel.guest.phone {
+                            HStack {
+                                Label(phone, systemImage: "phone")
+                            }
+                        }
+                        
+                        if let street = viewModel.guest.street, let city = viewModel.guest.city {
+                            Divider()
+                            Text("Adresse:")
+                                .font(.headline)
+                            Text(street)
+                            if let postalCode = viewModel.guest.postalCode {
+                                Text("\(postalCode) \(city)")
+                            } else {
+                                Text(city)
+                            }
+                            if let country = viewModel.guest.country {
+                                Text(country)
+                            }
+                        }
+                        
+                        if let intolerances = viewModel.guest.intolerances {
+                            Divider()
+                            Text("Unverträglichkeiten:")
+                                .font(.headline)
+                            Text(intolerances)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        if let favorites = viewModel.guest.favorites {
+                            Divider()
+                            Text("Favoriten:")
+                                .font(.headline)
+                            Text(favorites)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        if let dietaryNotes = viewModel.guest.dietaryNotes {
+                            Divider()
+                            Text("Ernährungshinweise:")
+                                .font(.headline)
+                            Text(dietaryNotes)
+                                .foregroundColor(.secondary)
+                        }
                     }
-                    .frame(width: 120, height: 120)
-                    .cornerRadius(60)
-                }
-                
-                Text(guest.fullName)
-                    .font(.title)
-                    .fontWeight(.bold)
-                
-                if let email = guest.email {
-                    HStack {
-                        Label(email, systemImage: "envelope")
-                    }
-                }
-                
-                if let phone = guest.phone {
-                    HStack {
-                        Label(phone, systemImage: "phone")
-                    }
-                }
-                
-                if let street = guest.street, let city = guest.city {
-                    Divider()
-                    Text("Adresse:")
-                        .font(.headline)
-                    Text(street)
-                    if let postalCode = guest.postalCode {
-                        Text("\(postalCode) \(city)")
-                    } else {
-                        Text(city)
-                    }
-                    if let country = guest.country {
-                        Text(country)
-                    }
-                }
-                
-                if let intolerances = guest.intolerances {
-                    Divider()
-                    Text("Unverträglichkeiten:")
-                        .font(.headline)
-                    Text(intolerances)
-                        .foregroundColor(.secondary)
-                }
-                
-                if let favorites = guest.favorites {
-                    Divider()
-                    Text("Favoriten:")
-                        .font(.headline)
-                    Text(favorites)
-                        .foregroundColor(.secondary)
-                }
-                
-                if let dietaryNotes = guest.dietaryNotes {
-                    Divider()
-                    Text("Ernährungshinweise:")
-                        .font(.headline)
-                    Text(dietaryNotes)
-                        .foregroundColor(.secondary)
+                    .padding()
                 }
             }
-            .padding()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.loadGuestDetails()
+        }
+    }
+}
+
+@MainActor
+class GuestDetailViewModel: ObservableObject {
+    @Published var guest: Guest
+    @Published var isLoading = false
+    
+    init(guest: Guest) {
+        self.guest = guest
+    }
+    
+    func loadGuestDetails() async {
+        isLoading = true
+        do {
+            guest = try await APIService.shared.getGuest(id: guest.id)
+        } catch {
+            print("Error loading guest details: \(error)")
+        }
+        isLoading = false
     }
 }
 
@@ -931,7 +1064,7 @@ struct ShoppingListDetailView: View {
                     .fontWeight(.bold)
                 
                 if let createdAt = list.createdAt {
-                    Text("Erstellt: \(createdAt)")
+                    Text("Erstellt: \(createdAt.toGermanDateTime())")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
