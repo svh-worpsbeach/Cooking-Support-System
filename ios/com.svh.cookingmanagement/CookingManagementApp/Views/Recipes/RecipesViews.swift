@@ -137,10 +137,14 @@ struct RecipeDetailView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Show first image if available
-                if let images = viewModel.recipe.images, let firstImage = images.first {
+        Group {
+            if viewModel.isLoading {
+                ProgressView("Loading...")
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        // Show first image if available
+                        if let images = viewModel.recipe.images, let firstImage = images.first {
                     AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(firstImage.filepath)")) { image in
                         image.resizable()
                             .aspectRatio(contentMode: .fill)
@@ -213,8 +217,13 @@ struct RecipeDetailView: View {
                         }
                     }
                 }
-                .padding()
+                        .padding()
+                    }
+                }
             }
+        }
+        .task {
+            await viewModel.loadRecipeDetails()
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -379,9 +388,20 @@ class RecipesViewModel: ObservableObject {
 class RecipeDetailViewModel: ObservableObject {
     @Published var recipe: Recipe
     @Published var errorMessage: String?
+    @Published var isLoading = false
     
     init(recipe: Recipe) {
         self.recipe = recipe
+    }
+    
+    func loadRecipeDetails() async {
+        isLoading = true
+        do {
+            recipe = try await APIService.shared.getRecipe(id: recipe.id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
     }
     
     func updateRecipe(_ updatedRecipe: Recipe) async {
