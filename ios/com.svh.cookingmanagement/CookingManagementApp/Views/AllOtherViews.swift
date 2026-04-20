@@ -194,58 +194,8 @@ class EventDetailViewModel: ObservableObject {
     }
 }
 
-struct EventFormView: View {
-    @EnvironmentObject var appState: AppState
-    @Environment(\.dismiss) private var dismiss
-    let event: Event?
-    let onSave: (Event) -> Void
-    @State private var name: String
-    @State private var description: String
-    @State private var date: Date
-    
-    init(event: Event?, onSave: @escaping (Event) -> Void) {
-        self.event = event
-        self.onSave = onSave
-        _name = State(initialValue: event?.name ?? "")
-        _description = State(initialValue: event?.description ?? "")
-        _date = State(initialValue: Date())
-    }
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                TextField("common.name".localized(appState.currentLanguage), text: $name)
-                TextField("common.description".localized(appState.currentLanguage), text: $description)
-                DatePicker("common.date".localized(appState.currentLanguage), selection: $date, displayedComponents: .date)
-            }
-            .navigationTitle(event == nil ? "events.new".localized(appState.currentLanguage) : "common.edit".localized(appState.currentLanguage))
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel".localized(appState.currentLanguage)) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("common.save".localized(appState.currentLanguage)) {
-                        let formatter = ISO8601DateFormatter()
-                        let newEvent = Event(
-                            id: event?.id ?? 0,
-                            name: name,
-                            description: description.isEmpty ? nil : description,
-                            theme: nil,
-                            eventDate: formatter.string(from: date),
-                            participants: event?.participants,
-                            courses: event?.courses,
-                            shoppingList: event?.shoppingList,
-                            createdAt: event?.createdAt,
-                            updatedAt: event?.updatedAt
-                        )
-                        onSave(newEvent)
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
+// MARK: - Event Form View
+// EventFormView is now in EventFormView.swift with extended functionality for editing participants and courses
 
 @MainActor
 class EventsViewModel: ObservableObject {
@@ -1436,45 +1386,8 @@ class ShoppingListDetailViewModel: ObservableObject {
     }
 }
 
-struct ShoppingListFormView: View {
-    @EnvironmentObject var appState: AppState
-    @Environment(\.dismiss) private var dismiss
-    let list: ShoppingList?
-    let onSave: (ShoppingList) -> Void
-    @State private var name: String
-    
-    init(list: ShoppingList?, onSave: @escaping (ShoppingList) -> Void) {
-        self.list = list
-        self.onSave = onSave
-        _name = State(initialValue: list?.name ?? "")
-    }
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                TextField("common.name".localized(appState.currentLanguage), text: $name)
-            }
-            .navigationTitle(list == nil ? "shopping.new".localized(appState.currentLanguage) : "common.edit".localized(appState.currentLanguage))
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel".localized(appState.currentLanguage)) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("common.save".localized(appState.currentLanguage)) {
-                        let newList = ShoppingList(
-                            id: list?.id ?? 0,
-                            name: name,
-                            items: list?.items ?? [],
-                            createdAt: list?.createdAt
-                        )
-                        onSave(newList)
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
+// MARK: - Shopping List Form View
+// ShoppingListFormView is now in ShoppingListFormView.swift with extended functionality for editing items
 
 @MainActor
 class ShoppingListsViewModel: ObservableObject {
