@@ -689,6 +689,7 @@ class ShoppingListsViewModel: ObservableObject {
 struct SettingsView: View {
     @EnvironmentObject var appState: AppState
     @State private var apiUrl: String = UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:8000"
+    @State private var showingConnectionDialog = false
     
     var body: some View {
         Form {
@@ -710,11 +711,19 @@ struct SettingsView: View {
             }
             
             Section("settings.apiUrl".localized(appState.currentLanguage)) {
-                TextField("settings.apiUrl".localized(appState.currentLanguage), text: $apiUrl)
-                    .autocapitalization(.none)
-                    .keyboardType(.URL)
-                Button("common.save".localized(appState.currentLanguage)) {
-                    UserDefaults.standard.set(apiUrl, forKey: "apiBaseURL")
+                Button(action: { showingConnectionDialog = true }) {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("settings.configureBackend".localized(appState.currentLanguage))
+                                .foregroundColor(.primary)
+                            Text(apiUrl)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
             
@@ -725,6 +734,194 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("settings.title".localized(appState.currentLanguage))
+        .sheet(isPresented: $showingConnectionDialog) {
+            BackendConfigurationView(currentUrl: $apiUrl)
+                .environmentObject(appState)
+        }
+    }
+}
+
+// MARK: - Backend Configuration View
+struct BackendConfigurationView: View {
+    @EnvironmentObject var appState: AppState
+    @Environment(\.dismiss) private var dismiss
+    @Binding var currentUrl: String
+    @State private var urlInput: String
+    @State private var isTestingConnection = false
+    @State private var connectionStatus: ConnectionStatus = .notTested
+    @State private var connectionMessage: String = ""
+    
+    enum ConnectionStatus {
+        case notTested
+        case testing
+        case success
+        case failed
+    }
+    
+    init(currentUrl: Binding<String>) {
+        self._currentUrl = currentUrl
+        self._urlInput = State(initialValue: currentUrl.wrappedValue)
+    }
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("settings.backendUrl".localized(appState.currentLanguage))
+                            .font(.headline)
+                        Text("settings.backendUrlDescription".localized(appState.currentLanguage))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+                
+                Section("settings.urlInput".localized(appState.currentLanguage)) {
+                    TextField("settings.urlPlaceholder".localized(appState.currentLanguage), text: $urlInput)
+                        .autocapitalization(.none)
+                        .keyboardType(.URL)
+                        .textContentType(.URL)
+                    
+                    // Quick presets
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("settings.quickPresets".localized(appState.currentLanguage))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        HStack(spacing: 8) {
+                            Button("Localhost") {
+                                urlInput = "http://localhost:8000"
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            
+                            Button("192.168.1.x") {
+                                urlInput = "http://192.168.1.100:8000"
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
+                Section {
+                    Button(action: testConnection) {
+                        HStack {
+                            if isTestingConnection {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle())
+                                Text("settings.testing".localized(appState.currentLanguage))
+                            } else {
+                                Image(systemName: "network")
+                                Text("settings.testConnection".localized(appState.currentLanguage))
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .disabled(urlInput.isEmpty || isTestingConnection)
+                    
+                    if connectionStatus != .notTested {
+                        HStack {
+                            Image(systemName: connectionStatus == .success ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .foregroundColor(connectionStatus == .success ? .green : .red)
+                            Text(connectionMessage)
+                                .font(.caption)
+                        }
+                    }
+                }
+                
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("settings.examples".localized(appState.currentLanguage))
+                            .font(.headline)
+                        
+                        ExampleRow(title: "settings.exampleLocal".localized(appState.currentLanguage),
+                                  url: "http://localhost:8000")
+                        ExampleRow(title: "settings.exampleNetwork".localized(appState.currentLanguage),
+                                  url: "http://192.168.1.100:8000")
+                        ExampleRow(title: "settings.exampleProduction".localized(appState.currentLanguage),
+                                  url: "https://api.example.com")
+                    }
+                }
+            }
+            .navigationTitle("settings.configureBackend".localized(appState.currentLanguage))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.cancel".localized(appState.currentLanguage)) {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("common.save".localized(appState.currentLanguage)) {
+                        saveConfiguration()
+                    }
+                    .disabled(urlInput.isEmpty)
+                }
+            }
+        }
+    }
+    
+    private func testConnection() {
+        isTestingConnection = true
+        connectionStatus = .testing
+        connectionMessage = ""
+        
+        Task {
+            do {
+                // Test connection by trying to fetch recipes
+                guard let url = URL(string: "\(urlInput)/api/recipes") else {
+                    throw URLError(.badURL)
+                }
+                
+                var request = URLRequest(url: url)
+                request.timeoutInterval = 5.0
+                
+                let (_, response) = try await URLSession.shared.data(for: request)
+                
+                if let httpResponse = response as? HTTPURLResponse {
+                    if (200...299).contains(httpResponse.statusCode) {
+                        await MainActor.run {
+                            connectionStatus = .success
+                            connectionMessage = "settings.connectionSuccess".localized(appState.currentLanguage)
+                            isTestingConnection = false
+                        }
+                    } else {
+                        throw URLError(.badServerResponse)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    connectionStatus = .failed
+                    connectionMessage = "settings.connectionFailed".localized(appState.currentLanguage) + ": \(error.localizedDescription)"
+                    isTestingConnection = false
+                }
+            }
+        }
+    }
+    
+    private func saveConfiguration() {
+        UserDefaults.standard.set(urlInput, forKey: "apiBaseURL")
+        currentUrl = urlInput
+        dismiss()
+    }
+}
+
+struct ExampleRow: View {
+    let title: String
+    let url: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Text(url)
+                .font(.system(.caption, design: .monospaced))
+                .foregroundColor(.blue)
+        }
     }
 }
 
