@@ -829,15 +829,25 @@ struct GuestFormView: View {
                     Button("common.save".localized(appState.currentLanguage)) {
                         let newGuest = Guest(
                             id: guest?.id ?? 0,
-                            name: name,
+                            firstName: name.components(separatedBy: " ").first ?? name,
+                            lastName: name.components(separatedBy: " ").dropFirst().joined(separator: " "),
                             email: email.isEmpty ? nil : email,
                             phone: phone.isEmpty ? nil : phone,
-                            dietaryRestrictions: guest?.dietaryRestrictions,
-                            notes: guest?.notes
+                            street: guest?.street,
+                            city: guest?.city,
+                            postalCode: guest?.postalCode,
+                            country: guest?.country,
+                            intolerances: guest?.intolerances,
+                            favorites: guest?.favorites,
+                            dietaryNotes: guest?.dietaryNotes,
+                            imagePath: guest?.imagePath,
+                            createdAt: guest?.createdAt,
+                            updatedAt: guest?.updatedAt
                         )
                         onSave(newGuest)
                         dismiss()
                     }
+                    .disabled(name.isEmpty)
                 }
             }
         }
