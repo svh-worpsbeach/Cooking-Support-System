@@ -1,309 +1,91 @@
-# Backend-Konfiguration - iOS App
+# Backend Configuration for iOS App
 
-Die iOS-App kann mit jedem Backend verbunden werden, indem die API-URL in den Einstellungen konfiguriert wird.
+## Problem
+The iOS app is configured to use port 8000, but the backend runs on port 5580.
 
-## 🔧 Backend-URL konfigurieren
+## Solution
 
-### In der App
+### Option 1: Configure in App Settings (Recommended)
+The app reads the API base URL from `UserDefaults` with key `apiBaseURL`.
 
-1. **App starten** im Simulator oder auf dem Gerät
-2. **Navigieren** zu "Mehr" → "Einstellungen"
-3. **API-URL eingeben** im Textfeld unter "API URL"
-   - Lokal: `http://localhost:8000`
-   - Netzwerk: `http://192.168.x.x:8000`
-   - Production: `https://your-domain.com`
-4. **Speichern** Button drücken
-5. Die App verwendet jetzt die neue URL für alle API-Anfragen
+1. Open the iOS app
+2. Go to Settings (if available)
+3. Set API Base URL to: `http://localhost:5580`
 
-### Standard-URL
+### Option 2: Modify Source Code
+If you need to change the default port in the source code:
 
-Wenn keine URL konfiguriert ist, verwendet die App:
-```
-http://localhost:8000
-```
+1. Open `ios/com.svh.cookingmanagement/CookingManagementApp/Services/APIService.swift`
+2. Change line 8 from:
+   ```swift
+   UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:8000"
+   ```
+   to:
+   ```swift
+   UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580"
+   ```
 
-## 📱 Verwendung
+3. Also update `ios/com.svh.cookingmanagement/CookingManagementApp/Views/Recipes/RecipesViews.swift` line 144:
+   ```swift
+   AsyncImage(url: URL(string: "http://localhost:5580/\(firstImage.filepath)"))
+   ```
 
-### Lokale Entwicklung (Simulator)
-
-```bash
-# Backend starten
-cd backend
-./run.sh
-
-# In der iOS-App:
-# Settings → API URL: http://localhost:8000
-```
-
-### Physisches Gerät im gleichen Netzwerk
-
-```bash
-# 1. Mac IP-Adresse herausfinden
-ifconfig | grep "inet " | grep -v 127.0.0.1
-
-# 2. Backend mit dieser IP starten
-cd backend
-./run.sh
-
-# 3. In der iOS-App:
-# Settings → API URL: http://192.168.x.x:8000
-```
-
-### Production Server
-
-```bash
-# In der iOS-App:
-# Settings → API URL: https://your-domain.com
-```
-
-## 🔍 Technische Details
-
-### Implementierung
-
-Die Backend-URL wird in `UserDefaults` gespeichert:
+### Option 3: Use Device IP Address
+For testing on a physical device, use your computer's IP address:
 
 ```swift
-// APIService.swift
-private var baseURL: String {
-    UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:8000"
-}
+"http://192.168.1.XXX:5580"
 ```
 
-### Settings View
+Replace `192.168.1.XXX` with your actual IP address.
+
+## Current Status
+
+### ✅ Views that exist and work correctly:
+- **LocationsView** (line 516 in AllOtherViews.swift) - Shows locations list
+- **ToolsView** (line 189 in AllOtherViews.swift) - Shows tools list  
+- **GuestsView** (line 661 in AllOtherViews.swift) - Shows guests list
+- **RecipeDetailView** (line 128 in RecipesViews.swift) - Shows:
+  - Ingredients (lines 173-184)
+  - Steps (lines 187-199)
+  - Images (lines 143-152, 199-210)
+- **EventDetailView** (line 52 in AllOtherViews.swift) - Shows:
+  - Participants (lines 77-92)
+  - Courses (lines 94-110)
+
+### ⚠️ Known Issues:
+1. **Port mismatch**: App uses 8000, backend uses 5580
+2. **Hardcoded URLs**: Image URLs in RecipeDetailView use hardcoded port 8000
+3. **Date formatting**: Timestamps shown as technical strings instead of localized dates
+
+## Date Formatting Issue
+
+The iOS app shows dates as raw strings (e.g., "2026-04-13T05:58:21.247248Z") instead of formatted dates.
+
+### Solution:
+Add a date formatter extension in Swift:
 
 ```swift
-// AllOtherViews.swift - SettingsView
-Section("settings.apiUrl".localized(appState.currentLanguage)) {
-    TextField("settings.apiUrl".localized(appState.currentLanguage), text: $apiUrl)
-        .autocapitalization(.none)
-        .keyboardType(.URL)
-    Button("common.save".localized(appState.currentLanguage)) {
-        UserDefaults.standard.set(apiUrl, forKey: "apiBaseURL")
+extension String {
+    func toFormattedDate() -> String {
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        guard let date = isoFormatter.date(from: self) else {
+            return self
+        }
+        
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "de_DE")
+        formatter.timeZone = TimeZone(identifier: "Europe/Berlin")
+        
+        return formatter.string(from: date)
     }
 }
 ```
 
-### API-Anfragen
-
-Alle API-Anfragen verwenden automatisch die konfigurierte URL:
-
+Then use it in views:
 ```swift
-// Beispiel: Rezepte laden
-func getRecipes() async throws -> [Recipe] {
-    return try await request(endpoint: "/api/recipes")
-}
-
-// Wird zu: http://configured-url/api/recipes
-```
-
-## 🌐 Unterstützte Protokolle
-
-### HTTP (Entwicklung)
-
-```
-http://localhost:8000
-http://192.168.1.100:8000
-```
-
-**Hinweis**: Für HTTP-Verbindungen (nicht HTTPS) muss App Transport Security konfiguriert werden.
-
-### HTTPS (Production)
-
-```
-https://api.example.com
-https://your-domain.com
-```
-
-**Empfohlen** für Production-Umgebungen.
-
-## 🔐 App Transport Security (ATS)
-
-### HTTP erlauben (nur für Entwicklung)
-
-Falls Sie HTTP verwenden möchten, fügen Sie zu `Info.plist` hinzu:
-
-```xml
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <true/>
-</dict>
-```
-
-**Oder** spezifisch für localhost:
-
-```xml
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSExceptionDomains</key>
-    <dict>
-        <key>localhost</key>
-        <dict>
-            <key>NSExceptionAllowsInsecureHTTPLoads</key>
-            <true/>
-        </dict>
-    </dict>
-</dict>
-```
-
-### Production (HTTPS)
-
-Für Production-Server mit HTTPS ist keine spezielle Konfiguration nötig.
-
-## 🧪 Testen der Verbindung
-
-### 1. Backend-Status prüfen
-
-```bash
-# Terminal
-curl http://localhost:8000/api/recipes
-
-# Sollte JSON zurückgeben
-```
-
-### 2. In der App testen
-
-1. Settings → API URL konfigurieren
-2. Zu "Rezepte" navigieren
-3. Rezepte sollten geladen werden
-
-### 3. Fehlerbehandlung
-
-Falls keine Verbindung:
-- ✅ Backend läuft
-- ✅ URL korrekt eingegeben
-- ✅ Firewall erlaubt Verbindung
-- ✅ Bei Gerät: Gleiche Netzwerk wie Mac
-
-## 📊 API-Endpoints
-
-Die App verwendet folgende Endpoints:
-
-### Rezepte
-```
-GET    /api/recipes
-POST   /api/recipes
-GET    /api/recipes/{id}
-PUT    /api/recipes/{id}
-DELETE /api/recipes/{id}
-```
-
-### Events
-```
-GET    /api/events
-POST   /api/events
-GET    /api/events/{id}
-PUT    /api/events/{id}
-DELETE /api/events/{id}
-```
-
-### Tools
-```
-GET    /api/tools
-POST   /api/tools
-GET    /api/tools/{id}
-PUT    /api/tools/{id}
-DELETE /api/tools/{id}
-```
-
-### Storage
-```
-GET    /api/storage
-POST   /api/storage
-GET    /api/storage/{id}
-PUT    /api/storage/{id}
-DELETE /api/storage/{id}
-```
-
-### Locations
-```
-GET    /api/locations
-POST   /api/locations
-GET    /api/locations/{id}
-PUT    /api/locations/{id}
-DELETE /api/locations/{id}
-```
-
-### Guests
-```
-GET    /api/guests
-POST   /api/guests
-GET    /api/guests/{id}
-PUT    /api/guests/{id}
-DELETE /api/guests/{id}
-```
-
-### Shopping Lists
-```
-GET    /api/shopping-lists
-POST   /api/shopping-lists
-GET    /api/shopping-lists/{id}
-PUT    /api/shopping-lists/{id}
-DELETE /api/shopping-lists/{id}
-```
-
-## 🔄 URL zur Laufzeit ändern
-
-Die URL kann jederzeit in den Einstellungen geändert werden:
-
-1. Neue URL eingeben
-2. "Speichern" drücken
-3. App verwendet sofort die neue URL
-4. **Kein Neustart nötig**
-
-## 💡 Best Practices
-
-### Entwicklung
-
-```swift
-// Simulator
-http://localhost:8000
-
-// Physisches Gerät
-http://192.168.x.x:8000
-```
-
-### Staging
-
-```swift
-https://staging.your-domain.com
-```
-
-### Production
-
-```swift
-https://api.your-domain.com
-```
-
-## 🐛 Troubleshooting
-
-### Problem: "Cannot connect to backend"
-
-**Lösung**:
-1. Backend läuft: `cd backend && ./run.sh`
-2. URL korrekt: Settings → API URL prüfen
-3. Netzwerk: Gleiche Netzwerk bei physischem Gerät
-
-### Problem: "Invalid URL"
-
-**Lösung**:
-- URL muss mit `http://` oder `https://` beginnen
-- Keine Leerzeichen
-- Port angeben falls nötig (z.B. `:8000`)
-
-### Problem: "SSL Error" (HTTPS)
-
-**Lösung**:
-- Gültiges SSL-Zertifikat auf Server
-- Oder HTTP für Entwicklung verwenden
-
-## 📚 Weitere Informationen
-
-- **Backend-Dokumentation**: `backend/README.md`
-- **API-Dokumentation**: `backend/FILE_UPLOAD_API.md`
-- **iOS-Setup**: `ios/XCODE_SETUP_GUIDE.md`
-- **Git-Workflow**: `ios/GIT_SETUP.md`
-
----
-
-**Die Backend-URL-Konfiguration ist vollständig implementiert und einsatzbereit!** 🚀
+Text(event.eventDate?.toFormattedDate() ?? "")
