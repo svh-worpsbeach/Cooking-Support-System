@@ -7,32 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000001A000001 /* CookingManagementApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000A000001 /* CookingManagementApp.swift */; };
-		A10000002A000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000001A000001 /* ContentView.swift */; };
-		A10000003A000001 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002A000001 /* Models.swift */; };
-		A10000004A000001 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000003A000001 /* APIService.swift */; };
-		A10000005A000001 /* Localizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000004A000001 /* Localizable.swift */; };
-		A10000006A000001 /* RecipesViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000005A000001 /* RecipesViews.swift */; };
-		A10000007A000001 /* AllOtherViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000006A000001 /* AllOtherViews.swift */; };
-		A10000008A000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000007A000001 /* Assets.xcassets */; };
-		A10000009A000001 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000008A000001 /* Preview Assets.xcassets */; };
+		A1000001 /* CookingManagementApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000011 /* CookingManagementApp.swift */; };
+		A1000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000012 /* ContentView.swift */; };
+		A1000003 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000013 /* Models.swift */; };
+		A1000004 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000014 /* APIService.swift */; };
+		A1000005 /* Localizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000015 /* Localizable.swift */; };
+		A1000006 /* RecipesViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000016 /* RecipesViews.swift */; };
+		A1000007 /* AllOtherViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000017 /* AllOtherViews.swift */; };
+		A1000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000018 /* Assets.xcassets */; };
+		A1000009 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000019 /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A10000000A000001 /* CookingManagementApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookingManagementApp.swift; sourceTree = "<group>"; };
-		A10000001A000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A10000002A000001 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		A10000003A000001 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
-		A10000004A000001 /* Localizable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localizable.swift; sourceTree = "<group>"; };
-		A10000005A000001 /* RecipesViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipesViews.swift; sourceTree = "<group>"; };
-		A10000006A000001 /* AllOtherViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllOtherViews.swift; sourceTree = "<group>"; };
-		A10000007A000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A10000008A000001 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		A1000000BA000001 /* CookingManagementApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CookingManagementApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000010 /* CookingManagementApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CookingManagementApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000011 /* CookingManagementApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookingManagementApp.swift; sourceTree = "<group>"; };
+		A1000012 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1000013 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A1000014 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
+		A1000015 /* Localizable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localizable.swift; sourceTree = "<group>"; };
+		A1000016 /* RecipesViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipesViews.swift; sourceTree = "<group>"; };
+		A1000017 /* AllOtherViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllOtherViews.swift; sourceTree = "<group>"; };
+		A1000018 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1000019 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		A1000000CA000001 /* Frameworks */ = {
+		A1000020 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -42,82 +42,82 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A1000000DA000001 = {
+		A1000030 = {
 			isa = PBXGroup;
 			children = (
-				A1000000EA000001 /* CookingManagementApp */,
-				A1000000FA000001 /* Products */,
+				A1000031 /* CookingManagementApp */,
+				A1000032 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		A1000000EA000001 /* CookingManagementApp */ = {
+		A1000031 /* CookingManagementApp */ = {
 			isa = PBXGroup;
 			children = (
-				A10000000A000001 /* CookingManagementApp.swift */,
-				A10000001A000001 /* ContentView.swift */,
-				A10000010A000001 /* Models */,
-				A10000011A000001 /* Services */,
-				A10000012A000001 /* Localization */,
-				A10000013A000001 /* Views */,
-				A10000007A000001 /* Assets.xcassets */,
-				A10000014A000001 /* Preview Content */,
+				A1000011 /* CookingManagementApp.swift */,
+				A1000012 /* ContentView.swift */,
+				A1000040 /* Models */,
+				A1000041 /* Services */,
+				A1000042 /* Localization */,
+				A1000043 /* Views */,
+				A1000018 /* Assets.xcassets */,
+				A1000044 /* Preview Content */,
 			);
 			path = CookingManagementApp;
 			sourceTree = "<group>";
 		};
-		A1000000FA000001 /* Products */ = {
+		A1000032 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A1000000BA000001 /* CookingManagementApp.app */,
+				A1000010 /* CookingManagementApp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A10000010A000001 /* Models */ = {
+		A1000040 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				A10000002A000001 /* Models.swift */,
+				A1000013 /* Models.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
 		};
-		A10000011A000001 /* Services */ = {
+		A1000041 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				A10000003A000001 /* APIService.swift */,
+				A1000014 /* APIService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
 		};
-		A10000012A000001 /* Localization */ = {
+		A1000042 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
-				A10000004A000001 /* Localizable.swift */,
+				A1000015 /* Localizable.swift */,
 			);
 			path = Localization;
 			sourceTree = "<group>";
 		};
-		A10000013A000001 /* Views */ = {
+		A1000043 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A10000015A000001 /* Recipes */,
-				A10000006A000001 /* AllOtherViews.swift */,
+				A1000045 /* Recipes */,
+				A1000017 /* AllOtherViews.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
 		};
-		A10000014A000001 /* Preview Content */ = {
+		A1000044 /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
-				A10000008A000001 /* Preview Assets.xcassets */,
+				A1000019 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		A10000015A000001 /* Recipes */ = {
+		A1000045 /* Recipes */ = {
 			isa = PBXGroup;
 			children = (
-				A10000005A000001 /* RecipesViews.swift */,
+				A1000016 /* RecipesViews.swift */,
 			);
 			path = Recipes;
 			sourceTree = "<group>";
@@ -125,13 +125,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A10000016A000001 /* CookingManagementApp */ = {
+		A1000050 /* CookingManagementApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A10000017A000001 /* Build configuration list for PBXNativeTarget "CookingManagementApp" */;
+			buildConfigurationList = A1000051 /* Build configuration list for PBXNativeTarget "CookingManagementApp" */;
 			buildPhases = (
-				A10000018A000001 /* Sources */,
-				A1000000CA000001 /* Frameworks */,
-				A10000019A000001 /* Resources */,
+				A1000052 /* Sources */,
+				A1000020 /* Frameworks */,
+				A1000053 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -139,25 +139,25 @@
 			);
 			name = CookingManagementApp;
 			productName = CookingManagementApp;
-			productReference = A1000000BA000001 /* CookingManagementApp.app */;
+			productReference = A1000010 /* CookingManagementApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		A1000001AA000001 /* Project object */ = {
+		A1000060 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1610;
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
-					A10000016A000001 = {
+					A1000050 = {
 						CreatedOnToolsVersion = 16.1;
 					};
 				};
 			};
-			buildConfigurationList = A1000001BA000001 /* Build configuration list for PBXProject "CookingManagementApp" */;
+			buildConfigurationList = A1000061 /* Build configuration list for PBXProject "CookingManagementApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -165,47 +165,47 @@
 				en,
 				de,
 			);
-			mainGroup = A1000000DA000001;
-			productRefGroup = A1000000FA000001 /* Products */;
+			mainGroup = A1000030;
+			productRefGroup = A1000032 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A10000016A000001 /* CookingManagementApp */,
+				A1000050 /* CookingManagementApp */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A10000019A000001 /* Resources */ = {
+		A1000053 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000009A000001 /* Preview Assets.xcassets in Resources */,
-				A10000008A000001 /* Assets.xcassets in Resources */,
+				A1000009 /* Preview Assets.xcassets in Resources */,
+				A1000008 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A10000018A000001 /* Sources */ = {
+		A1000052 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000002A000001 /* ContentView.swift in Sources */,
-				A10000007A000001 /* AllOtherViews.swift in Sources */,
-				A10000006A000001 /* RecipesViews.swift in Sources */,
-				A10000003A000001 /* Models.swift in Sources */,
-				A10000005A000001 /* Localizable.swift in Sources */,
-				A10000004A000001 /* APIService.swift in Sources */,
-				A10000001A000001 /* CookingManagementApp.swift in Sources */,
+				A1000002 /* ContentView.swift in Sources */,
+				A1000007 /* AllOtherViews.swift in Sources */,
+				A1000006 /* RecipesViews.swift in Sources */,
+				A1000003 /* Models.swift in Sources */,
+				A1000005 /* Localizable.swift in Sources */,
+				A1000004 /* APIService.swift in Sources */,
+				A1000001 /* CookingManagementApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		A1000001CA000001 /* Debug */ = {
+		A1000070 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -268,7 +268,7 @@
 			};
 			name = Debug;
 		};
-		A1000001DA000001 /* Release */ = {
+		A1000071 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -324,7 +324,7 @@
 			};
 			name = Release;
 		};
-		A1000001EA000001 /* Debug */ = {
+		A1000072 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -354,7 +354,7 @@
 			};
 			name = Debug;
 		};
-		A1000001FA000001 /* Release */ = {
+		A1000073 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -387,25 +387,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A1000001BA000001 /* Build configuration list for PBXProject "CookingManagementApp" */ = {
+		A1000061 /* Build configuration list for PBXProject "CookingManagementApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A1000001CA000001 /* Debug */,
-				A1000001DA000001 /* Release */,
+				A1000070 /* Debug */,
+				A1000071 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A10000017A000001 /* Build configuration list for PBXNativeTarget "CookingManagementApp" */ = {
+		A1000051 /* Build configuration list for PBXNativeTarget "CookingManagementApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A1000001EA000001 /* Debug */,
-				A1000001FA000001 /* Release */,
+				A1000072 /* Debug */,
+				A1000073 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = A1000001AA000001 /* Project object */;
+	rootObject = A1000060 /* Project object */;
 }
