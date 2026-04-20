@@ -623,7 +623,9 @@ struct LocationFormView: View {
                             id: location?.id ?? 0,
                             name: name,
                             description: description.isEmpty ? nil : description,
-                            imageUrl: location?.imageUrl
+                            imagePath: location?.imagePath,
+                            createdAt: location?.createdAt,
+                            updatedAt: location?.updatedAt
                         )
                         onSave(newLocation)
                         dismiss()
