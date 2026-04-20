@@ -18,41 +18,86 @@ struct Recipe: Codable, Identifiable, Hashable {
     let id: Int
     var name: String
     var description: String?
-    var ingredients: [Ingredient]
-    var steps: [RecipeStep]
-    var prepTime: Int?
-    var cookTime: Int?
-    var servings: Int?
-    var difficulty: String?
-    var category: String?
-    var tags: [String]
-    var imageUrl: String?
-    var sourceUrl: String?
+    var preparationTime: String?
+    var cookingTime: String?
+    var titleImageId: Int?
+    var categories: [RecipeCategory]?
+    var ingredients: [Ingredient]?
+    var steps: [RecipeStep]?
+    var images: [RecipeImage]?
+    var createdAt: String?
+    var updatedAt: String?
     
     enum CodingKeys: String, CodingKey {
-        case id, name, description, ingredients, steps, servings, difficulty, category, tags
-        case prepTime = "prep_time"
-        case cookTime = "cook_time"
-        case imageUrl = "image_url"
-        case sourceUrl = "source_url"
+        case id, name, description, categories, ingredients, steps, images
+        case preparationTime = "preparation_time"
+        case cookingTime = "cooking_time"
+        case titleImageId = "title_image_id"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+}
+
+struct RecipeCategory: Codable, Hashable {
+    let id: Int
+    let recipeId: Int
+    let categoryName: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case recipeId = "recipe_id"
+        case categoryName = "category_name"
     }
 }
 
 struct Ingredient: Codable, Hashable {
+    let id: Int
+    let recipeId: Int
     var name: String
-    var amount: String
-    var unit: String?
+    var description: String?
+    var amount: Double
+    var unit: String
+    var orderIndex: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, description, amount, unit
+        case recipeId = "recipe_id"
+        case orderIndex = "order_index"
+    }
 }
 
 struct RecipeStep: Codable, Hashable {
+    let id: Int
+    let recipeId: Int
     var stepNumber: Int
-    var instruction: String
-    var imageUrl: String?
+    var content: String
+    var stepImageId: Int?
+    var createdAt: String?
     
     enum CodingKeys: String, CodingKey {
-        case instruction
+        case id, content
+        case recipeId = "recipe_id"
         case stepNumber = "step_number"
-        case imageUrl = "image_url"
+        case stepImageId = "step_image_id"
+        case createdAt = "created_at"
+    }
+}
+
+struct RecipeImage: Codable, Hashable {
+    let id: Int
+    let recipeId: Int
+    var filename: String
+    var filepath: String
+    var isProcessImage: Bool
+    var orderIndex: Int
+    var createdAt: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, filename, filepath
+        case recipeId = "recipe_id"
+        case isProcessImage = "is_process_image"
+        case orderIndex = "order_index"
+        case createdAt = "created_at"
     }
 }
 

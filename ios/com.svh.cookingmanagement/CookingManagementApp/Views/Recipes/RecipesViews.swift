@@ -85,8 +85,9 @@ struct RecipeRow: View {
     
     var body: some View {
         HStack {
-            if let imageUrl = recipe.imageUrl {
-                AsyncImage(url: URL(string: imageUrl)) { image in
+            // Show first image if available
+            if let images = recipe.images, let firstImage = images.first {
+                AsyncImage(url: URL(string: "http://localhost:8000/\(firstImage.filepath)")) { image in
                     image.resizable()
                         .aspectRatio(contentMode: .fill)
                 } placeholder: {
@@ -108,12 +109,12 @@ struct RecipeRow: View {
                 }
                 
                 HStack {
-                    if let prepTime = recipe.prepTime {
-                        Label("\(prepTime) min", systemImage: "clock")
+                    if let prepTime = recipe.preparationTime, prepTime != "0:00" {
+                        Label(prepTime, systemImage: "clock")
                             .font(.caption2)
                     }
-                    if let servings = recipe.servings {
-                        Label("\(servings)", systemImage: "person.2")
+                    if let cookTime = recipe.cookingTime, cookTime != "0:00" {
+                        Label(cookTime, systemImage: "flame")
                             .font(.caption2)
                     }
                 }
@@ -138,8 +139,9 @@ struct RecipeDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                if let imageUrl = viewModel.recipe.imageUrl {
-                    AsyncImage(url: URL(string: imageUrl)) { image in
+                // Show first image if available
+                if let images = viewModel.recipe.images, let firstImage = images.first {
+                    AsyncImage(url: URL(string: "http://localhost:8000/\(firstImage.filepath)")) { image in
                         image.resizable()
                             .aspectRatio(contentMode: .fill)
                     } placeholder: {
@@ -160,45 +162,44 @@ struct RecipeDetailView: View {
                     }
                     
                     HStack(spacing: 20) {
-                        if let prepTime = viewModel.recipe.prepTime {
-                            InfoBadge(icon: "clock", text: "\(prepTime) min")
+                        if let prepTime = viewModel.recipe.preparationTime, prepTime != "0:00" {
+                            InfoBadge(icon: "clock", text: prepTime)
                         }
-                        if let cookTime = viewModel.recipe.cookTime {
-                            InfoBadge(icon: "flame", text: "\(cookTime) min")
-                        }
-                        if let servings = viewModel.recipe.servings {
-                            InfoBadge(icon: "person.2", text: "\(servings)")
+                        if let cookTime = viewModel.recipe.cookingTime, cookTime != "0:00" {
+                            InfoBadge(icon: "flame", text: cookTime)
                         }
                     }
                     
-                    if !viewModel.recipe.ingredients.isEmpty {
+                    if let ingredients = viewModel.recipe.ingredients, !ingredients.isEmpty {
                         Divider()
                         
                         Text("recipes.ingredients".localized(appState.currentLanguage))
                             .font(.headline)
                         
-                        ForEach(viewModel.recipe.ingredients, id: \.name) { ingredient in
+                        ForEach(ingredients.sorted(by: { $0.orderIndex < $1.orderIndex }), id: \.id) { ingredient in
                             HStack {
                                 Text("•")
-                                Text("\(ingredient.amount) \(ingredient.unit ?? "") \(ingredient.name)")
+                                Text("\(String(format: "%.1f", ingredient.amount)) \(ingredient.unit) \(ingredient.name)")
                             }
                         }
                     }
                     
-                    if !viewModel.recipe.steps.isEmpty {
+                    if let steps = viewModel.recipe.steps, !steps.isEmpty {
                         Divider()
                         
                         Text("recipes.steps".localized(appState.currentLanguage))
                             .font(.headline)
                         
-                        ForEach(viewModel.recipe.steps.sorted(by: { $0.stepNumber < $1.stepNumber }), id: \.stepNumber) { step in
+                        ForEach(steps.sorted(by: { $0.stepNumber < $1.stepNumber }), id: \.id) { step in
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Schritt \(step.stepNumber)")
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
-                                Text(step.instruction)
-                                if let imageUrl = step.imageUrl {
-                                    AsyncImage(url: URL(string: imageUrl)) { image in
+                                Text(step.content)
+                                if let stepImageId = step.stepImageId,
+                                   let images = viewModel.recipe.images,
+                                   let stepImage = images.first(where: { $0.id == stepImageId }) {
+                                    AsyncImage(url: URL(string: "http://localhost:8000/\(stepImage.filepath)")) { image in
                                         image.resizable()
                                             .aspectRatio(contentMode: .fit)
                                     } placeholder: {
@@ -278,20 +279,14 @@ struct RecipeFormView: View {
     @State private var description: String
     @State private var prepTime: String
     @State private var cookTime: String
-    @State private var servings: String
-    @State private var difficulty: String
-    @State private var category: String
     
     init(recipe: Recipe?, onSave: @escaping (Recipe) -> Void) {
         self.recipe = recipe
         self.onSave = onSave
         _name = State(initialValue: recipe?.name ?? "")
         _description = State(initialValue: recipe?.description ?? "")
-        _prepTime = State(initialValue: recipe?.prepTime.map(String.init) ?? "")
-        _cookTime = State(initialValue: recipe?.cookTime.map(String.init) ?? "")
-        _servings = State(initialValue: recipe?.servings.map(String.init) ?? "")
-        _difficulty = State(initialValue: recipe?.difficulty ?? "")
-        _category = State(initialValue: recipe?.category ?? "")
+        _prepTime = State(initialValue: recipe?.preparationTime ?? "0:00")
+        _cookTime = State(initialValue: recipe?.cookingTime ?? "0:00")
     }
     
     var body: some View {
@@ -302,18 +297,11 @@ struct RecipeFormView: View {
                     TextField("common.description".localized(appState.currentLanguage), text: $description)
                 }
                 
-                Section("recipes.prepTime".localized(appState.currentLanguage)) {
+                Section("recipes.times".localized(appState.currentLanguage)) {
                     TextField("recipes.prepTime".localized(appState.currentLanguage), text: $prepTime)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.decimalPad)
                     TextField("recipes.cookTime".localized(appState.currentLanguage), text: $cookTime)
-                        .keyboardType(.numberPad)
-                    TextField("recipes.servings".localized(appState.currentLanguage), text: $servings)
-                        .keyboardType(.numberPad)
-                }
-                
-                Section {
-                    TextField("recipes.difficulty".localized(appState.currentLanguage), text: $difficulty)
-                    TextField("common.category".localized(appState.currentLanguage), text: $category)
+                        .keyboardType(.decimalPad)
                 }
             }
             .navigationTitle(recipe == nil ? "recipes.new".localized(appState.currentLanguage) : "common.edit".localized(appState.currentLanguage))
@@ -339,16 +327,15 @@ struct RecipeFormView: View {
             id: recipe?.id ?? 0,
             name: name,
             description: description.isEmpty ? nil : description,
-            ingredients: recipe?.ingredients ?? [],
-            steps: recipe?.steps ?? [],
-            prepTime: Int(prepTime),
-            cookTime: Int(cookTime),
-            servings: Int(servings),
-            difficulty: difficulty.isEmpty ? nil : difficulty,
-            category: category.isEmpty ? nil : category,
-            tags: recipe?.tags ?? [],
-            imageUrl: recipe?.imageUrl,
-            sourceUrl: recipe?.sourceUrl
+            preparationTime: prepTime.isEmpty ? "0:00" : prepTime,
+            cookingTime: cookTime.isEmpty ? "0:00" : cookTime,
+            titleImageId: recipe?.titleImageId,
+            categories: recipe?.categories,
+            ingredients: recipe?.ingredients,
+            steps: recipe?.steps,
+            images: recipe?.images,
+            createdAt: recipe?.createdAt,
+            updatedAt: recipe?.updatedAt
         )
         onSave(newRecipe)
         dismiss()
