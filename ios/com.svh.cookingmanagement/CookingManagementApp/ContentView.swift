@@ -24,23 +24,41 @@ struct ContentView: View {
                 }
                 .tag(2)
             
+            LocationsView()
+                .tabItem {
+                    Label("locations.title".localized(appState.currentLanguage), systemImage: "mappin.circle.fill")
+                }
+                .tag(3)
+            
+            GuestsView()
+                .tabItem {
+                    Label("guests.title".localized(appState.currentLanguage), systemImage: "person.2.fill")
+                }
+                .tag(4)
+            
+            ShoppingListsView()
+                .tabItem {
+                    Label("shopping.title".localized(appState.currentLanguage), systemImage: "cart.fill")
+                }
+                .tag(5)
+            
             StorageView()
                 .tabItem {
                     Label("nav.storage".localized(appState.currentLanguage), systemImage: "archivebox.fill")
                 }
-                .tag(3)
+                .tag(6)
             
             ToolsView()
                 .tabItem {
                     Label("nav.tools".localized(appState.currentLanguage), systemImage: "wrench.fill")
                 }
-                .tag(4)
+                .tag(7)
             
             MoreView()
                 .tabItem {
                     Label("nav.more".localized(appState.currentLanguage), systemImage: "ellipsis.circle.fill")
                 }
-                .tag(5)
+                .tag(8)
         }
         .preferredColorScheme(appState.isDarkMode ? .dark : .light)
     }
@@ -77,18 +95,6 @@ struct MoreView: View {
     var body: some View {
         NavigationView {
             List {
-                NavigationLink(destination: LocationsView()) {
-                    Label("locations.title".localized(appState.currentLanguage), systemImage: "mappin.circle.fill")
-                }
-                
-                NavigationLink(destination: GuestsView()) {
-                    Label("guests.title".localized(appState.currentLanguage), systemImage: "person.2.fill")
-                }
-                
-                NavigationLink(destination: ShoppingListsView()) {
-                    Label("shopping.title".localized(appState.currentLanguage), systemImage: "cart.fill")
-                }
-                
                 Section {
                     Button(action: {
                         if let url = URL(string: UIApplication.openSettingsURLString) {
