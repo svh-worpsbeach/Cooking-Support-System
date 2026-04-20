@@ -150,12 +150,14 @@ struct ToolsView: View {
                     EmptyStateView(icon: "wrench.fill", message: "empty.tools".localized(appState.currentLanguage))
                 } else {
                     List(viewModel.tools) { tool in
-                        VStack(alignment: .leading) {
-                            Text(tool.name).font(.headline)
-                            if let description = tool.description {
-                                Text(description).font(.caption).foregroundColor(.secondary)
+                        NavigationLink(destination: ToolDetailView(tool: tool)) {
+                            VStack(alignment: .leading) {
+                                Text(tool.name).font(.headline)
+                                if let description = tool.description {
+                                    Text(description).font(.caption).foregroundColor(.secondary)
+                                }
+                                Text("Menge: \(tool.quantity)").font(.caption2)
                             }
-                            Text("Menge: \(tool.quantity)").font(.caption2)
                         }
                     }
                 }
@@ -177,6 +179,51 @@ struct ToolsView: View {
         .task {
             await viewModel.loadTools()
         }
+    }
+}
+
+struct ToolDetailView: View {
+    @EnvironmentObject var appState: AppState
+    let tool: Tool
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                if let imageUrl = tool.imageUrl {
+                    AsyncImage(url: URL(string: imageUrl)) { image in
+                        image.resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Color.gray
+                    }
+                    .frame(height: 200)
+                    .clipped()
+                }
+                
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(tool.name)
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    if let description = tool.description {
+                        Text(description)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
+                        Label("Menge: \(tool.quantity)", systemImage: "number")
+                    }
+                    
+                    if let location = tool.location {
+                        Divider()
+                        Text("Standort: \(location.name)")
+                            .font(.subheadline)
+                    }
+                }
+                .padding()
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -266,10 +313,12 @@ struct StorageView: View {
                     EmptyStateView(icon: "archivebox.fill", message: "empty.storage".localized(appState.currentLanguage))
                 } else {
                     List(viewModel.items) { item in
-                        VStack(alignment: .leading) {
-                            Text(item.name).font(.headline)
-                            if let quantity = item.quantity, let unit = item.unit {
-                                Text("\(quantity) \(unit)").font(.caption).foregroundColor(.secondary)
+                        NavigationLink(destination: StorageDetailView(item: item)) {
+                            VStack(alignment: .leading) {
+                                Text(item.name).font(.headline)
+                                if let quantity = item.quantity, let unit = item.unit {
+                                    Text("\(quantity) \(unit)").font(.caption).foregroundColor(.secondary)
+                                }
                             }
                         }
                     }
@@ -292,6 +341,52 @@ struct StorageView: View {
         .task {
             await viewModel.loadItems()
         }
+    }
+}
+
+struct StorageDetailView: View {
+    @EnvironmentObject var appState: AppState
+    let item: Storage
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(item.name)
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                if let description = item.description {
+                    Text(description)
+                        .foregroundColor(.secondary)
+                }
+                
+                if let quantity = item.quantity, let unit = item.unit {
+                    HStack {
+                        Label("\(quantity) \(unit)", systemImage: "scalemass")
+                    }
+                }
+                
+                if let category = item.category {
+                    HStack {
+                        Label(category, systemImage: "tag")
+                    }
+                }
+                
+                if let expiryDate = item.expiryDate {
+                    HStack {
+                        Label(expiryDate, systemImage: "calendar")
+                    }
+                }
+                
+                if let location = item.location {
+                    Divider()
+                    Text("Standort: \(location.name)")
+                        .font(.subheadline)
+                }
+            }
+            .padding()
+        }
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -381,10 +476,12 @@ struct LocationsView: View {
                 EmptyStateView(icon: "mappin.circle.fill", message: "empty.locations".localized(appState.currentLanguage))
             } else {
                 List(viewModel.locations) { location in
-                    VStack(alignment: .leading) {
-                        Text(location.name).font(.headline)
-                        if let description = location.description {
-                            Text(description).font(.caption).foregroundColor(.secondary)
+                    NavigationLink(destination: LocationDetailView(location: location)) {
+                        VStack(alignment: .leading) {
+                            Text(location.name).font(.headline)
+                            if let description = location.description {
+                                Text(description).font(.caption).foregroundColor(.secondary)
+                            }
                         }
                     }
                 }
@@ -406,6 +503,41 @@ struct LocationsView: View {
         .task {
             await viewModel.loadLocations()
         }
+    }
+}
+
+struct LocationDetailView: View {
+    @EnvironmentObject var appState: AppState
+    let location: Location
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                if let imageUrl = location.imageUrl {
+                    AsyncImage(url: URL(string: imageUrl)) { image in
+                        image.resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Color.gray
+                    }
+                    .frame(height: 200)
+                    .clipped()
+                }
+                
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(location.name)
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    if let description = location.description {
+                        Text(description)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding()
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -487,10 +619,12 @@ struct GuestsView: View {
                 EmptyStateView(icon: "person.2.fill", message: "empty.guests".localized(appState.currentLanguage))
             } else {
                 List(viewModel.guests) { guest in
-                    VStack(alignment: .leading) {
-                        Text(guest.name).font(.headline)
-                        if let email = guest.email {
-                            Text(email).font(.caption).foregroundColor(.secondary)
+                    NavigationLink(destination: GuestDetailView(guest: guest)) {
+                        VStack(alignment: .leading) {
+                            Text(guest.name).font(.headline)
+                            if let email = guest.email {
+                                Text(email).font(.caption).foregroundColor(.secondary)
+                            }
                         }
                     }
                 }
@@ -512,6 +646,51 @@ struct GuestsView: View {
         .task {
             await viewModel.loadGuests()
         }
+    }
+}
+
+struct GuestDetailView: View {
+    @EnvironmentObject var appState: AppState
+    let guest: Guest
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(guest.name)
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                if let email = guest.email {
+                    HStack {
+                        Label(email, systemImage: "envelope")
+                    }
+                }
+                
+                if let phone = guest.phone {
+                    HStack {
+                        Label(phone, systemImage: "phone")
+                    }
+                }
+                
+                if let dietary = guest.dietaryRestrictions {
+                    Divider()
+                    Text("Ernährungseinschränkungen:")
+                        .font(.headline)
+                    Text(dietary)
+                        .foregroundColor(.secondary)
+                }
+                
+                if let notes = guest.notes {
+                    Divider()
+                    Text("Notizen:")
+                        .font(.headline)
+                    Text(notes)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding()
+        }
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -598,9 +777,11 @@ struct ShoppingListsView: View {
                 EmptyStateView(icon: "cart.fill", message: "empty.shopping".localized(appState.currentLanguage))
             } else {
                 List(viewModel.lists) { list in
-                    VStack(alignment: .leading) {
-                        Text(list.name).font(.headline)
-                        Text("\(list.items.count) Artikel").font(.caption).foregroundColor(.secondary)
+                    NavigationLink(destination: ShoppingListDetailView(list: list)) {
+                        VStack(alignment: .leading) {
+                            Text(list.name).font(.headline)
+                            Text("\(list.items.count) Artikel").font(.caption).foregroundColor(.secondary)
+                        }
                     }
                 }
             }
@@ -621,6 +802,63 @@ struct ShoppingListsView: View {
         .task {
             await viewModel.loadLists()
         }
+    }
+}
+
+struct ShoppingListDetailView: View {
+    @EnvironmentObject var appState: AppState
+    let list: ShoppingList
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(list.name)
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                if let createdAt = list.createdAt {
+                    Text("Erstellt: \(createdAt)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Divider()
+                
+                Text("Artikel (\(list.items.count))")
+                    .font(.headline)
+                
+                ForEach(list.items) { item in
+                    HStack {
+                        Image(systemName: item.checked ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(item.checked ? .green : .secondary)
+                        
+                        VStack(alignment: .leading) {
+                            Text(item.name)
+                                .strikethrough(item.checked)
+                            if let quantity = item.quantity, let unit = item.unit {
+                                Text("\(quantity) \(unit)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        if let category = item.category {
+                            Text(category)
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.secondary.opacity(0.2))
+                                .cornerRadius(8)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+            .padding()
+        }
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
