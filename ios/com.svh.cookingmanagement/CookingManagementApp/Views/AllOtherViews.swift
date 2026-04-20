@@ -240,7 +240,9 @@ struct ToolsView: View {
                                 if let description = tool.description {
                                     Text(description).font(.caption).foregroundColor(.secondary)
                                 }
-                                Text("Menge: \(tool.quantity)").font(.caption2)
+                                if let locationName = tool.locationName {
+                                    Text("Standort: \(locationName)").font(.caption2).foregroundColor(.secondary)
+                                }
                             }
                         }
                     }
@@ -281,8 +283,8 @@ struct ToolDetailView: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        if let imageUrl = viewModel.tool.imageUrl {
-                            AsyncImage(url: URL(string: imageUrl)) { image in
+                        if let imagePath = viewModel.tool.imagePath {
+                            AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(imagePath)")) { image in
                                 image.resizable()
                                     .aspectRatio(contentMode: .fill)
                             } placeholder: {
@@ -302,13 +304,15 @@ struct ToolDetailView: View {
                                     .foregroundColor(.secondary)
                             }
                             
-                            HStack {
-                                Label("Menge: \(viewModel.tool.quantity)", systemImage: "number")
+                            if let storageLocation = viewModel.tool.storageLocation {
+                                HStack {
+                                    Label(storageLocation, systemImage: "archivebox")
+                                }
                             }
                             
-                            if let location = viewModel.tool.location {
+                            if let locationName = viewModel.tool.locationName {
                                 Divider()
-                                Text("Standort: \(location.name)")
+                                Text("Standort: \(locationName)")
                                     .font(.subheadline)
                             }
                         }
@@ -351,14 +355,14 @@ struct ToolFormView: View {
     let onSave: (Tool) -> Void
     @State private var name: String
     @State private var description: String
-    @State private var quantity: String
+    @State private var storageLocation: String
     
     init(tool: Tool?, onSave: @escaping (Tool) -> Void) {
         self.tool = tool
         self.onSave = onSave
         _name = State(initialValue: tool?.name ?? "")
         _description = State(initialValue: tool?.description ?? "")
-        _quantity = State(initialValue: tool.map { String($0.quantity) } ?? "1")
+        _storageLocation = State(initialValue: tool?.storageLocation ?? "")
     }
     
     var body: some View {
@@ -366,8 +370,7 @@ struct ToolFormView: View {
             Form {
                 TextField("common.name".localized(appState.currentLanguage), text: $name)
                 TextField("common.description".localized(appState.currentLanguage), text: $description)
-                TextField("common.quantity".localized(appState.currentLanguage), text: $quantity)
-                    .keyboardType(.numberPad)
+                TextField("Lagerort", text: $storageLocation)
             }
             .navigationTitle(tool == nil ? "tools.new".localized(appState.currentLanguage) : "common.edit".localized(appState.currentLanguage))
             .toolbar {
@@ -380,10 +383,12 @@ struct ToolFormView: View {
                             id: tool?.id ?? 0,
                             name: name,
                             description: description.isEmpty ? nil : description,
-                            quantity: Int(quantity) ?? 1,
+                            storageLocation: storageLocation.isEmpty ? nil : storageLocation,
                             locationId: tool?.locationId,
-                            location: tool?.location,
-                            imageUrl: tool?.imageUrl
+                            locationName: tool?.locationName,
+                            imagePath: tool?.imagePath,
+                            createdAt: tool?.createdAt,
+                            updatedAt: tool?.updatedAt
                         )
                         onSave(newTool)
                         dismiss()

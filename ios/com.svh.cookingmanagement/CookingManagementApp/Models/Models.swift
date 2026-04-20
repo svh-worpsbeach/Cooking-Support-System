@@ -238,15 +238,21 @@ struct Tool: Codable, Identifiable, Hashable {
     let id: Int
     var name: String
     var description: String?
-    var quantity: Int
+    var storageLocation: String?
     var locationId: Int?
-    var location: Location?
-    var imageUrl: String?
+    var locationName: String?
+    var imagePath: String?
+    var createdAt: String?
+    var updatedAt: String?
     
     enum CodingKeys: String, CodingKey {
-        case id, name, description, quantity, location
+        case id, name, description
+        case storageLocation = "storage_location"
         case locationId = "location_id"
-        case imageUrl = "image_url"
+        case locationName = "location_name"
+        case imagePath = "image_path"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
     }
 }
 
