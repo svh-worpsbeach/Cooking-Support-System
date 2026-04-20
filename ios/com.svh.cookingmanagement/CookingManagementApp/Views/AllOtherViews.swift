@@ -52,6 +52,9 @@ struct EventsView: View {
 struct EventDetailView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel: EventDetailViewModel
+    @State private var showingEditSheet = false
+    @State private var showingDeleteAlert = false
+    @Environment(\.dismiss) private var dismiss
     
     init(event: Event) {
         _viewModel = StateObject(wrappedValue: EventDetailViewModel(event: event))
@@ -121,6 +124,36 @@ struct EventDetailView: View {
             await viewModel.loadEventDetails()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button(action: { showingEditSheet = true }) {
+                        Label("common.edit".localized(appState.currentLanguage), systemImage: "pencil")
+                    }
+                    Button(role: .destructive, action: { showingDeleteAlert = true }) {
+                        Label("common.delete".localized(appState.currentLanguage), systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            EventFormView(event: viewModel.event) { updatedEvent in
+                Task {
+                    await viewModel.updateEvent(updatedEvent)
+                }
+            }
+        }
+        .alert("common.delete".localized(appState.currentLanguage), isPresented: $showingDeleteAlert) {
+            Button("common.cancel".localized(appState.currentLanguage), role: .cancel) { }
+            Button("common.delete".localized(appState.currentLanguage), role: .destructive) {
+                Task {
+                    await viewModel.deleteEvent()
+                    dismiss()
+                }
+            }
+        }
     }
 }
 
@@ -142,6 +175,22 @@ class EventDetailViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+    
+    func updateEvent(_ updatedEvent: Event) async {
+        do {
+            event = try await APIService.shared.updateEvent(updatedEvent)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    func deleteEvent() async {
+        do {
+            try await APIService.shared.deleteEvent(id: event.id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
@@ -271,6 +320,9 @@ struct ToolsView: View {
 struct ToolDetailView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel: ToolDetailViewModel
+    @State private var showingEditSheet = false
+    @State private var showingDeleteAlert = false
+    @Environment(\.dismiss) private var dismiss
     
     init(tool: Tool) {
         _viewModel = StateObject(wrappedValue: ToolDetailViewModel(tool: tool))
@@ -325,6 +377,36 @@ struct ToolDetailView: View {
         .task {
             await viewModel.loadToolDetails()
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button(action: { showingEditSheet = true }) {
+                        Label("common.edit".localized(appState.currentLanguage), systemImage: "pencil")
+                    }
+                    Button(role: .destructive, action: { showingDeleteAlert = true }) {
+                        Label("common.delete".localized(appState.currentLanguage), systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            ToolFormView(tool: viewModel.tool) { updatedTool in
+                Task {
+                    await viewModel.updateTool(updatedTool)
+                }
+            }
+        }
+        .alert("common.delete".localized(appState.currentLanguage), isPresented: $showingDeleteAlert) {
+            Button("common.cancel".localized(appState.currentLanguage), role: .cancel) { }
+            Button("common.delete".localized(appState.currentLanguage), role: .destructive) {
+                Task {
+                    await viewModel.deleteTool()
+                    dismiss()
+                }
+            }
+        }
     }
 }
 
@@ -332,6 +414,7 @@ struct ToolDetailView: View {
 class ToolDetailViewModel: ObservableObject {
     @Published var tool: Tool
     @Published var isLoading = false
+    @Published var errorMessage: String?
     
     init(tool: Tool) {
         self.tool = tool
@@ -342,9 +425,25 @@ class ToolDetailViewModel: ObservableObject {
         do {
             tool = try await APIService.shared.getTool(id: tool.id)
         } catch {
-            print("Error loading tool details: \(error)")
+            errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+    
+    func updateTool(_ updatedTool: Tool) async {
+        do {
+            tool = try await APIService.shared.updateTool(updatedTool)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    func deleteTool() async {
+        do {
+            try await APIService.shared.deleteTool(id: tool.id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
@@ -469,30 +568,37 @@ struct StorageView: View {
 
 struct StorageDetailView: View {
     @EnvironmentObject var appState: AppState
-    let item: Storage
+    @StateObject private var viewModel: StorageDetailViewModel
+    @State private var showingEditSheet = false
+    @State private var showingDeleteAlert = false
+    @Environment(\.dismiss) private var dismiss
+    
+    init(item: Storage) {
+        _viewModel = StateObject(wrappedValue: StorageDetailViewModel(item: item))
+    }
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(item.name)
+                Text(viewModel.item.name)
                     .font(.title)
                     .fontWeight(.bold)
                 
                 HStack {
-                    Label("\(String(format: "%.1f", item.quantity)) \(item.unit)", systemImage: "scalemass")
+                    Label("\(String(format: "%.1f", viewModel.item.quantity)) \(viewModel.item.unit)", systemImage: "scalemass")
                 }
                 
                 HStack {
-                    Label(item.category, systemImage: "tag")
+                    Label(viewModel.item.category, systemImage: "tag")
                 }
                 
-                if let expiryDate = item.expiryDate {
+                if let expiryDate = viewModel.item.expiryDate {
                     HStack {
                         Label(expiryDate.toGermanDate(), systemImage: "calendar")
                     }
                 }
                 
-                if let locationName = item.locationName {
+                if let locationName = viewModel.item.locationName {
                     Divider()
                     Text("Standort: \(locationName)")
                         .font(.subheadline)
@@ -501,6 +607,62 @@ struct StorageDetailView: View {
             .padding()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button(action: { showingEditSheet = true }) {
+                        Label("common.edit".localized(appState.currentLanguage), systemImage: "pencil")
+                    }
+                    Button(role: .destructive, action: { showingDeleteAlert = true }) {
+                        Label("common.delete".localized(appState.currentLanguage), systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            StorageFormView(item: viewModel.item) { updatedItem in
+                Task {
+                    await viewModel.updateItem(updatedItem)
+                }
+            }
+        }
+        .alert("common.delete".localized(appState.currentLanguage), isPresented: $showingDeleteAlert) {
+            Button("common.cancel".localized(appState.currentLanguage), role: .cancel) { }
+            Button("common.delete".localized(appState.currentLanguage), role: .destructive) {
+                Task {
+                    await viewModel.deleteItem()
+                    dismiss()
+                }
+            }
+        }
+    }
+}
+
+@MainActor
+class StorageDetailViewModel: ObservableObject {
+    @Published var item: Storage
+    @Published var errorMessage: String?
+    
+    init(item: Storage) {
+        self.item = item
+    }
+    
+    func updateItem(_ updatedItem: Storage) async {
+        do {
+            item = try await APIService.shared.updateStorageItem(updatedItem)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    func deleteItem() async {
+        do {
+            try await APIService.shared.deleteStorageItem(id: item.id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
@@ -630,6 +792,9 @@ struct LocationsView: View {
 struct LocationDetailView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel: LocationDetailViewModel
+    @State private var showingEditSheet = false
+    @State private var showingDeleteAlert = false
+    @Environment(\.dismiss) private var dismiss
     
     init(location: Location) {
         _viewModel = StateObject(wrappedValue: LocationDetailViewModel(location: location))
@@ -672,6 +837,36 @@ struct LocationDetailView: View {
         .task {
             await viewModel.loadLocationDetails()
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button(action: { showingEditSheet = true }) {
+                        Label("common.edit".localized(appState.currentLanguage), systemImage: "pencil")
+                    }
+                    Button(role: .destructive, action: { showingDeleteAlert = true }) {
+                        Label("common.delete".localized(appState.currentLanguage), systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            LocationFormView(location: viewModel.location) { updatedLocation in
+                Task {
+                    await viewModel.updateLocation(updatedLocation)
+                }
+            }
+        }
+        .alert("common.delete".localized(appState.currentLanguage), isPresented: $showingDeleteAlert) {
+            Button("common.cancel".localized(appState.currentLanguage), role: .cancel) { }
+            Button("common.delete".localized(appState.currentLanguage), role: .destructive) {
+                Task {
+                    await viewModel.deleteLocation()
+                    dismiss()
+                }
+            }
+        }
     }
 }
 
@@ -679,6 +874,7 @@ struct LocationDetailView: View {
 class LocationDetailViewModel: ObservableObject {
     @Published var location: Location
     @Published var isLoading = false
+    @Published var errorMessage: String?
     
     init(location: Location) {
         self.location = location
@@ -689,9 +885,25 @@ class LocationDetailViewModel: ObservableObject {
         do {
             location = try await APIService.shared.getLocation(id: location.id)
         } catch {
-            print("Error loading location details: \(error)")
+            errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+    
+    func updateLocation(_ updatedLocation: Location) async {
+        do {
+            location = try await APIService.shared.updateLocation(updatedLocation)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    func deleteLocation() async {
+        do {
+            try await APIService.shared.deleteLocation(id: location.id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
@@ -823,6 +1035,9 @@ struct GuestsView: View {
 struct GuestDetailView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel: GuestDetailViewModel
+    @State private var showingEditSheet = false
+    @State private var showingDeleteAlert = false
+    @Environment(\.dismiss) private var dismiss
     
     init(guest: Guest) {
         _viewModel = StateObject(wrappedValue: GuestDetailViewModel(guest: guest))
@@ -909,6 +1124,36 @@ struct GuestDetailView: View {
         .task {
             await viewModel.loadGuestDetails()
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button(action: { showingEditSheet = true }) {
+                        Label("common.edit".localized(appState.currentLanguage), systemImage: "pencil")
+                    }
+                    Button(role: .destructive, action: { showingDeleteAlert = true }) {
+                        Label("common.delete".localized(appState.currentLanguage), systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            GuestFormView(guest: viewModel.guest) { updatedGuest in
+                Task {
+                    await viewModel.updateGuest(updatedGuest)
+                }
+            }
+        }
+        .alert("common.delete".localized(appState.currentLanguage), isPresented: $showingDeleteAlert) {
+            Button("common.cancel".localized(appState.currentLanguage), role: .cancel) { }
+            Button("common.delete".localized(appState.currentLanguage), role: .destructive) {
+                Task {
+                    await viewModel.deleteGuest()
+                    dismiss()
+                }
+            }
+        }
     }
 }
 
@@ -916,6 +1161,7 @@ struct GuestDetailView: View {
 class GuestDetailViewModel: ObservableObject {
     @Published var guest: Guest
     @Published var isLoading = false
+    @Published var errorMessage: String?
     
     init(guest: Guest) {
         self.guest = guest
@@ -926,9 +1172,25 @@ class GuestDetailViewModel: ObservableObject {
         do {
             guest = try await APIService.shared.getGuest(id: guest.id)
         } catch {
-            print("Error loading guest details: \(error)")
+            errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+    
+    func updateGuest(_ updatedGuest: Guest) async {
+        do {
+            guest = try await APIService.shared.updateGuest(updatedGuest)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    func deleteGuest() async {
+        do {
+            try await APIService.shared.deleteGuest(id: guest.id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
@@ -1056,16 +1318,23 @@ struct ShoppingListsView: View {
 
 struct ShoppingListDetailView: View {
     @EnvironmentObject var appState: AppState
-    let list: ShoppingList
+    @StateObject private var viewModel: ShoppingListDetailViewModel
+    @State private var showingEditSheet = false
+    @State private var showingDeleteAlert = false
+    @Environment(\.dismiss) private var dismiss
+    
+    init(list: ShoppingList) {
+        _viewModel = StateObject(wrappedValue: ShoppingListDetailViewModel(list: list))
+    }
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(list.name)
+                Text(viewModel.list.name)
                     .font(.title)
                     .fontWeight(.bold)
                 
-                if let createdAt = list.createdAt {
+                if let createdAt = viewModel.list.createdAt {
                     Text("Erstellt: \(createdAt.toGermanDateTime())")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -1073,10 +1342,10 @@ struct ShoppingListDetailView: View {
                 
                 Divider()
                 
-                Text("Artikel (\(list.items.count))")
+                Text("Artikel (\(viewModel.list.items.count))")
                     .font(.headline)
                 
-                ForEach(list.items) { item in
+                ForEach(viewModel.list.items) { item in
                     HStack {
                         Image(systemName: item.checked ? "checkmark.circle.fill" : "circle")
                             .foregroundColor(item.checked ? .green : .secondary)
@@ -1108,6 +1377,62 @@ struct ShoppingListDetailView: View {
             .padding()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button(action: { showingEditSheet = true }) {
+                        Label("common.edit".localized(appState.currentLanguage), systemImage: "pencil")
+                    }
+                    Button(role: .destructive, action: { showingDeleteAlert = true }) {
+                        Label("common.delete".localized(appState.currentLanguage), systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            ShoppingListFormView(list: viewModel.list) { updatedList in
+                Task {
+                    await viewModel.updateList(updatedList)
+                }
+            }
+        }
+        .alert("common.delete".localized(appState.currentLanguage), isPresented: $showingDeleteAlert) {
+            Button("common.cancel".localized(appState.currentLanguage), role: .cancel) { }
+            Button("common.delete".localized(appState.currentLanguage), role: .destructive) {
+                Task {
+                    await viewModel.deleteList()
+                    dismiss()
+                }
+            }
+        }
+    }
+}
+
+@MainActor
+class ShoppingListDetailViewModel: ObservableObject {
+    @Published var list: ShoppingList
+    @Published var errorMessage: String?
+    
+    init(list: ShoppingList) {
+        self.list = list
+    }
+    
+    func updateList(_ updatedList: ShoppingList) async {
+        do {
+            list = try await APIService.shared.updateShoppingList(updatedList)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    func deleteList() async {
+        do {
+            try await APIService.shared.deleteShoppingList(id: list.id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
