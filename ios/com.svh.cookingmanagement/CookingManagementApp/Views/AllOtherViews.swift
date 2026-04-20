@@ -820,6 +820,7 @@ struct GuestFormView: View {
                 TextField("guests.phone".localized(appState.currentLanguage), text: $phone)
             }
             .navigationTitle(guest == nil ? "guests.new".localized(appState.currentLanguage) : "common.edit".localized(appState.currentLanguage))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("common.cancel".localized(appState.currentLanguage)) { dismiss() }
