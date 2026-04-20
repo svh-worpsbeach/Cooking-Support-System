@@ -563,8 +563,8 @@ struct LocationDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                if let imageUrl = location.imageUrl {
-                    AsyncImage(url: URL(string: imageUrl)) { image in
+                if let imagePath = location.imagePath {
+                    AsyncImage(url: URL(string: "http://localhost:8000/\(imagePath)")) { image in
                         image.resizable()
                             .aspectRatio(contentMode: .fill)
                     } placeholder: {
