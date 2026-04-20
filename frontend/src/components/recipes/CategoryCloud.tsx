@@ -57,7 +57,7 @@ export default function CategoryCloud({ onCategoryClick, selectedCategories }: C
   const maxCount = Math.max(...categories.map(c => c.count));
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+    <div className="bg-white/90 dark:bg-gray-800/75 backdrop-blur-md rounded-lg shadow border border-gray-200/30 dark:border-gray-700/30 p-4 mb-6">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
         {t('recipes.categoryCloud')}
       </h3>
@@ -73,8 +73,8 @@ export default function CategoryCloud({ onCategoryClick, selectedCategories }: C
               className={`
                 inline-flex items-center px-3 py-1 rounded-full transition-all
                 ${isSelected
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-primary-600 text-white hover:bg-primary-700 dark:bg-primary-500/90 dark:hover:bg-primary-600/90 dark:backdrop-blur-sm'
+                  : 'bg-gray-100 dark:bg-gray-700/60 dark:backdrop-blur-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600/70'
                 }
               `}
               style={{ fontSize: `${fontSize}rem` }}
