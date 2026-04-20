@@ -519,35 +519,37 @@ struct LocationsView: View {
     @State private var showingAddLocation = false
     
     var body: some View {
-        Group {
-            if viewModel.isLoading {
-                ProgressView("common.loading".localized(appState.currentLanguage))
-            } else if viewModel.locations.isEmpty {
-                EmptyStateView(icon: "mappin.circle.fill", message: "empty.locations".localized(appState.currentLanguage))
-            } else {
-                List(viewModel.locations) { location in
-                    NavigationLink(destination: LocationDetailView(location: location)) {
-                        VStack(alignment: .leading) {
-                            Text(location.name).font(.headline)
-                            if let description = location.description {
-                                Text(description).font(.caption).foregroundColor(.secondary)
+        NavigationView {
+            Group {
+                if viewModel.isLoading {
+                    ProgressView("common.loading".localized(appState.currentLanguage))
+                } else if viewModel.locations.isEmpty {
+                    EmptyStateView(icon: "mappin.circle.fill", message: "empty.locations".localized(appState.currentLanguage))
+                } else {
+                    List(viewModel.locations) { location in
+                        NavigationLink(destination: LocationDetailView(location: location)) {
+                            VStack(alignment: .leading) {
+                                Text(location.name).font(.headline)
+                                if let description = location.description {
+                                    Text(description).font(.caption).foregroundColor(.secondary)
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        .navigationTitle("locations.title".localized(appState.currentLanguage))
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { showingAddLocation = true }) {
-                    Image(systemName: "plus")
+            .navigationTitle("locations.title".localized(appState.currentLanguage))
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingAddLocation = true }) {
+                        Image(systemName: "plus")
+                    }
                 }
             }
-        }
-        .sheet(isPresented: $showingAddLocation) {
-            LocationFormView(location: nil) { newLocation in
-                Task { await viewModel.createLocation(newLocation) }
+            .sheet(isPresented: $showingAddLocation) {
+                LocationFormView(location: nil) { newLocation in
+                    Task { await viewModel.createLocation(newLocation) }
+                }
             }
         }
         .task {
@@ -564,7 +566,7 @@ struct LocationDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 if let imagePath = location.imagePath {
-                    AsyncImage(url: URL(string: "http://localhost:8000/\(imagePath)")) { image in
+                    AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(imagePath)")) { image in
                         image.resizable()
                             .aspectRatio(contentMode: .fill)
                     } placeholder: {
@@ -675,7 +677,7 @@ struct GuestsView: View {
                         NavigationLink(destination: GuestDetailView(guest: guest)) {
                             HStack {
                                 if let imagePath = guest.imagePath {
-                                    AsyncImage(url: URL(string: "http://localhost:8000/\(imagePath)")) { image in
+                                    AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(imagePath)")) { image in
                                         image.resizable()
                                             .aspectRatio(contentMode: .fill)
                                     } placeholder: {
@@ -724,7 +726,7 @@ struct GuestDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 if let imagePath = guest.imagePath {
-                    AsyncImage(url: URL(string: "http://localhost:8000/\(imagePath)")) { image in
+                    AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(imagePath)")) { image in
                         image.resizable()
                             .aspectRatio(contentMode: .fill)
                     } placeholder: {
@@ -1038,7 +1040,7 @@ class ShoppingListsViewModel: ObservableObject {
 // MARK: - Settings View
 struct SettingsView: View {
     @EnvironmentObject var appState: AppState
-    @State private var apiUrl: String = UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:8000"
+    @State private var apiUrl: String = UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580"
     @State private var showingConnectionDialog = false
     
     var body: some View {
@@ -1141,7 +1143,7 @@ struct BackendConfigurationView: View {
                         
                         HStack(spacing: 8) {
                             Button("Localhost") {
-                                urlInput = "http://localhost:8000"
+                                urlInput = "http://localhost:5580"
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
@@ -1188,7 +1190,7 @@ struct BackendConfigurationView: View {
                             .font(.headline)
                         
                         ExampleRow(title: "settings.exampleLocal".localized(appState.currentLanguage),
-                                  url: "http://localhost:8000")
+                                  url: "http://localhost:5580")
                         ExampleRow(title: "settings.exampleNetwork".localized(appState.currentLanguage),
                                   url: "http://192.168.1.100:8000")
                         ExampleRow(title: "settings.exampleProduction".localized(appState.currentLanguage),

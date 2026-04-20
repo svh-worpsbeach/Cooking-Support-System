@@ -180,7 +180,7 @@ struct Localizable {
             "settings.backendUrl": "Backend URL",
             "settings.backendUrlDescription": "Enter the URL of your backend server. The app will connect to this server to load and save data.",
             "settings.urlInput": "URL Input",
-            "settings.urlPlaceholder": "http://localhost:8000",
+            "settings.urlPlaceholder": "http://localhost:5580",
             "settings.quickPresets": "Quick presets:",
             "settings.testConnection": "Test Connection",
             "settings.testing": "Testing connection...",

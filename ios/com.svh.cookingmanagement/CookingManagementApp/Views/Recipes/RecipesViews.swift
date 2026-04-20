@@ -87,7 +87,7 @@ struct RecipeRow: View {
         HStack {
             // Show first image if available
             if let images = recipe.images, let firstImage = images.first {
-                AsyncImage(url: URL(string: "http://localhost:8000/\(firstImage.filepath)")) { image in
+                AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(firstImage.filepath)")) { image in
                     image.resizable()
                         .aspectRatio(contentMode: .fill)
                 } placeholder: {
@@ -141,7 +141,7 @@ struct RecipeDetailView: View {
             VStack(alignment: .leading, spacing: 20) {
                 // Show first image if available
                 if let images = viewModel.recipe.images, let firstImage = images.first {
-                    AsyncImage(url: URL(string: "http://localhost:8000/\(firstImage.filepath)")) { image in
+                    AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(firstImage.filepath)")) { image in
                         image.resizable()
                             .aspectRatio(contentMode: .fill)
                     } placeholder: {
@@ -199,7 +199,7 @@ struct RecipeDetailView: View {
                                 if let stepImageId = step.stepImageId,
                                    let images = viewModel.recipe.images,
                                    let stepImage = images.first(where: { $0.id == stepImageId }) {
-                                    AsyncImage(url: URL(string: "http://localhost:8000/\(stepImage.filepath)")) { image in
+                                    AsyncImage(url: URL(string: "\(UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580")/\(stepImage.filepath)")) { image in
                                         image.resizable()
                                             .aspectRatio(contentMode: .fit)
                                     } placeholder: {
