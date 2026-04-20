@@ -13,6 +13,7 @@ import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import MultiSelectToolbar from '../components/common/MultiSelectToolbar';
+import { formatShortDate } from '../utils/timeUtils';
 import type { RecipeCreate, Event, EventCreate } from '../types';
 
 export default function RecipesPage() {
@@ -297,7 +298,7 @@ export default function RecipesPage() {
                 <div className="font-semibold text-gray-900 dark:text-gray-100">{event.name}</div>
                 {event.event_date && (
                   <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    📅 {new Date(event.event_date).toLocaleDateString()}
+                    📅 {formatShortDate(event.event_date)}
                   </div>
                 )}
               </button>

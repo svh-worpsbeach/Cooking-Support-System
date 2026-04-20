@@ -10,6 +10,7 @@ import Card from '../components/common/Card';
 import Input from '../components/common/Input';
 import Textarea from '../components/common/Textarea';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { formatDate, formatShortDate } from '../utils/timeUtils';
 import type { LocationCreate } from '../types';
 
 export default function LocationDetailPage() {
@@ -195,11 +196,7 @@ export default function LocationDetailPage() {
             <div>
               <div className="font-medium text-gray-900 dark:text-gray-100">{t('locations.created')}</div>
               <div className="text-gray-600 dark:text-gray-300">
-                {new Date(location.created_at).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                {formatDate(location.created_at)}
               </div>
             </div>
           </div>
@@ -209,11 +206,7 @@ export default function LocationDetailPage() {
               <div>
                 <div className="font-medium text-gray-900 dark:text-gray-100">{t('locations.lastUpdated')}</div>
                 <div className="text-gray-600 dark:text-gray-300">
-                  {new Date(location.updated_at).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
+                  {formatDate(location.updated_at)}
                 </div>
               </div>
             </div>
@@ -291,7 +284,7 @@ export default function LocationDetailPage() {
                           ? 'text-red-600 dark:text-red-400 font-semibold'
                           : 'text-gray-500 dark:text-gray-400'
                       }`}>
-                        📅 {t('locations.expires')}: {new Date(item.expiry_date).toLocaleDateString()}
+                        📅 {t('locations.expires')}: {formatShortDate(item.expiry_date)}
                       </div>
                     )}
                   </div>

@@ -5,6 +5,7 @@ import axios from 'axios';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { formatDateTime } from '../utils/timeUtils';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -180,7 +181,7 @@ export default function AdminPage() {
   };
 
   const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString();
+    return formatDateTime(timestamp);
   };
 
   const getLevelColor = (level: string) => {

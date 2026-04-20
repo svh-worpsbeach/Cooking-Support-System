@@ -339,7 +339,11 @@ export default function GuestsPage() {
                 <div className="font-semibold text-gray-900 dark:text-gray-100">{event.name}</div>
                 {event.event_date && (
                   <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    📅 {new Date(event.event_date).toLocaleDateString()}
+                    📅 {new Date(event.event_date).toLocaleDateString('de-DE', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                    })}
                   </div>
                 )}
               </button>

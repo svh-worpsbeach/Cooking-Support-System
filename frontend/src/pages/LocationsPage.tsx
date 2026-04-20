@@ -8,6 +8,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import Card from '../components/common/Card';
 import LocationForm from '../components/locations/LocationForm';
 import MultiSelectToolbar from '../components/common/MultiSelectToolbar';
+import { formatShortDate } from '../utils/timeUtils';
 import type { Location, LocationCreate } from '../types';
 
 export default function LocationsPage() {
@@ -121,7 +122,7 @@ export default function LocationsPage() {
                 </p>
               )}
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t('locations.created')}: {new Date(location.created_at).toLocaleDateString()}
+                {t('locations.created')}: {formatShortDate(location.created_at)}
               </p>
                 </Card>
               </Link>

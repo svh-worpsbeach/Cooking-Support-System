@@ -8,6 +8,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import Card from '../components/common/Card';
 import StorageForm from '../components/storage/StorageForm';
 import MultiSelectToolbar from '../components/common/MultiSelectToolbar';
+import { formatShortDate } from '../utils/timeUtils';
 import type { StorageItem, StorageItemCreate } from '../types';
 
 export default function StoragePage() {
@@ -124,7 +125,7 @@ export default function StoragePage() {
                       )}
                       {item.expiry_date && (
                         <p className={new Date(item.expiry_date) < new Date() ? 'text-red-600 dark:text-red-400' : ''}>
-                          📅 {t('locations.expires')}: {new Date(item.expiry_date).toLocaleDateString()}
+                          📅 {t('locations.expires')}: {formatShortDate(item.expiry_date)}
                         </p>
                       )}
                       {item.location && (
@@ -144,7 +145,7 @@ export default function StoragePage() {
                       )}
                       {item.expiry_date && (
                         <p className={new Date(item.expiry_date) < new Date() ? 'text-red-600 dark:text-red-400' : ''}>
-                          📅 {t('locations.expires')}: {new Date(item.expiry_date).toLocaleDateString()}
+                          📅 {t('locations.expires')}: {formatShortDate(item.expiry_date)}
                         </p>
                       )}
                       {item.location && (

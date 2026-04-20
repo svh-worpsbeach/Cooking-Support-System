@@ -8,6 +8,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import Card from '../components/common/Card';
 import EventForm from '../components/events/EventForm';
 import MultiSelectToolbar from '../components/common/MultiSelectToolbar';
+import { formatShortDate } from '../utils/timeUtils';
 import type { Event, EventCreate } from '../types';
 
 export default function EventsPage() {
@@ -122,7 +123,7 @@ export default function EventsPage() {
                 )}
                 {event.event_date && (
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                    📅 {new Date(event.event_date).toLocaleDateString()}
+                    📅 {formatShortDate(event.event_date)}
                   </p>
                 )}
                 {(event.participants || event.courses) && (

@@ -9,6 +9,7 @@ import Card from '../components/common/Card';
 import Input from '../components/common/Input';
 import Textarea from '../components/common/Textarea';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { formatDate } from '../utils/timeUtils';
 import type { CookingToolCreate } from '../types';
 
 export default function ToolDetailPage() {
@@ -259,11 +260,7 @@ export default function ToolDetailPage() {
                 <div>
                   <div className="font-medium text-gray-900 dark:text-gray-100">{t('tools.added')}</div>
                   <div className="text-gray-600 dark:text-gray-300">
-                    {new Date(tool.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
+                    {formatDate(tool.created_at)}
                   </div>
                 </div>
               </div>
@@ -273,11 +270,7 @@ export default function ToolDetailPage() {
                   <div>
                     <div className="font-medium text-gray-900 dark:text-gray-100">{t('tools.lastUpdated')}</div>
                     <div className="text-gray-600 dark:text-gray-300">
-                      {new Date(tool.updated_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
+                      {formatDate(tool.updated_at)}
                     </div>
                   </div>
                 </div>

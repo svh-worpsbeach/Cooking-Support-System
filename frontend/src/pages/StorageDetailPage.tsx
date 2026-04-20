@@ -8,6 +8,7 @@ import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import Input from '../components/common/Input';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { formatShortDate, formatDate } from '../utils/timeUtils';
 import type { StorageItemCreate } from '../types';
 
 export default function StorageDetailPage() {
@@ -206,7 +207,7 @@ export default function StorageDetailPage() {
             <div>
               <div className="font-semibold">{t('storage.expired')}</div>
               <div className="text-sm">
-                {t('storage.expiredOn')} {new Date(item.expiry_date!).toLocaleDateString()}
+                {t('storage.expiredOn')} {formatShortDate(item.expiry_date!)}
               </div>
             </div>
           </div>
@@ -220,7 +221,7 @@ export default function StorageDetailPage() {
             <div>
               <div className="font-semibold">{t('storage.expiringSoon')}</div>
               <div className="text-sm">
-                {t('storage.expiresOn')} {new Date(item.expiry_date!).toLocaleDateString()}
+                {t('storage.expiresOn')} {formatShortDate(item.expiry_date!)}
               </div>
             </div>
           </div>
@@ -330,11 +331,7 @@ export default function StorageDetailPage() {
                 <div>
                   <div className="font-medium text-gray-900 dark:text-gray-100">{t('storage.added')}</div>
                   <div className="text-gray-600 dark:text-gray-300">
-                    {new Date(item.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
+                    {formatDate(item.created_at)}
                   </div>
                 </div>
               </div>
@@ -344,11 +341,7 @@ export default function StorageDetailPage() {
                   <div>
                     <div className="font-medium text-gray-900 dark:text-gray-100">{t('storage.lastUpdated')}</div>
                     <div className="text-gray-600 dark:text-gray-300">
-                      {new Date(item.updated_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
+                      {formatDate(item.updated_at)}
                     </div>
                   </div>
                 </div>

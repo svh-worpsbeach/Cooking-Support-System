@@ -9,6 +9,7 @@ import Card from '../components/common/Card';
 import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EventForm from '../components/events/EventForm';
+import { formatDate } from '../utils/timeUtils';
 import type { EventCreate } from '../types';
 
 export default function EventDetailPage() {
@@ -149,12 +150,7 @@ export default function EventDetailPage() {
               <div>
                 <div className="font-medium text-gray-900 dark:text-gray-100">{t('events.date')}</div>
                 <div className="text-gray-600 dark:text-gray-300">
-                  {new Date(event.event_date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
+                  {formatDate(event.event_date)}
                 </div>
               </div>
             </div>
