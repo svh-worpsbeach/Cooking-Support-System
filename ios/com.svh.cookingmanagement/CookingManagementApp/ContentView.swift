@@ -24,15 +24,15 @@ struct ContentView: View {
                 }
                 .tag(2)
             
-            ToolsView()
-                .tabItem {
-                    Label("nav.tools".localized(appState.currentLanguage), systemImage: "wrench.fill")
-                }
-                .tag(3)
-            
             StorageView()
                 .tabItem {
                     Label("nav.storage".localized(appState.currentLanguage), systemImage: "archivebox.fill")
+                }
+                .tag(3)
+            
+            ToolsView()
+                .tabItem {
+                    Label("nav.tools".localized(appState.currentLanguage), systemImage: "wrench.fill")
                 }
                 .tag(4)
             
