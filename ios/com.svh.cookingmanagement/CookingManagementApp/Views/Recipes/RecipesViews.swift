@@ -22,6 +22,25 @@ struct RecipesView: View {
             Group {
                 if viewModel.isLoading {
                     ProgressView("common.loading".localized(appState.currentLanguage))
+                } else if let errorMessage = viewModel.errorMessage {
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.orange)
+                        Text("common.error".localized(appState.currentLanguage))
+                            .font(.headline)
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                        Button("Retry") {
+                            Task {
+                                await viewModel.loadRecipes()
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                    }
                 } else if filteredRecipes.isEmpty {
                     EmptyStateView(
                         icon: "book.fill",
@@ -345,12 +364,17 @@ class RecipesViewModel: ObservableObject {
     
     func loadRecipes() async {
         isLoading = true
+        errorMessage = nil
         defer { isLoading = false }
         
         do {
             recipes = try await APIService.shared.getRecipes()
+            print("✅ Loaded \(recipes.count) recipes")
         } catch {
             errorMessage = error.localizedDescription
+            print("❌ Error loading recipes: \(error.localizedDescription)")
+            // Show empty array on error
+            recipes = []
         }
     }
     
