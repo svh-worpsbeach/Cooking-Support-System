@@ -75,7 +75,7 @@ html.dark body::before {
 
 .dark .bg-gray-800,
 .dark\:bg-gray-800 {
-  @apply dark:bg-gray-800/85 dark:backdrop-blur-sm;
+  @apply dark:bg-gray-800/75 dark:backdrop-blur-md;
 }
 
 .bg-gray-50 {
@@ -84,7 +84,7 @@ html.dark body::before {
 
 .dark .bg-gray-700,
 .dark\:bg-gray-700 {
-  @apply dark:bg-gray-700/85 dark:backdrop-blur-sm;
+  @apply dark:bg-gray-700/70 dark:backdrop-blur-md;
 }
 
 .bg-gray-100 {
@@ -93,7 +93,7 @@ html.dark body::before {
 
 .dark .bg-gray-900,
 .dark\:bg-gray-900 {
-  @apply dark:bg-gray-900/90 dark:backdrop-blur-sm;
+  @apply dark:bg-gray-900/80 dark:backdrop-blur-md;
 }
 
 /* Glasmorphism styles - reduced opacity for better background visibility */
@@ -102,7 +102,7 @@ html.dark body::before {
 }
 
 .glass-mode .dark\:bg-gray-800 {
-  @apply dark:bg-gray-800/50 dark:backdrop-blur-md dark:border dark:border-gray-700/40;
+  @apply dark:bg-gray-800/40 dark:backdrop-blur-lg dark:border dark:border-gray-700/30;
 }
 
 .glass-mode .bg-gray-50 {
@@ -110,7 +110,7 @@ html.dark body::before {
 }
 
 .glass-mode .dark\:bg-gray-700 {
-  @apply dark:bg-gray-700/50 dark:backdrop-blur-md;
+  @apply dark:bg-gray-700/40 dark:backdrop-blur-lg;
 }
 
 .glass-mode .bg-gray-100 {
@@ -118,7 +118,7 @@ html.dark body::before {
 }
 
 .glass-mode .dark\:bg-gray-900 {
-  @apply dark:bg-gray-900/60 dark:backdrop-blur-md;
+  @apply dark:bg-gray-900/50 dark:backdrop-blur-lg;
 }
 
 /* Glass mode card enhancements */
@@ -130,6 +130,63 @@ html.dark body::before {
 .glass-mode.dark [class*="bg-white"],
 .glass-mode.dark [class*="bg-gray"] {
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+/* Enhanced transparency for dark mode elements */
+.dark .bg-gray-600 {
+  @apply dark:bg-gray-600/70 dark:backdrop-blur-sm;
+}
+
+.dark .bg-gray-500 {
+  @apply dark:bg-gray-500/75 dark:backdrop-blur-sm;
+}
+
+/* Input and form elements transparency */
+.dark input,
+.dark textarea,
+.dark select {
+  @apply dark:bg-gray-700/60 dark:backdrop-blur-sm;
+}
+
+/* Button transparency adjustments for dark mode */
+.dark button:not(.bg-primary-500):not(.bg-red-500):not(.bg-transparent) {
+  @apply dark:backdrop-blur-sm;
+}
+
+/* Modal backdrop enhanced transparency */
+.dark .bg-black {
+  @apply dark:bg-black/60;
+}
+
+/* Border transparency for dark mode */
+.dark .border-gray-700 {
+  @apply dark:border-gray-700/50;
+}
+
+.dark .border-gray-600 {
+  @apply dark:border-gray-600/50;
+}
+
+/* Hover states with transparency */
+.dark .hover\:bg-gray-700:hover {
+  @apply dark:bg-gray-700/80 dark:backdrop-blur-sm;
+}
+
+.dark .hover\:bg-gray-800:hover {
+  @apply dark:bg-gray-800/85 dark:backdrop-blur-sm;
+}
+
+/* Shadow enhancements for dark mode with transparency */
+.dark .shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.dark .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+.dark .shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+}
+
 }
 
 /* Made with Bob */

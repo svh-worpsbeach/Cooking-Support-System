@@ -143,14 +143,14 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen">
       {/* Top Navigation */}
-      <nav className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-sm">
+      <nav className="bg-white/90 dark:bg-gray-800/75 backdrop-blur-md shadow-sm border-b border-gray-200/30 dark:border-gray-700/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-4">
               {/* Hamburger Menu Button */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 dark:backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 aria-label="Toggle menu"
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,8 +171,8 @@ export default function Layout({ children }: LayoutProps) {
                     to={item.path}
                     className={`inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       isActive(item.path)
-                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        ? 'bg-primary-100 dark:bg-primary-900/40 dark:backdrop-blur-sm text-primary-700 dark:text-primary-400'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 dark:backdrop-blur-sm'
                     }`}
                   >
                     {item.icon}
@@ -186,7 +186,7 @@ export default function Layout({ children }: LayoutProps) {
             <div className="flex items-center">
               <button
                 onClick={toggleLanguage}
-                className="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/40 dark:backdrop-blur-sm hover:bg-primary-200 dark:hover:bg-primary-900/60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
                 {i18n.language === 'en' ? '🇩🇪 DE' : '🇬🇧 EN'}
               </button>
@@ -195,7 +195,7 @@ export default function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Mobile Main Navigation */}
-        <div className="md:hidden border-t dark:border-gray-700">
+        <div className="md:hidden border-t border-gray-200/50 dark:border-gray-700/50">
           <div className="px-2 pt-2 pb-3 space-y-1">
             {mainNavItems.map((item) => (
               <Link
@@ -203,8 +203,8 @@ export default function Layout({ children }: LayoutProps) {
                 to={item.path}
                 className={`flex items-center gap-3 px-3 py-2 rounded-md text-base font-medium ${
                   isActive(item.path)
-                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    ? 'bg-primary-100 dark:bg-primary-900/40 dark:backdrop-blur-sm text-primary-700 dark:text-primary-400'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 dark:backdrop-blur-sm'
                 }`}
               >
                 {item.icon}
@@ -218,20 +218,20 @@ export default function Layout({ children }: LayoutProps) {
       {/* Sidebar Overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black/60 dark:bg-black/70 backdrop-blur-sm z-40"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full bg-white dark:bg-gray-800 shadow-lg z-50 transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full bg-white/95 dark:bg-gray-800/90 backdrop-blur-md shadow-lg border-r border-gray-200/30 dark:border-gray-700/30 z-50 transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } ${showLabels ? 'w-64' : 'w-20'}`}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200/50 dark:border-gray-700/50">
             {showLabels && (
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {t('nav.menu')}
@@ -239,7 +239,7 @@ export default function Layout({ children }: LayoutProps) {
             )}
             <button
               onClick={() => setIsSidebarOpen(false)}
-              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
+              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 dark:backdrop-blur-sm focus:outline-none"
               aria-label="Close menu"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -258,8 +258,8 @@ export default function Layout({ children }: LayoutProps) {
                   onClick={() => setIsSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium transition-colors group ${
                     isActive(item.path)
-                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-primary-100 dark:bg-primary-900/40 dark:backdrop-blur-sm text-primary-700 dark:text-primary-400'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 dark:backdrop-blur-sm'
                   } ${!showLabels && 'justify-center'}`}
                   title={!showLabels ? item.label : undefined}
                 >
@@ -271,10 +271,10 @@ export default function Layout({ children }: LayoutProps) {
           </nav>
 
           {/* Sidebar Footer - Toggle View */}
-          <div className="p-4 border-t dark:border-gray-700">
+          <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50">
             <button
               onClick={toggleLabels}
-              className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+              className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 dark:backdrop-blur-sm transition-colors ${
                 !showLabels && 'justify-center'
               }`}
               title={showLabels ? t('nav.hideLabels') : t('nav.showLabels')}

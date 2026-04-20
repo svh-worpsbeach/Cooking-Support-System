@@ -17,7 +17,7 @@ export default function Card({
   
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 ${hoverStyles} ${className}`}
+      className={`bg-white/90 dark:bg-gray-800/75 backdrop-blur-md rounded-lg shadow-md border border-gray-200/30 dark:border-gray-700/30 p-6 ${hoverStyles} ${className}`}
       onClick={onClick}
     >
       {children}

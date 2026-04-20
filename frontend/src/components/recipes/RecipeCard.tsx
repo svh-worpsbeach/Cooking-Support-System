@@ -41,13 +41,13 @@ export default function RecipeCard({ recipe, selectable = false, selected = fals
             {recipe.categories.slice(0, 3).map((cat) => (
               <span
                 key={cat.id}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200"
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/60 dark:backdrop-blur-sm dark:text-primary-200"
               >
                 {cat.category_name}
               </span>
             ))}
             {recipe.categories.length > 3 && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700/60 dark:backdrop-blur-sm dark:text-gray-200">
                 +{recipe.categories.length - 3}
               </span>
             )}
