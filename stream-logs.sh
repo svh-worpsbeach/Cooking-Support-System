@@ -4,6 +4,28 @@ set -euo pipefail
 
 COMPOSE_FILE="./docker-compose.dev.yml"
 TAIL_LINES="${TAIL_LINES:-100}"
+COMPOSE_CMD=()
+
+command_exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+detect_compose_command() {
+  if command_exists podman-compose; then
+    COMPOSE_CMD=("podman-compose")
+  elif command_exists docker && docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD=("docker" "compose")
+  elif command_exists docker-compose; then
+    COMPOSE_CMD=("docker-compose")
+  else
+    echo "Error: Neither docker-compose, docker compose, nor podman-compose found." >&2
+    echo "Please install one of the following:" >&2
+    echo "  - Docker with Compose plugin (recommended)" >&2
+    echo "  - docker-compose (legacy)" >&2
+    echo "  - podman-compose" >&2
+    exit 1
+  fi
+}
 
 usage() {
   cat <<'EOF'
@@ -24,6 +46,8 @@ Examples:
   ./stream-logs.sh both
 EOF
 }
+
+detect_compose_command
 
 if [ ! -f "$COMPOSE_FILE" ]; then
   echo "Error: Compose file not found at $COMPOSE_FILE" >&2
@@ -86,10 +110,11 @@ done
 
 echo "Streaming logs from: ${DEDUPED_SERVICES[*]}"
 echo "Using compose file: $COMPOSE_FILE"
+echo "Using compose command: ${COMPOSE_CMD[*]}"
 echo "Tail lines: $TAIL_LINES"
 echo "Press Ctrl+C to stop."
 echo
 
-docker compose -f "$COMPOSE_FILE" logs --follow --tail "$TAIL_LINES" "${DEDUPED_SERVICES[@]}"
+"${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" logs --follow --tail "$TAIL_LINES" "${DEDUPED_SERVICES[@]}"
 
 # Made with Bob
