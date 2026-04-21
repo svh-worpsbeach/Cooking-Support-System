@@ -36,7 +36,7 @@ services:
     container_name: cooking-backend
     hostname: backend
     ports:
-      - "5580:8000"
+      - "0.0.0.0:5580:8000"
     environment:
       - DATABASE_TYPE=postgresql
       - POSTGRES_HOST=postgres
