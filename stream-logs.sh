@@ -27,6 +27,20 @@ detect_compose_command() {
   fi
 }
 
+stream_podman_logs() {
+  local tail_args=()
+  local pid_list=()
+
+  for target in "${RESOLVED_SERVICES[@]}"; do
+    tail_args+=("--tail" "$TAIL_LINES" "-f" "$target")
+  done
+
+  podman logs "${tail_args[@]}" &
+  pid_list+=($!)
+
+  wait "${pid_list[@]}"
+}
+
 resolve_podman_targets() {
   local ps_output
   ps_output=$("${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" ps 2>/dev/null || true)
@@ -165,6 +179,11 @@ if ! "${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" ps >/dev/null 2>&1; then
   echo "Error: Unable to query compose services." >&2
   echo "Make sure the compose provider is installed and the container engine is running." >&2
   exit 1
+fi
+
+if [ "${COMPOSE_CMD[0]}" = "podman-compose" ]; then
+  stream_podman_logs
+  exit $?
 fi
 
 LOG_ERROR_FILE=$(mktemp)
