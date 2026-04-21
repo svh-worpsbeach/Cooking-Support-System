@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import { useRecipes } from '../hooks/useRecipes';
 import { useEvents } from '../hooks/useEvents';
 import { useTools } from '../hooks/useTools';
@@ -37,7 +36,7 @@ export default function Home() {
   const { recipes } = useRecipes();
   const { events } = useEvents();
   const { tools } = useTools();
-  const { storageItems } = useStorage();
+  const { items } = useStorage();
   const { locations } = useLocations();
   const { guests } = useGuests();
 
@@ -98,7 +97,7 @@ export default function Home() {
     },
     {
       title: t('nav.storage'),
-      count: storageItems.length,
+      count: items.length,
       icon: '🏺',
       color: 'text-green-600 dark:text-green-400',
       link: '/storage',
