@@ -72,17 +72,16 @@ if [ ${#SERVICES[@]} -eq 0 ]; then
 fi
 
 DEDUPED_SERVICES=()
+DEDUPED_KEYS=""
+
 for service in "${SERVICES[@]}"; do
-  skip=false
-  for existing in "${DEDUPED_SERVICES[@]}"; do
-    if [ "$existing" = "$service" ]; then
-      skip=true
-      break
-    fi
-  done
-  if [ "$skip" = false ]; then
-    DEDUPED_SERVICES+=("$service")
-  fi
+  case " $DEDUPED_KEYS " in
+    *" $service "*) ;;
+    *)
+      DEDUPED_SERVICES+=("$service")
+      DEDUPED_KEYS="$DEDUPED_KEYS $service"
+      ;;
+  esac
 done
 
 echo "Streaming logs from: ${DEDUPED_SERVICES[*]}"
