@@ -148,21 +148,27 @@ class HomeViewModel: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
+        // Load statistics in smaller batches to avoid connection issues
+        // Batch 1: Core content
         async let recipes = loadRecipesCount()
         async let events = loadEventsCount()
+        let batch1 = await (recipes, events)
+        recipesCount = batch1.0
+        eventsCount = batch1.1
+        
+        // Batch 2: Resources
         async let tools = loadToolsCount()
         async let storage = loadStorageCount()
+        let batch2 = await (tools, storage)
+        toolsCount = batch2.0
+        storageCount = batch2.1
+        
+        // Batch 3: Additional data
         async let locations = loadLocationsCount()
         async let guests = loadGuestsCount()
-        
-        let results = await (recipes, events, tools, storage, locations, guests)
-        
-        recipesCount = results.0
-        eventsCount = results.1
-        toolsCount = results.2
-        storageCount = results.3
-        locationsCount = results.4
-        guestsCount = results.5
+        let batch3 = await (locations, guests)
+        locationsCount = batch3.0
+        guestsCount = batch3.1
     }
     
     private func loadRecipesCount() async -> Int {

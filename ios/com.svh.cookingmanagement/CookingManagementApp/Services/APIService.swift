@@ -16,6 +16,21 @@ class APIService {
         #endif
     }
     
+    // Configure URLSession with proper timeouts and connection settings
+    private lazy var urlSession: URLSession = {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 30
+        configuration.timeoutIntervalForResource = 60
+        configuration.httpMaximumConnectionsPerHost = 4
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.httpShouldSetCookies = false
+        configuration.httpAdditionalHeaders = [
+            "Connection": "keep-alive",
+            "Accept": "application/json"
+        ]
+        return URLSession(configuration: configuration)
+    }()
+    
     private init() {}
     
     // MARK: - Generic Request Methods
@@ -46,7 +61,7 @@ class APIService {
         )
         
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await urlSession.data(for: request)
             let durationMs = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
             guard let httpResponse = response as? HTTPURLResponse else {
                 logCommonEvent(
@@ -115,7 +130,7 @@ class APIService {
         )
         
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await urlSession.data(for: request)
             let durationMs = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
             guard let httpResponse = response as? HTTPURLResponse else {
                 logCommonEvent(
@@ -425,7 +440,7 @@ class APIService {
         )
         
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await urlSession.data(for: request)
             let durationMs = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
             guard let httpResponse = response as? HTTPURLResponse else {
                 logCommonEvent(
