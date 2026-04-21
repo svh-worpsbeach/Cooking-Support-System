@@ -30,6 +30,10 @@ struct Localizable {
             "common.location": "Standort",
             "common.image": "Bild",
             
+            // Home
+            "home.welcome": "Willkommen in Ihrer Kochverwaltung",
+            "home.statistics": "Statistiken",
+            
             // Recipes
             "recipes.title": "Rezepte",
             "recipes.new": "Neues Rezept",
@@ -121,6 +125,10 @@ struct Localizable {
             "common.date": "Date",
             "common.location": "Location",
             "common.image": "Image",
+            
+            // Home
+            "home.welcome": "Welcome to your Cooking Management",
+            "home.statistics": "Statistics",
             
             // Recipes
             "recipes.title": "Recipes",

@@ -24,6 +24,10 @@
     "no": "No",
     "view": "View"
   },
+  "home": {
+    "statistics": "Statistics",
+    "features": "Features"
+  },
   "nav": {
     "home": "Home",
     "recipes": "Recipes",

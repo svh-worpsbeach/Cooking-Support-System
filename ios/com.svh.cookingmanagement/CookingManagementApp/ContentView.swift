@@ -6,62 +6,43 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem {
+                    Label("nav.home".localized(appState.currentLanguage), systemImage: "house.fill")
+                }
+                .tag(0)
+            
             RecipesView()
                 .tabItem {
                     Label("nav.recipes".localized(appState.currentLanguage), systemImage: "book.fill")
                 }
-                .tag(0)
+                .tag(1)
             
             EventsView()
                 .tabItem {
                     Label("nav.events".localized(appState.currentLanguage), systemImage: "calendar")
                 }
-                .tag(1)
+                .tag(2)
             
             ShoppingListsView()
                 .tabItem {
                     Label("shopping.title".localized(appState.currentLanguage), systemImage: "cart.fill")
                 }
-                .tag(2)
+                .tag(3)
             
             StorageView()
                 .tabItem {
                     Label("nav.storage".localized(appState.currentLanguage), systemImage: "archivebox.fill")
                 }
-                .tag(3)
+                .tag(4)
             
             MoreView()
                 .tabItem {
                     Label("nav.more".localized(appState.currentLanguage), systemImage: "ellipsis.circle.fill")
                 }
-                .tag(4)
+                .tag(5)
         }
         .preferredColorScheme(appState.isDarkMode ? .dark : .light)
-    }
-}
-
-struct HomeView: View {
-    @EnvironmentObject var appState: AppState
-    
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    Text("Cooking Management System")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .padding()
-                    
-                    Text("Willkommen in Ihrer Kochverwaltung")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                }
-                .padding()
-            }
-            .navigationTitle("nav.home".localized(appState.currentLanguage))
-        }
     }
 }
 
