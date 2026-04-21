@@ -21,12 +21,13 @@ class APIService {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 30
         configuration.timeoutIntervalForResource = 60
-        configuration.httpMaximumConnectionsPerHost = 4
+        configuration.httpMaximumConnectionsPerHost = 1  // Limit to 1 connection to avoid resets
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
         configuration.httpShouldSetCookies = false
+        configuration.httpShouldUsePipelining = false  // Disable pipelining
         configuration.httpAdditionalHeaders = [
-            "Connection": "keep-alive",
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "Connection": "close"  // Use close instead of keep-alive to avoid connection resets
         ]
         return URLSession(configuration: configuration)
     }()

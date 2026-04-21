@@ -145,30 +145,57 @@ class HomeViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     func loadStatistics() async {
-        isLoading = true
-        defer { isLoading = false }
+        await MainActor.run {
+            isLoading = true
+        }
         
-        // Load statistics in smaller batches to avoid connection issues
-        // Batch 1: Core content
-        async let recipes = loadRecipesCount()
-        async let events = loadEventsCount()
-        let batch1 = await (recipes, events)
-        recipesCount = batch1.0
-        eventsCount = batch1.1
+        defer {
+            Task { @MainActor in
+                isLoading = false
+            }
+        }
         
-        // Batch 2: Resources
-        async let tools = loadToolsCount()
-        async let storage = loadStorageCount()
-        let batch2 = await (tools, storage)
-        toolsCount = batch2.0
-        storageCount = batch2.1
+        // Load statistics sequentially to avoid overwhelming the server
+        let recipes = await loadRecipesCount()
+        await MainActor.run {
+            recipesCount = recipes
+        }
         
-        // Batch 3: Additional data
-        async let locations = loadLocationsCount()
-        async let guests = loadGuestsCount()
-        let batch3 = await (locations, guests)
-        locationsCount = batch3.0
-        guestsCount = batch3.1
+        // Small delay to prevent connection resets
+        try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+        
+        let events = await loadEventsCount()
+        await MainActor.run {
+            eventsCount = events
+        }
+        
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        
+        let tools = await loadToolsCount()
+        await MainActor.run {
+            toolsCount = tools
+        }
+        
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        
+        let storage = await loadStorageCount()
+        await MainActor.run {
+            storageCount = storage
+        }
+        
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        
+        let locations = await loadLocationsCount()
+        await MainActor.run {
+            locationsCount = locations
+        }
+        
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        
+        let guests = await loadGuestsCount()
+        await MainActor.run {
+            guestsCount = guests
+        }
     }
     
     private func loadRecipesCount() async -> Int {
