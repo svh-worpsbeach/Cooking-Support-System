@@ -34,21 +34,60 @@ class APIService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = body
         
-        logRequest(request, body: body)
+        let startTime = CFAbsoluteTimeGetCurrent()
+        logCommonEvent(
+            level: "INFO",
+            method: method,
+            url: url.absoluteString,
+            status: 0,
+            responseSize: 0,
+            durationMs: 0,
+            message: "request_started headers=\(request.allHTTPHeaderFields ?? [:]) body=\(serializedBody(body) ?? "null")"
+        )
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
-            logResponse(data: data, response: response, error: nil)
+            let durationMs = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+            guard let httpResponse = response as? HTTPURLResponse else {
+                logCommonEvent(
+                    level: "ERROR",
+                    method: method,
+                    url: url.absoluteString,
+                    status: 0,
+                    responseSize: data.count,
+                    durationMs: durationMs,
+                    message: "invalid_response_type"
+                )
+                throw URLError(.badServerResponse)
+            }
             
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
+            logCommonEvent(
+                level: "INFO",
+                method: method,
+                url: url.absoluteString,
+                status: httpResponse.statusCode,
+                responseSize: data.count,
+                durationMs: durationMs,
+                message: "response_received headers=\(httpResponse.allHeaderFields) body=\(serializedBody(data) ?? "null")"
+            )
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
                 throw URLError(.badServerResponse)
             }
             
             let decoder = JSONDecoder()
             return try decoder.decode(T.self, from: data)
         } catch {
-            logResponse(data: nil, response: nil, error: error)
+            let durationMs = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+            logCommonEvent(
+                level: "ERROR",
+                method: method,
+                url: url.absoluteString,
+                status: (error as? URLError)?.errorCode ?? 0,
+                responseSize: 0,
+                durationMs: durationMs,
+                message: "request_failed error=\(error.localizedDescription) details=\(error)"
+            )
             throw error
         }
     }
@@ -64,65 +103,96 @@ class APIService {
         var request = URLRequest(url: url)
         request.httpMethod = method
         
-        logRequest(request, body: nil)
+        let startTime = CFAbsoluteTimeGetCurrent()
+        logCommonEvent(
+            level: "INFO",
+            method: method,
+            url: url.absoluteString,
+            status: 0,
+            responseSize: 0,
+            durationMs: 0,
+            message: "request_started headers=\(request.allHTTPHeaderFields ?? [:]) body=null"
+        )
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
-            logResponse(data: data, response: response, error: nil)
+            let durationMs = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+            guard let httpResponse = response as? HTTPURLResponse else {
+                logCommonEvent(
+                    level: "ERROR",
+                    method: method,
+                    url: url.absoluteString,
+                    status: 0,
+                    responseSize: data.count,
+                    durationMs: durationMs,
+                    message: "invalid_response_type"
+                )
+                throw URLError(.badServerResponse)
+            }
             
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
+            logCommonEvent(
+                level: "INFO",
+                method: method,
+                url: url.absoluteString,
+                status: httpResponse.statusCode,
+                responseSize: data.count,
+                durationMs: durationMs,
+                message: "response_received headers=\(httpResponse.allHeaderFields)"
+            )
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
                 throw URLError(.badServerResponse)
             }
         } catch {
-            logResponse(data: nil, response: nil, error: error)
+            let durationMs = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+            logCommonEvent(
+                level: "ERROR",
+                method: method,
+                url: url.absoluteString,
+                status: (error as? URLError)?.errorCode ?? 0,
+                responseSize: 0,
+                durationMs: durationMs,
+                message: "request_failed error=\(error.localizedDescription) details=\(error)"
+            )
             throw error
         }
     }
     
-    private func logRequest(_ request: URLRequest, body: Data?) {
+    private func logCommonEvent(
+        level: String,
+        method: String,
+        url: String,
+        status: Int,
+        responseSize: Int,
+        durationMs: Double,
+        message: String,
+        userAgent: String = "iOSApp/1.0",
+        referer: String = "-"
+    ) {
         guard isNetworkDebugLoggingEnabled else { return }
         
-        let method = request.httpMethod ?? "UNKNOWN"
-        let url = request.url?.absoluteString ?? "nil"
-        print("🌐 [API Request] \(method) \(url)")
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "dd/MMM/yyyy:HH:mm:ss Z"
+        let timestamp = formatter.string(from: Date())
+        let sanitizedMessage = message.replacingOccurrences(of: "\"", with: "'")
+        let line = "ios-app - - [\(timestamp)] \"\(method) \(url) HTTP/1.1\" \(status) \(responseSize) \"\(referer)\" \"\(userAgent)\" source=ios duration_ms=\(String(format: "%.2f", durationMs)) message=\"\(sanitizedMessage)\""
         
-        if let headers = request.allHTTPHeaderFields, !headers.isEmpty {
-            print("🌐 [API Headers] \(headers)")
-        }
-        
-        guard let body, !body.isEmpty else { return }
-        
-        if let bodyString = String(data: body, encoding: .utf8) {
-            print("🌐 [API Body] \(bodyString)")
+        if level == "ERROR" {
+            print("❌ \(line)")
         } else {
-            print("🌐 [API Body] <\(body.count) bytes binary data>")
+            print(line)
         }
     }
     
-    private func logResponse(data: Data?, response: URLResponse?, error: Error?) {
-        guard isNetworkDebugLoggingEnabled else { return }
+    private func serializedBody(_ data: Data?) -> String? {
+        guard let data, !data.isEmpty else { return nil }
         
-        if let httpResponse = response as? HTTPURLResponse {
-            let url = httpResponse.url?.absoluteString ?? "nil"
-            print("🌐 [API Response] \(httpResponse.statusCode) \(url)")
-            print("🌐 [API Response Headers] \(httpResponse.allHeaderFields)")
-        } else if let response {
-            print("🌐 [API Response] \(response)")
+        if let bodyString = String(data: data, encoding: .utf8) {
+            return bodyString
         }
         
-        if let data, !data.isEmpty {
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("🌐 [API Response Body] \(responseString)")
-            } else {
-                print("🌐 [API Response Body] <\(data.count) bytes binary data>")
-            }
-        }
-        
-        if let error {
-            print("❌ [API Error] \(error.localizedDescription)")
-            print("❌ [API Error Details] \(error)")
-        }
+        return "<\(data.count) bytes binary data>"
     }
     
     // MARK: - Recipes
@@ -329,7 +399,8 @@ class APIService {
         }
         
         let boundary = UUID().uuidString
-        var request = URLRequest(url: URL(string: "\(baseURL)/api/\(type)/\(id)/image")!)
+        let url = URL(string: "\(baseURL)/api/\(type)/\(id)/image")!
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         
@@ -341,22 +412,61 @@ class APIService {
         body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
         
         request.httpBody = body
-        logRequest(request, body: nil)
-        print("🌐 [API Upload] image/jpeg \(imageData.count) bytes")
+        let startTime = CFAbsoluteTimeGetCurrent()
+        
+        logCommonEvent(
+            level: "INFO",
+            method: "POST",
+            url: url.absoluteString,
+            status: 0,
+            responseSize: imageData.count,
+            durationMs: 0,
+            message: "request_started headers=\(request.allHTTPHeaderFields ?? [:]) body=<multipart image/jpeg \(imageData.count) bytes>"
+        )
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
-            logResponse(data: data, response: response, error: nil)
+            let durationMs = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+            guard let httpResponse = response as? HTTPURLResponse else {
+                logCommonEvent(
+                    level: "ERROR",
+                    method: "POST",
+                    url: url.absoluteString,
+                    status: 0,
+                    responseSize: data.count,
+                    durationMs: durationMs,
+                    message: "invalid_response_type"
+                )
+                throw URLError(.badServerResponse)
+            }
             
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
+            logCommonEvent(
+                level: "INFO",
+                method: "POST",
+                url: url.absoluteString,
+                status: httpResponse.statusCode,
+                responseSize: data.count,
+                durationMs: durationMs,
+                message: "response_received headers=\(httpResponse.allHeaderFields) body=\(serializedBody(data) ?? "null")"
+            )
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
                 throw URLError(.badServerResponse)
             }
             
             let result = try JSONDecoder().decode([String: String].self, from: data)
             return result["image_url"] ?? ""
         } catch {
-            logResponse(data: nil, response: nil, error: error)
+            let durationMs = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+            logCommonEvent(
+                level: "ERROR",
+                method: "POST",
+                url: url.absoluteString,
+                status: (error as? URLError)?.errorCode ?? 0,
+                responseSize: 0,
+                durationMs: durationMs,
+                message: "request_failed error=\(error.localizedDescription) details=\(error)"
+            )
             throw error
         }
     }

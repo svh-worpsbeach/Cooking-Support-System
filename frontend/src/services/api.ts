@@ -2,30 +2,81 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-// Detailed initialization debug output
-console.group('🚀 Frontend API Initialization');
-console.log('📋 Configuration Source Analysis:');
-console.log('  ├─ VITE_API_URL (from env):', import.meta.env.VITE_API_URL || '❌ NOT SET');
-console.log('  ├─ Fallback value:', 'http://localhost:8000/api');
-console.log('  └─ Final API_BASE_URL:', API_BASE_URL);
-console.log('');
-console.log('🔍 Configuration Details:');
-console.log('  ├─ Build mode:', import.meta.env.MODE);
-console.log('  ├─ Is production:', import.meta.env.PROD);
-console.log('  ├─ Is development:', import.meta.env.DEV);
-console.log('  └─ Base URL:', import.meta.env.BASE_URL);
-console.log('');
-console.log('📝 How VITE_API_URL is set:');
-console.log('  1. Docker build arg: VITE_API_URL in docker-compose.yml');
-console.log('  2. Local .env file: VITE_API_URL=... in frontend/.env');
-console.log('  3. Fallback: http://localhost:8000/api (if not set)');
-console.log('');
-console.log('✅ Active configuration:', {
-  source: import.meta.env.VITE_API_URL ? 'Environment Variable' : 'Fallback Default',
-  value: API_BASE_URL,
-  timestamp: new Date().toISOString()
+type CommonLogLevel = 'INFO' | 'ERROR';
+type CommonLogSource = 'frontend';
+
+const pendingRequestTimes = new Map<string, number>();
+
+function formatApacheTimestamp(date: Date): string {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const timezoneOffsetMinutes = -date.getTimezoneOffset();
+  const sign = timezoneOffsetMinutes >= 0 ? '+' : '-';
+  const offsetHours = String(Math.floor(Math.abs(timezoneOffsetMinutes) / 60)).padStart(2, '0');
+  const offsetMinutes = String(Math.abs(timezoneOffsetMinutes) % 60).padStart(2, '0');
+
+  return `${day}/${month}/${year}:${hours}:${minutes}:${seconds} ${sign}${offsetHours}${offsetMinutes}`;
+}
+
+function buildFullUrl(baseURL?: string, url?: string): string {
+  if (!url) return baseURL || '-';
+  if (/^https?:\/\//i.test(url)) return url;
+  if (!baseURL) return url;
+  return `${baseURL.replace(/\/$/, '')}/${url.replace(/^\//, '')}`;
+}
+
+function getRequestKey(method?: string, fullUrl?: string): string {
+  return `${(method || 'GET').toUpperCase()} ${fullUrl || '-'}`;
+}
+
+function logCommonEvent({
+  level,
+  source,
+  method,
+  url,
+  status,
+  responseSize,
+  durationMs,
+  message = '-',
+  userAgent = navigator.userAgent,
+  referer = window.location.href,
+}: {
+  level: CommonLogLevel;
+  source: CommonLogSource;
+  method: string;
+  url: string;
+  status: number;
+  responseSize: number;
+  durationMs: number;
+  message?: string;
+  userAgent?: string;
+  referer?: string;
+}) {
+  const timestamp = formatApacheTimestamp(new Date());
+  const line = `browser - - [${timestamp}] "${method} ${url} HTTP/1.1" ${status} ${responseSize} "${referer}" "${userAgent}" source=${source} duration_ms=${durationMs.toFixed(2)} message="${String(message).replace(/"/g, "'")}"`;
+
+  if (level === 'ERROR') {
+    console.error(line);
+  } else {
+    console.log(line);
+  }
+}
+
+logCommonEvent({
+  level: 'INFO',
+  source: 'frontend',
+  method: 'SYSTEM',
+  url: API_BASE_URL,
+  status: 200,
+  responseSize: 0,
+  durationMs: 0,
+  message: `frontend_api_initialized mode=${import.meta.env.MODE} source=${import.meta.env.VITE_API_URL ? 'env' : 'fallback'}`,
 });
-console.groupEnd();
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -34,60 +85,87 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor for logging and auth
 api.interceptors.request.use(
   (config) => {
-    console.log('📤 API Request:', {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`,
-      headers: config.headers,
-      data: config.data
+    const method = (config.method || 'GET').toUpperCase();
+    const fullUrl = buildFullUrl(config.baseURL, config.url);
+    const requestKey = getRequestKey(method, fullUrl);
+    pendingRequestTimes.set(requestKey, performance.now());
+
+    logCommonEvent({
+      level: 'INFO',
+      source: 'frontend',
+      method,
+      url: fullUrl,
+      status: 0,
+      responseSize: 0,
+      durationMs: 0,
+      message: `request_started headers=${JSON.stringify(config.headers ?? {})} body=${JSON.stringify(config.data ?? null)}`,
     });
+
     return config;
   },
   (error) => {
-    console.error('❌ Request Error:', error);
+    logCommonEvent({
+      level: 'ERROR',
+      source: 'frontend',
+      method: 'UNKNOWN',
+      url: '-',
+      status: 0,
+      responseSize: 0,
+      durationMs: 0,
+      message: `request_setup_error error=${error?.message ?? 'unknown'}`,
+    });
     return Promise.reject(error);
   }
 );
 
-// Response interceptor for logging and error handling
 api.interceptors.response.use(
   (response) => {
-    console.log('📥 API Response:', {
+    const method = (response.config.method || 'GET').toUpperCase();
+    const fullUrl = buildFullUrl(response.config.baseURL, response.config.url);
+    const requestKey = getRequestKey(method, fullUrl);
+    const startTime = pendingRequestTimes.get(requestKey) ?? performance.now();
+    pendingRequestTimes.delete(requestKey);
+    const durationMs = performance.now() - startTime;
+    const responseBody = JSON.stringify(response.data ?? '');
+    const responseSize = new TextEncoder().encode(responseBody).length;
+
+    logCommonEvent({
+      level: 'INFO',
+      source: 'frontend',
+      method,
+      url: fullUrl,
       status: response.status,
-      statusText: response.statusText,
-      url: response.config.url,
-      data: response.data
+      responseSize,
+      durationMs,
+      message: `response_received status_text=${response.statusText} body=${responseBody}`,
     });
+
     return response;
   },
   (error) => {
-    if (error.response) {
-      // Server responded with error status
-      console.error('❌ API Error Response:', {
-        status: error.response.status,
-        statusText: error.response.statusText,
-        url: error.config?.url,
-        data: error.response.data,
-        headers: error.response.headers
-      });
-    } else if (error.request) {
-      // Request made but no response
-      console.error('❌ Network Error (No Response):', {
-        url: error.config?.url,
-        message: error.message,
-        request: error.request
-      });
-    } else {
-      // Something else happened
-      console.error('❌ Request Setup Error:', {
-        message: error.message,
-        config: error.config
-      });
-    }
+    const method = (error.config?.method || 'GET').toUpperCase();
+    const fullUrl = buildFullUrl(error.config?.baseURL, error.config?.url);
+    const requestKey = getRequestKey(method, fullUrl);
+    const startTime = pendingRequestTimes.get(requestKey) ?? performance.now();
+    pendingRequestTimes.delete(requestKey);
+    const durationMs = performance.now() - startTime;
+    const responseBody = JSON.stringify(error.response?.data ?? error.message ?? '');
+    const responseSize = new TextEncoder().encode(responseBody).length;
+    const status = error.response?.status ?? 0;
+
+    logCommonEvent({
+      level: 'ERROR',
+      source: 'frontend',
+      method,
+      url: fullUrl,
+      status,
+      responseSize,
+      durationMs,
+      message: `request_failed error=${error.message} body=${responseBody}`,
+    });
+
     return Promise.reject(error);
   }
 );

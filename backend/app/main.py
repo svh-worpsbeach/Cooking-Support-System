@@ -3,21 +3,56 @@ Main FastAPI application for the Cooking Management System.
 """
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 import os
 import logging
+import time
 
 from app.database import engine, Base
 from app.models import *  # Import all models to ensure they're registered
 
 # Configure logging
 logging.basicConfig(
-    level=logging.ERROR,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO,
+    format='%(message)s'
 )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("cms.backend")
+
+
+def log_common_event(
+    level: int,
+    client_ip: str,
+    method: str,
+    path: str,
+    protocol: str,
+    status_code: int,
+    response_size: int,
+    duration_ms: float,
+    source: str,
+    message: str = "-",
+    user_agent: str = "-",
+    referer: str = "-"
+) -> None:
+    timestamp = time.strftime("%d/%b/%Y:%H:%M:%S %z")
+    logger.log(
+        level,
+        '%s - - [%s] "%s %s %s" %s %s "%s" "%s" source=%s duration_ms=%.2f message="%s"',
+        client_ip or "-",
+        timestamp,
+        method,
+        path,
+        protocol,
+        status_code,
+        response_size,
+        referer,
+        user_agent,
+        source,
+        duration_ms,
+        message.replace('"', "'")
+    )
 
 
 @asynccontextmanager
@@ -25,50 +60,89 @@ async def lifespan(app: FastAPI):
     """
     Lifespan context manager for startup and shutdown events.
     """
-    logger.info("=" * 80)
-    logger.info("BACKEND STARTUP - Cooking Management System")
-    logger.info("=" * 80)
-    
-    # Log database configuration
     from app.config import settings
-    logger.info(f"Database Type: {settings.database_type}")
-    logger.info(f"Database URL: {settings.get_database_url()}")
+
+    log_common_event(
+        logging.INFO,
+        client_ip="127.0.0.1",
+        method="SYSTEM",
+        path="/startup",
+        protocol="INTERNAL",
+        status_code=200,
+        response_size=0,
+        duration_ms=0.0,
+        source="backend",
+        message=f"startup database_type={settings.database_type} database_url={settings.get_database_url()}",
+        user_agent="CookingManagementSystem",
+    )
     
-    # Startup: Create database tables
     try:
-        logger.info("Creating database tables...")
         Base.metadata.create_all(bind=engine, checkfirst=True)
         
-        # Verify tables were created
         from sqlalchemy import inspect
         inspector = inspect(engine)
         tables = inspector.get_table_names()
-        logger.info(f"Available tables: {', '.join(tables)}")
         
-        # Check each table
-        for table_name in tables:
-            columns = inspector.get_columns(table_name)
-            logger.debug(f"Table '{table_name}' has {len(columns)} columns")
-        
-        logger.info("✓ Database tables created successfully")
+        log_common_event(
+            logging.INFO,
+            client_ip="127.0.0.1",
+            method="SYSTEM",
+            path="/startup/database",
+            protocol="INTERNAL",
+            status_code=200,
+            response_size=len(tables),
+            duration_ms=0.0,
+            source="backend",
+            message=f"database tables_ready={','.join(tables)}",
+            user_agent="CookingManagementSystem",
+        )
     except Exception as e:
         error_msg = str(e)
-        # Only ignore DB2 index warnings (SQL0605W)
         if "SQL0605W" in error_msg:
-            logger.warning(f"Index already exists (ignored): {error_msg}")
-            logger.info("✓ Database tables created successfully (with warnings)")
+            log_common_event(
+                logging.WARNING,
+                client_ip="127.0.0.1",
+                method="SYSTEM",
+                path="/startup/database",
+                protocol="INTERNAL",
+                status_code=200,
+                response_size=0,
+                duration_ms=0.0,
+                source="backend",
+                message=f"database warning={error_msg}",
+                user_agent="CookingManagementSystem",
+            )
         else:
-            logger.error(f"✗ ERROR creating tables: {error_msg}")
+            log_common_event(
+                logging.ERROR,
+                client_ip="127.0.0.1",
+                method="SYSTEM",
+                path="/startup/database",
+                protocol="INTERNAL",
+                status_code=500,
+                response_size=0,
+                duration_ms=0.0,
+                source="backend",
+                message=f"database error={error_msg}",
+                user_agent="CookingManagementSystem",
+            )
             raise
-    
-    logger.info("=" * 80)
-    logger.info("Backend ready to accept requests")
-    logger.info("=" * 80)
     
     yield
     
-    # Shutdown: Add cleanup logic here if needed
-    logger.info("Application shutting down")
+    log_common_event(
+        logging.INFO,
+        client_ip="127.0.0.1",
+        method="SYSTEM",
+        path="/shutdown",
+        protocol="INTERNAL",
+        status_code=200,
+        response_size=0,
+        duration_ms=0.0,
+        source="backend",
+        message="shutdown",
+        user_agent="CookingManagementSystem",
+    )
 
 # Create FastAPI app
 app = FastAPI(
@@ -95,6 +169,54 @@ os.makedirs("uploads/guests", exist_ok=True)
 
 # Mount static files for images under /api/uploads to match frontend URLs
 app.mount("/api/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
+@app.middleware("http")
+async def common_log_middleware(request: Request, call_next):
+    start_time = time.perf_counter()
+    client_ip = request.client.host if request.client else "-"
+    method = request.method
+    path = request.url.path
+    protocol = request.scope.get("http_version", "HTTP/1.1")
+    protocol_label = f"HTTP/{protocol}" if not str(protocol).startswith("HTTP/") else str(protocol)
+    user_agent = request.headers.get("user-agent", "-")
+    referer = request.headers.get("referer", "-")
+    
+    try:
+        response = await call_next(request)
+        duration_ms = (time.perf_counter() - start_time) * 1000
+        response_size = int(response.headers.get("content-length", "0"))
+        log_common_event(
+            logging.INFO,
+            client_ip=client_ip,
+            method=method,
+            path=path,
+            protocol=protocol_label,
+            status_code=response.status_code,
+            response_size=response_size,
+            duration_ms=duration_ms,
+            source="backend",
+            user_agent=user_agent,
+            referer=referer,
+        )
+        return response
+    except Exception as exc:
+        duration_ms = (time.perf_counter() - start_time) * 1000
+        log_common_event(
+            logging.ERROR,
+            client_ip=client_ip,
+            method=method,
+            path=path,
+            protocol=protocol_label,
+            status_code=500,
+            response_size=0,
+            duration_ms=duration_ms,
+            source="backend",
+            message=str(exc),
+            user_agent=user_agent,
+            referer=referer,
+        )
+        raise
 
 
 @app.get("/")
