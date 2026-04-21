@@ -5,7 +5,7 @@ class APIService {
     static let shared = APIService()
     
     private var baseURL: String {
-        UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580"
+        UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://192.168.178.65:5580"
     }
     
     private var isNetworkDebugLoggingEnabled: Bool {
