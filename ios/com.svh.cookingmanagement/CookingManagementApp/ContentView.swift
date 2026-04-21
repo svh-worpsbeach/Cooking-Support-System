@@ -5,42 +5,55 @@ struct ContentView: View {
     @State private var selectedTab = 0
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            HomeView()
-                .tabItem {
-                    Label("nav.home".localized(appState.currentLanguage), systemImage: "house.fill")
-                }
-                .tag(0)
+        ZStack {
+            // Background Image
+            Image(appState.isDarkMode ? "KitchenDark" : "KitchenLight")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .ignoresSafeArea()
             
-            RecipesView()
-                .tabItem {
-                    Label("nav.recipes".localized(appState.currentLanguage), systemImage: "book.fill")
-                }
-                .tag(1)
+            // Subtle overlay for better readability
+            Color.black.opacity(appState.isDarkMode ? 0.3 : 0.1)
+                .ignoresSafeArea()
             
-            EventsView()
-                .tabItem {
-                    Label("nav.events".localized(appState.currentLanguage), systemImage: "calendar")
-                }
-                .tag(2)
-            
-            ShoppingListsView()
-                .tabItem {
-                    Label("shopping.title".localized(appState.currentLanguage), systemImage: "cart.fill")
-                }
-                .tag(3)
-            
-            StorageView()
-                .tabItem {
-                    Label("nav.storage".localized(appState.currentLanguage), systemImage: "archivebox.fill")
-                }
-                .tag(4)
-            
-            MoreView()
-                .tabItem {
-                    Label("nav.more".localized(appState.currentLanguage), systemImage: "ellipsis.circle.fill")
-                }
-                .tag(5)
+            // Main Content
+            TabView(selection: $selectedTab) {
+                HomeView()
+                    .tabItem {
+                        Label("nav.home".localized(appState.currentLanguage), systemImage: "house.fill")
+                    }
+                    .tag(0)
+                
+                RecipesView()
+                    .tabItem {
+                        Label("nav.recipes".localized(appState.currentLanguage), systemImage: "book.fill")
+                    }
+                    .tag(1)
+                
+                EventsView()
+                    .tabItem {
+                        Label("nav.events".localized(appState.currentLanguage), systemImage: "calendar")
+                    }
+                    .tag(2)
+                
+                ShoppingListsView()
+                    .tabItem {
+                        Label("shopping.title".localized(appState.currentLanguage), systemImage: "cart.fill")
+                    }
+                    .tag(3)
+                
+                StorageView()
+                    .tabItem {
+                        Label("nav.storage".localized(appState.currentLanguage), systemImage: "archivebox.fill")
+                    }
+                    .tag(4)
+                
+                MoreView()
+                    .tabItem {
+                        Label("nav.more".localized(appState.currentLanguage), systemImage: "ellipsis.circle.fill")
+                    }
+                    .tag(5)
+            }
         }
         .preferredColorScheme(appState.isDarkMode ? .dark : .light)
     }
