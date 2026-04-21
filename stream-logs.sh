@@ -121,13 +121,19 @@ if ! "${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" ps >/dev/null 2>&1; then
   exit 1
 fi
 
+LOG_ERROR_FILE=$(mktemp)
+cleanup() {
+  rm -f "$LOG_ERROR_FILE"
+}
+trap cleanup EXIT
+
 set +e
-LOG_OUTPUT=$("${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" logs --follow --tail "$TAIL_LINES" "${DEDUPED_SERVICES[@]}" 2>&1)
+"${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" logs --follow --tail "$TAIL_LINES" "${DEDUPED_SERVICES[@]}" 2> >(tee "$LOG_ERROR_FILE" >&2)
 LOG_EXIT_CODE=$?
 set -e
 
 if [ $LOG_EXIT_CODE -ne 0 ]; then
-  echo "$LOG_OUTPUT" >&2
+  LOG_OUTPUT=$(cat "$LOG_ERROR_FILE")
 
   case "${COMPOSE_CMD[*]}:$LOG_OUTPUT" in
     podman-compose:*"no container with name or ID"*|podman-compose:*"no such container"*)
@@ -135,13 +141,11 @@ if [ $LOG_EXIT_CODE -ne 0 ]; then
       echo "Hint: No matching Podman containers were found for the selected services." >&2
       echo "Start them first, for example with:" >&2
       echo "  ./compose-wrapper.sh -f ./docker-compose.dev.yml up -d" >&2
-      echo "Then retry [`./stream-logs.sh`](stream-logs.sh)." >&2
+      echo "Then retry ./stream-logs.sh." >&2
       ;;
   esac
 
   exit $LOG_EXIT_CODE
 fi
-
-printf '%s\n' "$LOG_OUTPUT"
 
 # Made with Bob
