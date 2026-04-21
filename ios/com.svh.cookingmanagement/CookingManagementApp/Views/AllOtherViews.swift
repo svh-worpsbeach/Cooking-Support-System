@@ -33,51 +33,54 @@ struct HomeView: View {
                                 .fontWeight(.bold)
                                 .padding(.horizontal)
                             
-                            LazyVGrid(columns: [
-                                GridItem(.flexible()),
-                                GridItem(.flexible())
-                            ], spacing: 16) {
-                                StatCard(
-                                    title: "nav.recipes".localized(appState.currentLanguage),
-                                    count: viewModel.recipesCount,
-                                    icon: "book.fill",
-                                    color: .blue
-                                )
+                            VStack(spacing: 16) {
+                                HStack(spacing: 16) {
+                                    StatCard(
+                                        title: "nav.recipes".localized(appState.currentLanguage),
+                                        count: viewModel.recipesCount,
+                                        icon: "book.fill",
+                                        color: .blue
+                                    )
+                                    
+                                    StatCard(
+                                        title: "nav.events".localized(appState.currentLanguage),
+                                        count: viewModel.eventsCount,
+                                        icon: "calendar",
+                                        color: .purple
+                                    )
+                                }
                                 
-                                StatCard(
-                                    title: "nav.events".localized(appState.currentLanguage),
-                                    count: viewModel.eventsCount,
-                                    icon: "calendar",
-                                    color: .purple
-                                )
+                                HStack(spacing: 16) {
+                                    StatCard(
+                                        title: "nav.tools".localized(appState.currentLanguage),
+                                        count: viewModel.toolsCount,
+                                        icon: "wrench.fill",
+                                        color: .orange
+                                    )
+                                    
+                                    StatCard(
+                                        title: "nav.storage".localized(appState.currentLanguage),
+                                        count: viewModel.storageCount,
+                                        icon: "archivebox.fill",
+                                        color: .green
+                                    )
+                                }
                                 
-                                StatCard(
-                                    title: "nav.tools".localized(appState.currentLanguage),
-                                    count: viewModel.toolsCount,
-                                    icon: "wrench.fill",
-                                    color: .orange
-                                )
-                                
-                                StatCard(
-                                    title: "nav.storage".localized(appState.currentLanguage),
-                                    count: viewModel.storageCount,
-                                    icon: "archivebox.fill",
-                                    color: .green
-                                )
-                                
-                                StatCard(
-                                    title: "locations.title".localized(appState.currentLanguage),
-                                    count: viewModel.locationsCount,
-                                    icon: "mappin.circle.fill",
-                                    color: .red
-                                )
-                                
-                                StatCard(
-                                    title: "guests.title".localized(appState.currentLanguage),
-                                    count: viewModel.guestsCount,
-                                    icon: "person.2.fill",
-                                    color: .pink
-                                )
+                                HStack(spacing: 16) {
+                                    StatCard(
+                                        title: "locations.title".localized(appState.currentLanguage),
+                                        count: viewModel.locationsCount,
+                                        icon: "mappin.circle.fill",
+                                        color: .red
+                                    )
+                                    
+                                    StatCard(
+                                        title: "guests.title".localized(appState.currentLanguage),
+                                        count: viewModel.guestsCount,
+                                        icon: "person.2.fill",
+                                        color: .pink
+                                    )
+                                }
                             }
                             .padding(.horizontal)
                         }
