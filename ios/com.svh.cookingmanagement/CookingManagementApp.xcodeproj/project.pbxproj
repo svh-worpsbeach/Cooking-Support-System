@@ -19,7 +19,8 @@
 		A100000A /* DateFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001A /* DateFormatters.swift */; };
 		A100000B /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = A100001B /* Settings.bundle */; };
 		ACDADB4F2F9744C30071357F /* RecipeFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDADB4E2F9744C30071357F /* RecipeFormView.swift */; };
-		ACDADB512F9744F80071357F /* EventFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDADB502F9744F80071357F /* EventFormView.swift */; };
+		ACDADB542F9746980071357F /* EventFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDADB522F9746980071357F /* EventFormView.swift */; };
+		ACDADB572F9746B60071357F /* ShoppingListFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDADB552F9746B60071357F /* ShoppingListFormView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,7 +37,8 @@
 		A100001A /* DateFormatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatters.swift; sourceTree = "<group>"; };
 		A100001B /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		ACDADB4E2F9744C30071357F /* RecipeFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeFormView.swift; sourceTree = "<group>"; };
-		ACDADB502F9744F80071357F /* EventFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventFormView.swift; sourceTree = "<group>"; };
+		ACDADB522F9746980071357F /* EventFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventFormView.swift; sourceTree = "<group>"; };
+		ACDADB552F9746B60071357F /* ShoppingListFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingListFormView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,7 +112,8 @@
 		A1000043 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				ACDADB502F9744F80071357F /* EventFormView.swift */,
+				ACDADB562F9746B60071357F /* ShoppingLists */,
+				ACDADB532F9746980071357F /* Events */,
 				A1000045 /* Recipes */,
 				A1000017 /* AllOtherViews.swift */,
 			);
@@ -140,6 +143,22 @@
 				A100001A /* DateFormatters.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		ACDADB532F9746980071357F /* Events */ = {
+			isa = PBXGroup;
+			children = (
+				ACDADB522F9746980071357F /* EventFormView.swift */,
+			);
+			path = Events;
+			sourceTree = "<group>";
+		};
+		ACDADB562F9746B60071357F /* ShoppingLists */ = {
+			isa = PBXGroup;
+			children = (
+				ACDADB552F9746B60071357F /* ShoppingListFormView.swift */,
+			);
+			path = ShoppingLists;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -216,7 +235,8 @@
 				A1000002 /* ContentView.swift in Sources */,
 				A1000007 /* AllOtherViews.swift in Sources */,
 				ACDADB4F2F9744C30071357F /* RecipeFormView.swift in Sources */,
-				ACDADB512F9744F80071357F /* EventFormView.swift in Sources */,
+				ACDADB572F9746B60071357F /* ShoppingListFormView.swift in Sources */,
+				ACDADB542F9746980071357F /* EventFormView.swift in Sources */,
 				A1000006 /* RecipesViews.swift in Sources */,
 				A1000003 /* Models.swift in Sources */,
 				A1000005 /* Localizable.swift in Sources */,
