@@ -115,6 +115,33 @@ echo "Tail lines: $TAIL_LINES"
 echo "Press Ctrl+C to stop."
 echo
 
-"${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" logs --follow --tail "$TAIL_LINES" "${DEDUPED_SERVICES[@]}"
+if ! "${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" ps >/dev/null 2>&1; then
+  echo "Error: Unable to query compose services." >&2
+  echo "Make sure the compose provider is installed and the container engine is running." >&2
+  exit 1
+fi
+
+set +e
+LOG_OUTPUT=$("${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" logs --follow --tail "$TAIL_LINES" "${DEDUPED_SERVICES[@]}" 2>&1)
+LOG_EXIT_CODE=$?
+set -e
+
+if [ $LOG_EXIT_CODE -ne 0 ]; then
+  echo "$LOG_OUTPUT" >&2
+
+  case "${COMPOSE_CMD[*]}:$LOG_OUTPUT" in
+    podman-compose:*"no container with name or ID"*|podman-compose:*"no such container"*)
+      echo >&2
+      echo "Hint: No matching Podman containers were found for the selected services." >&2
+      echo "Start them first, for example with:" >&2
+      echo "  ./compose-wrapper.sh -f ./docker-compose.dev.yml up -d" >&2
+      echo "Then retry [`./stream-logs.sh`](stream-logs.sh)." >&2
+      ;;
+  esac
+
+  exit $LOG_EXIT_CODE
+fi
+
+printf '%s\n' "$LOG_OUTPUT"
 
 # Made with Bob
