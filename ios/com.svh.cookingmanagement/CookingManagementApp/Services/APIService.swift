@@ -8,6 +8,14 @@ class APIService {
         UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://localhost:5580"
     }
     
+    private var isNetworkDebugLoggingEnabled: Bool {
+        #if DEBUG
+        true
+        #else
+        false
+        #endif
+    }
+    
     private init() {}
     
     // MARK: - Generic Request Methods
@@ -26,15 +34,23 @@ class APIService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = body
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        logRequest(request, body: body)
         
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw URLError(.badServerResponse)
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            logResponse(data: data, response: response, error: nil)
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                throw URLError(.badServerResponse)
+            }
+            
+            let decoder = JSONDecoder()
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            logResponse(data: nil, response: nil, error: error)
+            throw error
         }
-        
-        let decoder = JSONDecoder()
-        return try decoder.decode(T.self, from: data)
     }
     
     private func requestWithoutResponse(
@@ -48,11 +64,64 @@ class APIService {
         var request = URLRequest(url: url)
         request.httpMethod = method
         
-        let (_, response) = try await URLSession.shared.data(for: request)
+        logRequest(request, body: nil)
         
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw URLError(.badServerResponse)
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            logResponse(data: data, response: response, error: nil)
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                throw URLError(.badServerResponse)
+            }
+        } catch {
+            logResponse(data: nil, response: nil, error: error)
+            throw error
+        }
+    }
+    
+    private func logRequest(_ request: URLRequest, body: Data?) {
+        guard isNetworkDebugLoggingEnabled else { return }
+        
+        let method = request.httpMethod ?? "UNKNOWN"
+        let url = request.url?.absoluteString ?? "nil"
+        print("🌐 [API Request] \(method) \(url)")
+        
+        if let headers = request.allHTTPHeaderFields, !headers.isEmpty {
+            print("🌐 [API Headers] \(headers)")
+        }
+        
+        guard let body, !body.isEmpty else { return }
+        
+        if let bodyString = String(data: body, encoding: .utf8) {
+            print("🌐 [API Body] \(bodyString)")
+        } else {
+            print("🌐 [API Body] <\(body.count) bytes binary data>")
+        }
+    }
+    
+    private func logResponse(data: Data?, response: URLResponse?, error: Error?) {
+        guard isNetworkDebugLoggingEnabled else { return }
+        
+        if let httpResponse = response as? HTTPURLResponse {
+            let url = httpResponse.url?.absoluteString ?? "nil"
+            print("🌐 [API Response] \(httpResponse.statusCode) \(url)")
+            print("🌐 [API Response Headers] \(httpResponse.allHeaderFields)")
+        } else if let response {
+            print("🌐 [API Response] \(response)")
+        }
+        
+        if let data, !data.isEmpty {
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("🌐 [API Response Body] \(responseString)")
+            } else {
+                print("🌐 [API Response Body] <\(data.count) bytes binary data>")
+            }
+        }
+        
+        if let error {
+            print("❌ [API Error] \(error.localizedDescription)")
+            print("❌ [API Error Details] \(error)")
         }
     }
     
@@ -272,16 +341,24 @@ class APIService {
         body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
         
         request.httpBody = body
+        logRequest(request, body: nil)
+        print("🌐 [API Upload] image/jpeg \(imageData.count) bytes")
         
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw URLError(.badServerResponse)
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            logResponse(data: data, response: response, error: nil)
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                throw URLError(.badServerResponse)
+            }
+            
+            let result = try JSONDecoder().decode([String: String].self, from: data)
+            return result["image_url"] ?? ""
+        } catch {
+            logResponse(data: nil, response: nil, error: error)
+            throw error
         }
-        
-        let result = try JSONDecoder().decode([String: String].self, from: data)
-        return result["image_url"] ?? ""
     }
 }
 
