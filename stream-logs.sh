@@ -27,6 +27,47 @@ detect_compose_command() {
   fi
 }
 
+resolve_podman_targets() {
+  local ps_output
+  ps_output=$("${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" ps 2>/dev/null || true)
+
+  if [ -z "$ps_output" ]; then
+    echo "Error: Unable to read Podman compose container list." >&2
+    exit 1
+  fi
+
+  RESOLVED_SERVICES=()
+
+  for service in "${DEDUPED_SERVICES[@]}"; do
+    local target_name=""
+    case "$service" in
+      backend)
+        if printf '%s\n' "$ps_output" | grep -q '[[:space:]]cooking-backend[[:space:]]*$'; then
+          target_name="cooking-backend"
+        elif printf '%s\n' "$ps_output" | grep -q '[[:space:]]cooking-backend-dev[[:space:]]*$'; then
+          target_name="cooking-backend-dev"
+        fi
+        ;;
+      frontend)
+        if printf '%s\n' "$ps_output" | grep -q '[[:space:]]cooking-frontend[[:space:]]*$'; then
+          target_name="cooking-frontend"
+        elif printf '%s\n' "$ps_output" | grep -q '[[:space:]]cooking-frontend-dev[[:space:]]*$'; then
+          target_name="cooking-frontend-dev"
+        fi
+        ;;
+    esac
+
+    if [ -z "$target_name" ]; then
+      echo "Error: No running container found for service '$service'." >&2
+      echo "Available containers:" >&2
+      printf '%s\n' "$ps_output" >&2
+      exit 1
+    fi
+
+    RESOLVED_SERVICES+=("$target_name")
+  done
+}
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -108,6 +149,11 @@ for service in "${SERVICES[@]}"; do
   esac
 done
 
+RESOLVED_SERVICES=("${DEDUPED_SERVICES[@]}")
+if [ "${COMPOSE_CMD[0]}" = "podman-compose" ]; then
+  resolve_podman_targets
+fi
+
 echo "Streaming logs from: ${DEDUPED_SERVICES[*]}"
 echo "Using compose file: $COMPOSE_FILE"
 echo "Using compose command: ${COMPOSE_CMD[*]}"
@@ -128,7 +174,7 @@ cleanup() {
 trap cleanup EXIT
 
 set +e
-"${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" logs --follow --tail "$TAIL_LINES" "${DEDUPED_SERVICES[@]}" 2> >(tee "$LOG_ERROR_FILE" >&2)
+"${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" logs --follow --tail "$TAIL_LINES" "${RESOLVED_SERVICES[@]}" 2> >(tee "$LOG_ERROR_FILE" >&2)
 LOG_EXIT_CODE=$?
 set -e
 
