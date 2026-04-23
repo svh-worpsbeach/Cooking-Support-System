@@ -1,0 +1,37 @@
+[Unit]
+Description=Cooking Management System - Backend API
+After=network-online.target cooking-postgres.service
+Wants=network-online.target
+Requires=cooking-postgres.service
+
+[Container]
+Image=localhost/cookingmanagementsystem_backend:latest
+ContainerName=cooking-backend
+Network=cooking-network.network
+PublishPort=0.0.0.0:5580:8000
+Volume=cooking-uploads-data.volume:/app/uploads
+Environment=DATABASE_TYPE=postgresql
+Environment=POSTGRES_HOST=cooking-postgres
+Environment=POSTGRES_PORT=5432
+Environment=POSTGRES_DATABASE=cooking_db
+Environment=POSTGRES_USER=postgres
+Environment=POSTGRES_PASSWORD=postgres
+Environment=CORS_ORIGINS=http://frontend,http://localhost:5500,http://localhost:5580
+Environment=POOL_SIZE=10
+Environment=MAX_OVERFLOW=20
+Environment=POOL_PRE_PING=true
+Environment=ECHO_SQL=false
+Environment=PYTHONUNBUFFERED=1
+Environment=LOG_LEVEL=ERROR
+HealthCmd=curl -f http://localhost:8000/health || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+
+[Service]
+Restart=unless-stopped
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target default.target

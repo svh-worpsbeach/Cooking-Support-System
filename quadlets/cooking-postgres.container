@@ -1,0 +1,26 @@
+[Unit]
+Description=Cooking Management System - PostgreSQL Database
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/library/postgres:16-alpine
+ContainerName=cooking-postgres
+Network=cooking-network.network
+PublishPort=0.0.0.0:5532:5432
+Volume=cooking-postgres-data.volume:/var/lib/postgresql/data
+Environment=POSTGRES_DB=cooking_db
+Environment=POSTGRES_USER=postgres
+Environment=POSTGRES_PASSWORD=postgres
+HealthCmd=pg_isready -U postgres
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=5
+HealthStartPeriod=10s
+
+[Service]
+Restart=unless-stopped
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target default.target

@@ -1,0 +1,23 @@
+[Unit]
+Description=Cooking Management System - Frontend
+After=network-online.target cooking-backend.service
+Wants=network-online.target
+Requires=cooking-backend.service
+
+[Container]
+Image=localhost/cookingmanagementsystem_frontend:latest
+ContainerName=cooking-frontend
+Network=cooking-network.network
+PublishPort=0.0.0.0:5500:80
+HealthCmd=curl -f http://localhost/health || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=40s
+
+[Service]
+Restart=unless-stopped
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target default.target

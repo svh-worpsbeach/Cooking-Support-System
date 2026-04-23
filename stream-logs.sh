@@ -5,12 +5,19 @@ set -euo pipefail
 COMPOSE_FILE="./docker-compose.dev.yml"
 TAIL_LINES="${TAIL_LINES:-100}"
 COMPOSE_CMD=()
+USE_QUADLETS="${USE_QUADLETS:-false}"
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
 detect_compose_command() {
+  # Check if we should use quadlets
+  if [ "$USE_QUADLETS" = "true" ] && command_exists systemctl; then
+    COMPOSE_CMD=("quadlet")
+    return
+  fi
+  
   if command_exists podman-compose; then
     COMPOSE_CMD=("podman-compose")
   elif command_exists docker && docker compose version >/dev/null 2>&1; then
@@ -23,8 +30,24 @@ detect_compose_command() {
     echo "  - Docker with Compose plugin (recommended)" >&2
     echo "  - docker-compose (legacy)" >&2
     echo "  - podman-compose" >&2
+    echo "  - Or set USE_QUADLETS=true to use systemd journal" >&2
     exit 1
   fi
+}
+
+stream_quadlet_logs() {
+  local services=()
+  
+  for service in "${DEDUPED_SERVICES[@]}"; do
+    services+=("-u" "cooking-$service.service")
+  done
+  
+  echo "Streaming logs from systemd journal..."
+  echo "Services: ${DEDUPED_SERVICES[*]}"
+  echo "Press Ctrl+C to stop."
+  echo
+  
+  journalctl --user "${services[@]}" -f -n "$TAIL_LINES"
 }
 
 stream_podman_logs() {
@@ -164,6 +187,13 @@ for service in "${SERVICES[@]}"; do
 done
 
 RESOLVED_SERVICES=("${DEDUPED_SERVICES[@]}")
+
+# Handle quadlet mode
+if [ "${COMPOSE_CMD[0]}" = "quadlet" ]; then
+  stream_quadlet_logs
+  exit $?
+fi
+
 if [ "${COMPOSE_CMD[0]}" = "podman-compose" ]; then
   resolve_podman_targets
 fi

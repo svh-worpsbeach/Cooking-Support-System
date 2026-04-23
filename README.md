@@ -105,14 +105,41 @@ cooking-management-system/
 ### Prerequisites
 
 - **Container Runtime** (wähle eine Option):
-  - Docker und Docker Compose (empfohlen)
-  - Podman und podman-compose (Docker-Alternative, rootless)
+  - Docker und Docker Compose (empfohlen für alle Plattformen)
+  - Podman und podman-compose (Docker-Alternative, rootless, empfohlen für macOS/Linux)
+  - Podman Quadlets (systemd-basiert, **nur für Linux Production**)
 - **ODER für manuelle Installation**: Python 3.11+, Node.js 18+, und eine Datenbank (SQLite/PostgreSQL/DB2)
 - Git
 
 ### Quick Start mit Docker oder Podman
 
 Das Projekt unterstützt sowohl Docker als auch Podman. Das [`switch-database.sh`](switch-database.sh) Skript erkennt automatisch, welches Tool verfügbar ist.
+
+**Empfohlene Methode für macOS/Development:**
+```bash
+# Verwendet automatisch podman-compose oder docker-compose
+./switch-database.sh postgresql
+```
+
+**Podman Quadlets (Nur für Linux Production):**
+```bash
+# ⚠️ Funktioniert NICHT auf macOS (kein systemd auf Host)
+# Nur auf Linux mit systemd verwenden
+
+# Quadlets installieren
+./quadlet-wrapper.sh install
+
+# Services starten
+./quadlet-wrapper.sh start
+
+# Status prüfen
+./quadlet-wrapper.sh status
+
+# Logs anzeigen
+./quadlet-wrapper.sh logs backend --follow
+```
+
+**Wichtig:** Quadlets benötigen systemd und funktionieren nur auf Linux. Auf macOS verwende `podman-compose`. Siehe [QUADLETS_GUIDE.md](QUADLETS_GUIDE.md) für Details.
 
 **Option 1: SQLite (Development)**
 ```bash
@@ -132,7 +159,9 @@ Das Projekt unterstützt sowohl Docker als auch Podman. Das [`switch-database.sh
 **Hinweis für Podman-Benutzer:**
 - Das Skript erkennt automatisch `podman-compose` und verwendet es anstelle von Docker
 - Siehe [PODMAN_GUIDE.md](PODMAN_GUIDE.md) für detaillierte Podman-spezifische Anweisungen
+- Siehe [QUADLETS_GUIDE.md](QUADLETS_GUIDE.md) für systemd-basierte Container-Verwaltung (nur Linux)
 - Podman läuft rootless und ist eine sichere Docker-Alternative
+- **macOS**: Verwende `podman-compose`, nicht Quadlets (kein systemd auf Host)
 
 The application will be available at:
 - Frontend: http://localhost:5500 (PostgreSQL), http://localhost:5501 (DB2), http://localhost:5502 (SQLite)
@@ -290,7 +319,15 @@ podman-compose down
 ./compose-wrapper.sh up -d
 ./compose-wrapper.sh logs -f
 ./compose-wrapper.sh down
+
+# ODER mit Podman Quadlets (nur Linux, systemd-basiert)
+export USE_QUADLETS=true
+./compose-wrapper.sh up -d
+./compose-wrapper.sh logs -f
+./compose-wrapper.sh down
 ```
+
+**Hinweis:** Quadlets funktionieren nur auf Linux mit systemd. Auf macOS verwende die Standard-Methode ohne `USE_QUADLETS`.
 
 Die Anwendung ist dann verfügbar unter:
 - Frontend: http://localhost:5500 (PostgreSQL), http://localhost:5501 (DB2), http://localhost:5502 (SQLite)
@@ -300,6 +337,7 @@ Die Anwendung ist dann verfügbar unter:
 **Deployment-Anleitungen:**
 - **[Allgemeines Deployment](DEPLOYMENT.md)** - Standard Docker/Podman Deployment, Produktions-Setup, Monitoring
 - **[Podman Guide](PODMAN_GUIDE.md)** - Podman-spezifische Anweisungen und Best Practices
+- **[Quadlets Guide](QUADLETS_GUIDE.md)** - Systemd-basierte Container-Verwaltung (nur Linux Production)
 - **[Synology NAS Deployment](SYNOLOGY_DEPLOYMENT.md)** - Detaillierte Anleitung für Synology DSM 8 mit Container Manager
 
 Siehe [DEPLOYMENT.md](DEPLOYMENT.md) für:

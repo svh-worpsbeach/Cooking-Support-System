@@ -12,7 +12,7 @@ services:
     container_name: cooking-backend-dev
     hostname: backend
     ports:
-      - "0.0.0.0:5580:8000"
+      - "5580:8000"
     environment:
       - DATABASE_TYPE=sqlite
       - SQLITE_DATABASE=/app/data/cooking.db
@@ -45,7 +45,7 @@ services:
     container_name: cooking-frontend-dev
     hostname: frontend
     ports:
-      - "5502:80"
+      - "5500:80"
     depends_on:
       - backend
     restart: unless-stopped
