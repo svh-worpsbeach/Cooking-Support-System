@@ -127,7 +127,11 @@ struct StatCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.secondary.opacity(0.1))
+                .fill(Color(UIColor.systemBackground).opacity(0.7))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
         )
     }
 }

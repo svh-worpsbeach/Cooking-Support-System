@@ -12,8 +12,9 @@ Eine native iOS/iPadOS-Anwendung für das Cooking Management System, entwickelt 
 - ✅ **Gästeverwaltung**: Verwalten von Gästen mit Ernährungseinschränkungen
 - ✅ **Einkaufslisten**: Erstellen und verwalten von Einkaufslisten
 - ✅ **Mehrsprachigkeit**: Deutsch und Englisch
-- ✅ **Dark Mode**: Unterstützung für hellen und dunklen Modus
+- ✅ **Dark Mode**: Unterstützung für hellen und dunklen Modus mit adaptiven Hintergrundbildern
 - ✅ **iPad-Optimierung**: Angepasste Layouts für iPad
+- ✅ **Hintergrundbilder**: Moderne Küchen-Hintergrundbilder, die sich an den Dark Mode anpassen
 
 ## Anforderungen
 
@@ -72,7 +73,10 @@ ios/
 ├── com.svh.cookingmanagement/
 │   └── CookingManagementApp/
 │       ├── CookingManagementApp.swift    # App-Einstiegspunkt
-│       ├── ContentView.swift              # Haupt-Tab-Navigation
+│       ├── ContentView.swift              # Haupt-Tab-Navigation mit Hintergrund
+│       ├── Assets.xcassets/               # App-Assets
+│       │   ├── KitchenLight.imageset/     # Hintergrundbild für Light Mode
+│       │   └── KitchenDark.imageset/      # Hintergrundbild für Dark Mode
 │       ├── Models/
 │       │   └── Models.swift               # Datenmodelle
 │       ├── Services/
@@ -83,6 +87,7 @@ ios/
 │           ├── Recipes/
 │           │   └── RecipesViews.swift     # Rezept-Views
 │           └── AllOtherViews.swift        # Alle anderen Views
+├── BACKGROUND_IMAGES.md                   # Dokumentation zu Hintergrundbildern
 ├── .gitignore
 └── README.md
 ```
@@ -101,7 +106,7 @@ Die App folgt dem **MVVM (Model-View-ViewModel)** Pattern:
 #### AppState
 Globaler App-Zustand für:
 - Spracheinstellungen (Deutsch/Englisch)
-- Dark Mode
+- Dark Mode (steuert auch die Hintergrundbilder)
 - Wird als `@EnvironmentObject` in alle Views injiziert
 
 #### APIService

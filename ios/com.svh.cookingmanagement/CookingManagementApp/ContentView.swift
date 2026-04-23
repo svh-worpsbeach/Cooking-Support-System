@@ -5,7 +5,20 @@ struct ContentView: View {
     @State private var selectedTab = 0
     
     var body: some View {
-        TabView(selection: $selectedTab) {
+        ZStack {
+            // Background image based on dark mode
+            Image(appState.isDarkMode ? "KitchenDark" : "KitchenLight")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .ignoresSafeArea()
+                .opacity(0.3)
+            
+            // Subtle overlay for better readability
+            Color.black
+                .opacity(appState.isDarkMode ? 0.2 : 0.05)
+                .ignoresSafeArea()
+            
+            TabView(selection: $selectedTab) {
             HomeView()
                 .tabItem {
                     Label("nav.home".localized(appState.currentLanguage), systemImage: "house.fill")
@@ -41,8 +54,9 @@ struct ContentView: View {
                     Label("nav.more".localized(appState.currentLanguage), systemImage: "ellipsis.circle.fill")
                 }
                 .tag(5)
+            }
+            .preferredColorScheme(appState.isDarkMode ? .dark : .light)
         }
-        .preferredColorScheme(appState.isDarkMode ? .dark : .light)
     }
 }
 
