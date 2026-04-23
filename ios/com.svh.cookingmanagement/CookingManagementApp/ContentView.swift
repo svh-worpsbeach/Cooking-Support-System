@@ -12,40 +12,57 @@ struct ContentView: View {
             // Content layer - TabView with all tabs
             TabView(selection: $selectedTab) {
             HomeView()
+                .background(Color.clear)
                 .tabItem {
                     Label("nav.home".localized(appState.currentLanguage), systemImage: "house.fill")
                 }
                 .tag(0)
             
             RecipesView()
+                .background(Color.clear)
                 .tabItem {
                     Label("nav.recipes".localized(appState.currentLanguage), systemImage: "book.fill")
                 }
                 .tag(1)
             
             EventsView()
+                .background(Color.clear)
                 .tabItem {
                     Label("nav.events".localized(appState.currentLanguage), systemImage: "calendar")
                 }
                 .tag(2)
             
             ShoppingListsView()
+                .background(Color.clear)
                 .tabItem {
                     Label("shopping.title".localized(appState.currentLanguage), systemImage: "cart.fill")
                 }
                 .tag(3)
             
             StorageView()
+                .background(Color.clear)
                 .tabItem {
                     Label("nav.storage".localized(appState.currentLanguage), systemImage: "archivebox.fill")
                 }
                 .tag(4)
             
             MoreView()
+                .background(Color.clear)
                 .tabItem {
                     Label("nav.more".localized(appState.currentLanguage), systemImage: "ellipsis.circle.fill")
                 }
                 .tag(5)
+            }
+            .onAppear {
+                // Make TabView background transparent
+                let appearance = UITabBarAppearance()
+                appearance.configureWithTransparentBackground()
+                appearance.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.8)
+                
+                UITabBar.appearance().standardAppearance = appearance
+                if #available(iOS 15.0, *) {
+                    UITabBar.appearance().scrollEdgeAppearance = appearance
+                }
             }
             .preferredColorScheme(appState.isDarkMode ? .dark : .light)
         }
