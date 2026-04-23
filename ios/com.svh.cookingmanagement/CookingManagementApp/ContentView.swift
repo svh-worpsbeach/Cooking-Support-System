@@ -5,7 +5,12 @@ struct ContentView: View {
     @State private var selectedTab = 0
     
     var body: some View {
-        TabView(selection: $selectedTab) {
+        ZStack {
+            // Background layer - always behind everything
+            BackgroundImageView(isDarkMode: appState.isDarkMode)
+            
+            // Content layer - TabView with all tabs
+            TabView(selection: $selectedTab) {
             HomeView()
                 .tabItem {
                     Label("nav.home".localized(appState.currentLanguage), systemImage: "house.fill")
@@ -41,22 +46,30 @@ struct ContentView: View {
                     Label("nav.more".localized(appState.currentLanguage), systemImage: "ellipsis.circle.fill")
                 }
                 .tag(5)
-        }
-        .background(
-            ZStack {
-                // Background image based on dark mode
-                Image(appState.isDarkMode ? "KitchenDark" : "KitchenLight")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .opacity(0.3)
-                
-                // Subtle overlay for better readability
-                Color.black
-                    .opacity(appState.isDarkMode ? 0.2 : 0.05)
             }
-            .ignoresSafeArea()
-        )
-        .preferredColorScheme(appState.isDarkMode ? .dark : .light)
+            .preferredColorScheme(appState.isDarkMode ? .dark : .light)
+        }
+    }
+}
+
+// MARK: - Background Image View
+struct BackgroundImageView: View {
+    let isDarkMode: Bool
+    
+    var body: some View {
+        ZStack {
+            // Background image based on dark mode
+            Image(isDarkMode ? "KitchenDark" : "KitchenLight")
+                .resizable()
+                .scaledToFill()
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                .opacity(0.3)
+            
+            // Subtle overlay for better readability
+            Color.black
+                .opacity(isDarkMode ? 0.2 : 0.05)
+        }
+        .ignoresSafeArea()
     }
 }
 
