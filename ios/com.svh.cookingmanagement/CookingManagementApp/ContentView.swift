@@ -58,12 +58,24 @@ struct BackgroundImageView: View {
     
     var body: some View {
         ZStack {
-            // Background image based on dark mode
-            Image(isDarkMode ? "KitchenDark" : "KitchenLight")
-                .resizable()
-                .scaledToFill()
-                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                .opacity(0.3)
+            // Try to load the image, fallback to color if not found
+            if let image = UIImage(named: isDarkMode ? "KitchenDark" : "KitchenLight") {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                    .opacity(0.3)
+            } else {
+                // Fallback gradient if image is not found
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        isDarkMode ? Color(red: 0.1, green: 0.08, blue: 0.06) : Color(red: 0.97, green: 0.97, blue: 0.95),
+                        isDarkMode ? Color(red: 0.15, green: 0.12, blue: 0.08) : Color(red: 0.95, green: 0.95, blue: 0.93)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
             
             // Subtle overlay for better readability
             Color.black
